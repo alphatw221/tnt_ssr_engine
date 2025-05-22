@@ -1,0 +1,27 @@
+{
+  "name": "tnt_ssr_engine",
+  "version": "1.0.0",
+  "type":"module",
+  "scripts": {
+    "start": "dotenvx run -- node server/server.js",
+    "dev": "dotenvx run --env-file=.env.prod.local -- node --watch server/server.js",
+    "test": "dotenvx run --env-file=.env.prod.local -- node test.js"
+  },
+  "main": "server.js",
+  "license": "MIT",
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.44.1",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.27.1",
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-react": "^7.27.1",
+    "@babel/register": "^7.27.1",
+    "@vitejs/plugin-react": "^4.4.1",
+    "vite": "^6.3.5"
+  }
+}
