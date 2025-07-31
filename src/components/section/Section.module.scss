@@ -1,0 +1,274 @@
+@import "@/assets/scss/my-variables";
+
+
+$props: (
+  width: (
+    name: "width",
+  ),
+  max-width:(
+    name: "max-width",
+  ),
+  min-width:(
+    name: "min-width",
+  ),
+  height:(
+    name: "height",
+  ),
+  max-height:(
+    name: "max-height",
+  ),
+  min-height:(
+    name: "min-height",
+  ),
+  top: (
+    name: "top",
+  ),
+  bottom: (
+    name: "bottom",
+  ),
+  left: (
+    name: "left",
+  ),
+  right: (
+    name: "right",
+  ),
+  display:(
+    name: "display",
+    default:flex,
+  ),
+  
+  flex-direction:(
+    name: "flex-direction",
+    default:column,
+  ),
+
+  justify-content:(
+    name: "justify-content",
+    default:center,
+  ),
+
+  justify-items:(
+    name: "justify-items",
+    default:center,
+  ),
+
+  align-content:(
+    name: "align-content",
+    default:center,
+  ),
+
+  align-items:(
+    name: "align-items",
+    default:center,
+  ),
+
+  flex-wrap:(
+    name: "flex-wrap",
+    default:wrap,
+  ),
+
+
+  background-position:(
+    name: "background-position",
+  ),
+  background-size:(
+    name: "background-size",
+  ),
+);
+
+
+
+
+.fragment {
+
+    overflow:visible;
+    position: relative;;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    justify-items: center;
+    align-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+
+
+    @each $size, $breakpoint in $size-breakpoint-pairs {
+
+        --width-#{$size}:initial;
+        --height-#{$size}:initial;
+
+        --max-width-#{$size}:initial;
+        --min-width-#{$size}:initial;
+        --max-height-#{$size}:initial;
+        --min-height-#{$size}:initial;
+
+        --top-#{$size}: initial;
+        --bottom-#{$size}: initial;
+        --left-#{$size}: initial;
+        --right-#{$size}: initial;
+
+        --display-#{$size}: flex;
+
+        --background-position-#{$size}:initial;
+        --background-size-#{$size}:initial;
+
+    }
+
+    @include generate-rwd-stylesheet($props);
+
+    // @media only screen and (min-width: 1536px){
+    //     width:var(--width-xxl);
+    //     max-width: var(--max-width-xxl);
+    //     min-width: var(--min-width-xxl);
+    //     height:var(--height-xxl);
+    //     max-height: var(--max-height-xxl);
+    //     min-height: var(--min-height-xxl);
+    //     background-position: var(--background-position-xxl);
+    //     background-size: var(--background-size-xxl);
+    //     top: var(--top-xxl);
+    //     bottom: var(--bottom-xxl);
+    //     left: var(--left-xxl);
+    //     right: var(--right-xxl);
+
+    //     display: var(--display-xxl, flex);
+    // }
+    // @media only screen and (min-width: 1280px) and (max-width: 1535px){
+    //     width:var(--width-xl);
+    //     max-width: var(--max-width-xl);
+    //     min-width: var(--min-width-xl);
+    //     height:var(--height-xl);
+    //     max-height: var(--max-height-xl);
+    //     min-height: var(--min-height-xl);
+    //     background-position: var(--background-position-xl);
+    //     background-size: var(--background-size-xl);
+    //     top: var(--top-xl);
+    //     bottom: var(--bottom-xl);
+    //     left: var(--left-xl);
+    //     right: var(--right-xl);
+
+    //     display: var(--display-xl, flex);
+    // }
+    // @media only screen and (min-width: 1024px) and (max-width: 1279px){
+    //     width:var(--width-lg);
+    //     max-width: var(--max-width-lg);
+    //     min-width: var(--min-width-lg);
+    //     height:var(--height-lg);
+    //     max-height: var(--max-height-lg);
+    //     min-height: var(--min-height-lg);
+    //     background-position: var(--background-position-lg);
+    //     background-size: var(--background-size-lg);
+    //     top: var(--top-lg);
+    //     bottom: var(--bottom-lg);
+    //     left: var(--left-lg);
+    //     right: var(--right-lg);
+
+    //     display: var(--display-lg, flex);
+    // }
+    // @media only screen and (min-width: 768px) and (max-width: 1023px){
+    //     width:var(--width-md);
+    //     max-width: var(--max-width-md);
+    //     min-width: var(--min-width-md);
+    //     height:var(--height-md);
+    //     max-height: var(--max-height-md);
+    //     min-height: var(--min-height-md);
+    //     background-position: var(--background-position-md);
+    //     background-size: var(--background-size-md);
+    //     top: var(--top-md);
+    //     bottom: var(--bottom-md);
+    //     left: var(--left-md);
+    //     right: var(--right-md);
+
+    //     display: var(--display-md, flex);
+    // }
+    // @media only screen and (min-width: 640px) and (max-width: 767px){
+    //     width:var(--width-sm);
+    //     max-width: var(--max-width-sm);
+    //     min-width: var(--min-width-sm);
+    //     height:var(--height-sm);
+    //     max-height: var(--max-height-sm);
+    //     min-height: var(--min-height-sm);
+    //     background-position: var(--background-position-sm);
+    //     background-size: var(--background-size-sm);
+    //     top: var(--top-sm);
+    //     bottom: var(--bottom-sm);
+    //     left: var(--left-sm);
+    //     right: var(--right-sm);
+
+    //     display: var(--display-sm, flex);
+    // }
+    // @media only screen and (min-width: 390px) and (max-width: 636px){
+    //     width:var(--width-xs);
+    //     max-width: var(--max-width-xs);
+    //     min-width: var(--min-width-xs);
+    //     height:var(--height-xs);
+    //     max-height: var(--max-height-xs);
+    //     min-height: var(--min-height-xs);
+    //     background-position: var(--background-position-xs);
+    //     background-size: var(--background-size-xs);
+    //     top: var(--top-xs);
+    //     bottom: var(--bottom-xs);
+    //     left: var(--left-xs);
+    //     right: var(--right-xs);
+
+    //     display: var(--display-xs, flex);
+    // }
+    // @media only screen and (max-width: 389px){
+    //     width:var(--width-xxs);
+    //     max-width: var(--max-width-xxs);
+    //     min-width: var(--min-width-xxs);
+    //     height:var(--height-xxs);
+    //     max-height: var(--max-height-xxs);
+    //     min-height: var(--min-height-xxs);
+    //     background-position: var(--background-position-xxs);
+    //     background-size: var(--background-size-xxs);
+    //     top: var(--top-xxs);
+    //     bottom: var(--bottom-xxs);
+    //     left: var(--left-xxs);
+    //     right: var(--right-xxs);
+
+    //     display: var(--display-xxs, flex);
+    // }
+
+
+
+
+
+    &.can_drop{
+        border: solid;
+        border-width: 1px;
+        border-color: lightseagreen;
+    }
+
+    &.is_over{
+        border: solid;
+        border-width: 1px;
+        border-color: lightgreen;
+    }
+
+    .component_matrix_container{
+        // width: 100%;
+        // height: 100%;
+        display: flex;
+        flex-direction: column;
+        // align-items: center;
+        justify-content: center;
+        // align-content: center;
+        // justify-items: center;
+
+
+    }
+
+    .fragment_settings_dropdown{
+        position: absolute;
+        top:20px;
+        right:20px;
+    }
+
+    .fragment_actions{
+        
+    }
+
+   
+}
+

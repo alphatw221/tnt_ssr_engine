@@ -1,0 +1,122 @@
+@import "@/assets/scss/my-variables";
+
+$props: (
+  width: (
+    name: "width",
+  ),
+  max-width:(
+    name: "max-width",
+  ),
+  min-width:(
+    name: "min-width",
+    default:20px,
+  ),
+  height:(
+    name: "height",
+  ),
+  max-height:(
+    name: "max-height",
+  ),
+  min-height:(
+    name: "min-height",
+    default:20px,
+  ),
+);
+
+.absolute-position-node-box{
+    // min-height: 20px;
+    // min-width: 20px;
+    position: relative;
+
+
+    @include generate-rwd-stylesheet($props);
+
+    // @media only screen and (min-width: 1536px){
+    //     width:var(--width-xxl);
+    //     max-width: var(--max-width-xxl);
+    //     min-width: var(--min-width-xxl,20px);
+    //     height:var(--height-xxl);
+    //     max-height: var(--max-height-xxl);
+    //     min-height: var(--min-height-xxl,20px);
+
+
+    // }
+    // @media only screen and (min-width: 1280px) and (max-width: 1535px){
+    //     width:var(--width-xl);
+    //     max-width: var(--max-width-xl);
+    //     min-width: var(--min-width-xl,20px);
+    //     height:var(--height-xl);
+    //     max-height: var(--max-height-xl);
+    //     min-height: var(--min-height-xl,20px);
+
+
+    // }
+    // @media only screen and (min-width: 1024px) and (max-width: 1279px){
+    //     width:var(--width-lg);
+    //     max-width: var(--max-width-lg);
+    //     min-width: var(--min-width-lg,20px);
+    //     height:var(--height-lg);
+    //     max-height: var(--max-height-lg);
+    //     min-height: var(--min-height-lg,20px);
+
+
+    // }
+    // @media only screen and (min-width: 768px) and (max-width: 1023px){
+    //     width:var(--width-md);
+    //     max-width: var(--max-width-md);
+    //     min-width: var(--min-width-md,20px);
+    //     height:var(--height-md);
+    //     max-height: var(--max-height-md);
+    //     min-height: var(--min-height-md,20px);
+
+
+    // }
+    // @media only screen and (min-width: 640px) and (max-width: 767px){
+    //     width:var(--width-sm);
+    //     max-width: var(--max-width-sm);
+    //     min-width: var(--min-width-sm,20px);
+    //     height:var(--height-sm);
+    //     max-height: var(--max-height-sm);
+    //     min-height: var(--min-height-sm,20px);
+
+
+    // }
+    // @media only screen and (min-width: 390px) and (max-width: 636px){
+    //     width:var(--width-xs);
+    //     max-width: var(--max-width-xs);
+    //     min-width: var(--min-width-xs,20px);
+    //     height:var(--height-xs);
+    //     max-height: var(--max-height-xs);
+    //     min-height: var(--min-height-xs,20px);
+
+
+    // }
+    // @media only screen and (max-width: 389px){
+    //     width:var(--width-xxs);
+    //     max-width: var(--max-width-xxs);
+    //     min-width: var(--min-width-xxs,20px);
+    //     height:var(--height-xxs);
+    //     max-height: var(--max-height-xxs);
+    //     min-height: var(--min-height-xxs,20px);
+
+
+
+    // }
+
+
+
+
+    &.can-drop{
+        border: solid;
+        border-width: 1px;
+        border-color: lightseagreen;
+    }
+
+    &.is-over{
+        border: solid;
+        border-width: 1px;
+        border-color: lightgreen;
+    }
+    
+}
+

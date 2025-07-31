@@ -1,0 +1,11 @@
+.single-slider{
+    height: 40vh;
+
+
+
+    .slider-btn{
+        &:hover{
+            margin-left: 5px;
+        }
+    }
+}

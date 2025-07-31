@@ -1,20 +1,51 @@
 {
   "name": "tnt_ssr_engine",
   "version": "1.0.0",
-  "type":"module",
+  "type": "module",
   "scripts": {
-    "start": "dotenvx run -- node server/server.js",
-    "dev": "dotenvx run --env-file=.env.prod.local -- node --watch server/server.js",
-    "test": "dotenvx run --env-file=.env.prod.local -- node test.js"
+    "start": "dotenvx run -- nodemon",
+    "dev": "dotenvx run --env-file=.env.prod.local -- nodemon"
   },
   "main": "server.js",
   "license": "MIT",
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^44.3.0",
+    "@ckeditor/ckeditor5-react": "^9.5.0",
     "@dotenvx/dotenvx": "^1.44.1",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@monaco-editor/react": "^4.7.0",
+    "@reduxjs/toolkit": "^2.8.2",
+    "axios": "^1.9.0",
+    "clsx": "^2.1.1",
+    "cogo-toast": "^4.2.3",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "google-map-react": "^2.2.5",
+    "js-cookie": "^3.0.5",
+    "prop-types": "^15.8.1",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-bootstrap": "^2.10.10",
+    "react-color": "^2.19.3",
+    "react-datetime-picker": "^6.0.1",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dom": "^19.1.0",
+    "react-helmet": "^6.1.0",
+    "react-helmet-async": "^2.0.5",
+    "react-hooks-paginator": "^0.5.3",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.6.2",
+    "react-select": "^5.10.1",
+    "redis": "^5.6.1",
+    "redux-persist": "^6.0.0",
+    "sass": "^1.89.0",
+    "simple-react-validator": "^1.6.2",
+    "socket.io-client": "^4.8.1",
+    "swiper": "^11.2.8",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.27.1",
@@ -22,6 +53,7 @@
     "@babel/preset-react": "^7.27.1",
     "@babel/register": "^7.27.1",
     "@vitejs/plugin-react": "^4.4.1",
+    "nodemon": "^3.1.10",
     "vite": "^6.3.5"
   }
 }

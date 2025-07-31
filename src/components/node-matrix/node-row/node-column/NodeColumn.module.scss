@@ -1,0 +1,35 @@
+
+
+    
+.component_column_container{
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    // margin-left: 2px;
+    // margin-right: 2px;
+    // padding-left: 2px;
+    // padding-right: 2px;
+
+    &.is_over_current{
+
+        &.hover_left{
+            border-left: solid;
+            border-left-width: 1px;
+            border-color: lightseagreen;
+        }
+        &.hover_right{
+            border-right: solid;
+            border-right-width: 1px;
+            border-color: lightseagreen;
+        }
+        
+    }
+
+    // .component_column_row_container{
+        
+    //     // display: flex;
+    //     // flex-direction: column;
+    // }
+}
+      

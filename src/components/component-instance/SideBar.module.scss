@@ -1,0 +1,50 @@
+.component{
+
+
+
+    .button-block{
+        text-align: center;
+        cursor: pointer;
+        color: var(--button-font-color);
+        background-color: white;
+
+        min-width: 24px;
+        min-height: 24px;
+
+        transition: all 0.3s ease 0s;
+
+
+        &:hover{
+            color:var(--button-font-color2)
+        }
+    }
+
+    // &:hover{
+    //     .button-block{
+    //         color:var(--button-font-color2)
+
+    //     }
+    // }
+
+   
+    
+}
+
+.side-bar {
+
+    width: 100%;
+    min-height: 100%;
+    
+    &.can-drop{
+        border: solid;
+        border-width: 1px;
+        border-color: #006eff;
+    }
+
+    &.is-over{
+        border: solid;
+        border-width: 1px;
+        border-color: #26ff00;
+    }
+
+}

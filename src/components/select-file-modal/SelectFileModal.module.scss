@@ -1,0 +1,157 @@
+.modal{
+    z-index: 9999;
+
+
+
+
+
+
+
+    .upload_file_tab{
+        padding: 5%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        align-content: center;
+        justify-content: center;
+
+        .preview-container{
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+        
+            .preview-image{
+                max-width: 100%;
+                max-height: 100%;
+            }
+            .remove_image_icon{
+                position:absolute;
+                top: 1%;
+                right: 1%;
+                cursor: pointer;
+            }
+        }
+
+
+    }
+
+
+    .store_files_tab{
+        padding: 5%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        align-content: center;
+        justify-content: center;
+
+        .store_files_grid{
+            padding: 5%;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+
+            align-items: stretch;
+            align-content: stretch;
+            justify-content: center;
+
+
+            .store_files_container{
+                
+                position: relative;
+                .store_file{
+                    width: 10vw;
+                    height: 10vh;
+                    cursor: pointer;
+                    &:hover{
+                        border-style: solid;
+                        border-color: blue;
+                        border-width: 2px;
+                    }
+                }
+            }
+        }
+        
+        
+
+
+
+
+    }
+
+
+    .public_files_tab{
+        padding: 5%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        align-content: center;
+        justify-content: center;
+
+     
+
+
+    }
+}
+
+
+.remove_icon{
+    position:absolute;
+    right:5px;
+    bottom: 5px;
+    width: 10px;
+    height: 10px;
+    color: red;
+
+    cursor: pointer;
+
+    &:hover{
+        width: 12px;
+        height: 12px;
+    }
+}
+
+
+
+.get-more-icon-container{
+
+    transition: all 0.3s ease 0s;
+    display:flex;
+    flex-direction: row;
+    justify-items: center;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    background-color: aliceblue;
+
+    cursor: pointer;
+
+    &:hover{
+        width: 31px;
+        height: 31px;
+
+        .get-more-icon{
+            width: 25px;
+            height: 25px;
+        }
+
+
+    }
+}
+
+
+
+.get-more-icon{
+
+    transition: all 0.3s ease 0s;
+    width: 20px;
+    height: 20px;
+    color: black;
+
+
+}

@@ -1,0 +1,163 @@
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: #132851;
+  // border: 1px solid #333;
+  // border-radius: 8px;
+  // margin-bottom: 0.5rem;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #193368;
+  }
+}
+
+.focus{
+  background-color: #0b1b3b;
+}
+.name {
+  flex: 1;
+  margin: 0 0.75rem;
+  font-size: 1rem;
+  color: #f0f0f0;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expand-icon {
+  color: #aaa;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  margin-right: 5px;
+  &:hover {
+    color: #fff;
+  }
+}
+.drag-icon{
+  color: #aaa;
+  font-size: 1.1rem;
+  cursor: grab;
+
+  &:hover {
+    color: #4c9aff;
+  }
+}
+.settings-icon {
+  color: #aaa;
+  font-size: 1.1rem;
+  cursor: pointer;
+
+  &:hover {
+    color: #4c9aff;
+  }
+}
+
+
+
+.title-block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0px;
+
+  margin-left: 5px;
+  margin-right: 5px;
+  border-bottom: 1px solid #ddd;
+
+
+  .title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: white;
+  }
+
+}
+
+
+
+.add-btn {
+    position:relative;
+    width: 25px;
+    height: 25px;
+
+    background-color: #4884c4;
+    color: #fff;
+    border: none;
+    font-size: 12;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #0056b3;
+
+      .tooltip{
+        visibility: visible;
+        opacity: 1;
+      }
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+}
+
+.tooltip {
+  visibility: hidden;
+  width: 80px;
+  background-color: white;
+  color: black;
+  text-align: center;
+  border-radius: 5px 0px 5px 5px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  top: 70%; /* 在元素上方显示 */
+  right: 70%;
+  // margin-left: -60px; /* 居中对齐 */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+
+.icursor-hover-top,
+.drag-over-top,
+.focus-before,
+.hover-top{
+  border-top: solid;
+  border-top-width: 2px;
+  border-color: black;
+  margin-top: 5px;
+  cursor:vertical-text ;
+}
+
+.icursor-hover-bottom,
+.drag-over-bottom,
+.focus-after,
+.hover-bottom{
+    border-bottom: solid;
+    border-bottom-width: 2px;
+    border-color: black;
+    margin-bottom: 5px;
+    cursor:vertical-text ;
+}
+
+.icursor-hover-in,
+.drag-over-in,
+.focus-in,
+.hover-in{
+  border: solid;
+  border-width: 2px;
+  border-color: black;
+  margin: 5px;
+  cursor:vertical-text ;
+}

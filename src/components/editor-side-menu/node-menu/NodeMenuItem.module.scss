@@ -1,0 +1,137 @@
+@import "../../../assets/scss/variables";
+
+$total-layers: 20;
+@for $i from 0 through $total-layers {
+  .layer-#{$i} {
+    background: lighten($theme-color-2, $i * 4%);
+    // padding: 0 3px*$i;
+    margin: 0 2px*$i;
+  }
+}
+
+.hover-top{
+  border-top: solid;
+  border-top-width: 2px;
+  border-color: red;
+  margin-top: 5px;
+  cursor:vertical-text ;
+}
+.hover-bottom{
+    border-bottom: solid;
+    border-bottom-width: 2px;
+    border-color: red;
+    margin-bottom: 5px;
+    cursor:vertical-text ;
+}
+.hover-in{
+  border: solid;
+  border-width: 2px;
+  border-color: red;
+  margin: 5px;
+  cursor:vertical-text ;
+}
+
+
+.page-menu-item-header {
+
+
+//   &.is-over-current{
+//     &.hover-top{
+//       border-top: solid;
+//       border-top-width: 2px;
+//       border-color: red;
+//       margin-top: 5px;
+//     }
+//     &.hover-bottom{
+//         border-bottom: solid;
+//         border-bottom-width: 2px;
+//         border-color: red;
+//         margin-bottom: 5px;
+//     }
+//     &.hover-in{
+//       border: solid;
+//       border-width: 2px;
+//       border-color: red;
+//       margin: 5px;
+//   }
+    
+// }
+
+
+
+  // background: $theme-color-2;
+  color: $theme-text-color-1;
+  display: flex;
+  flex-wrap: wrap;
+  // overflow: hidden;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2%;
+
+  .drag_icon{
+    cursor: grab;
+    &:hover{
+      color: grey;
+    }
+  }
+
+  .page_name_input {
+    width: fit-content;
+  }
+
+  .page-name {
+    margin: 0px 5px;
+  }
+
+  .reserve-page-name {
+    color: red;
+  }
+
+  .settings {
+    position: relative ;
+    .icon{
+      cursor: pointer;
+      &:hover{
+        color: grey;
+      }
+    }
+
+    .drop_down_list{
+      position: absolute ;
+      z-index: 9999;
+      top: 10px;
+      left:10px;
+      // padding: 2px;
+      background: $theme-color-3;
+      width: 0px;
+      height: 0px;
+      // width: 0px;
+      // height: 0px;
+      transition: width .2s, height 1s ;
+      overflow:hidden;
+      &.show{
+        width: 100px;
+        height: fit-content;
+      }
+
+      ul{
+        li {
+          white-space: nowrap;
+          margin: 0 5px;
+          cursor: pointer;
+          &:hover{
+            color: grey;
+          }
+        }
+      }
+      
+    }
+   
+  }
+
+
+  
+
+}
+

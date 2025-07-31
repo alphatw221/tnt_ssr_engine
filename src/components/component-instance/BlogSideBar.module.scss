@@ -1,0 +1,13 @@
+@import "../../assets/scss/variables";
+
+.blog-side-bar{
+    width: 15vw;
+    padding: 20px;
+
+    @media #{$md-layout} {
+        width: 95vw;
+    }
+    @media #{$xs-layout} {
+        width: 95vw;
+    }
+}

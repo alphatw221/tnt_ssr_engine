@@ -1,0 +1,115 @@
+.訪客結帳彈窗 {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    display: none;
+    border: 1px solid #333;
+}
+.訪客結帳彈窗.顯示 {
+    display: block;
+}
+
+.身份選擇框 {
+    padding: 15px;
+    text-align: center;
+}
+
+.身份選擇訊息框, .驗證訊息框 {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    text-align: center;
+
+}
+.身份選擇訊息, .驗證訊息 {
+    font-size: 16px;
+    color: #333;
+}
+
+.以訪客身份繼續按鈕,
+.取消按鈕,
+.電子郵件-發送按鈕,
+.手機-發送按鈕,
+.送出按鈕{
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.電子郵件-發送按鈕,
+.手機-發送按鈕{
+    margin-left: auto;
+}
+
+.手機驗證框,.電子郵件驗證框{
+    display:flex;
+    align-items: center;
+}
+.以訪客身份繼續按鈕, .送出按鈕 {
+    background-color: #007bff;
+    color: white;
+}
+.取消按鈕 {
+    background-color: #6c757d;
+    color: white;
+}
+
+.登入連結, .註冊連結 {
+    color: #007bff;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.驗證框 {
+    margin-top: 20px;
+    display: none;
+}
+.驗證框.顯示 {
+    display: block;
+}
+
+.驗證碼輸入框{
+    margin-top:20px;
+    text-align: center;
+}
+.驗證碼輸入框 input {
+    width: 120px;
+    padding: 8px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    margin-left:20px
+}
+
+.按鈕框{
+    display: flex;
+    justify-content: space-evenly;
+    margin-top:20px
+
+}
+
+
+.通用訊息框, .錯誤訊息框 {
+    display: none;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+}
+.通用訊息框.隱藏, .錯誤訊息框.隱藏 {
+    display: none;
+}
+
+.可隱藏 {
+    display: none;
+}
+
+.等待 {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

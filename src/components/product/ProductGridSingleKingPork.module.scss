@@ -1,0 +1,273 @@
+@import "../../assets/scss/variables";
+
+.product-wrap,
+.product-list-image-wrap {
+
+  position: relative;
+  // padding: 1px 10px;
+
+  .product-img {
+    position: relative;
+
+    // overflow: hidden;
+    img {
+      width: 100%;
+      // height: 30vh;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    &-badges {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      span {
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1;
+
+        display: block;
+
+        margin-bottom: 10px;
+        padding: 3px 11px;
+
+        color: #fff;
+        border-radius: 3px;
+        text-align: center;
+        &.pink {
+          background-color: #fa6bff;
+        }
+        &.purple {
+          background-color: $theme-color;
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    .hover-img {
+      position: absolute;
+      top: 0;
+      left: 50%;
+
+      visibility: hidden;
+
+      transition-duration: 0.7s;
+      transform: translate(-50%, 20px);
+
+      opacity: 0;
+    }
+    .product-action {
+      position: absolute;
+      z-index: 9;
+      bottom: 0;
+      left: 50%;
+
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      overflow: hidden;
+      width: 100%;
+
+      transform: translateX(-50%);
+      > div {
+        display: flex;
+        visibility: hidden;
+        align-items: center;
+        justify-content: center;
+
+        height: 48px;
+
+        transition: all 0.5s ease;
+        transform: translateY(20px);
+
+        opacity: 0;
+        background-color: $theme-color;
+        // &:hover {
+        //     background-color: #000;
+        // }
+      }
+      .pro-wishlist {
+        width: 48px;
+
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .pro-cart {
+        font-size: 14px;
+
+        width: calc(100% - 48px - 48px);
+        // width: calc(100% - 48px);
+
+        transition-delay: 0.1s;
+      }
+      .pro-quickview {
+        width: 48px;
+        margin: 0;
+
+        transition-delay: 0.2s;
+
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .pro-same-action {
+        a,
+        button {
+          font-size: 16px;
+          line-height: 48px;
+
+          display: block;
+
+          width: 100%;
+          height: 48px;
+
+          text-align: center;
+          text-transform: capitalize;
+
+          color: #fff;
+          border: none;
+          background: none;
+          &:hover,
+          &.active {
+            background-color: darkgray;
+          }
+
+          span {
+            @media #{$xs-layout} {
+              display: none;
+            }
+          }
+        }
+        &.pro-wishlist,
+        &.pro-quickview {
+          a {
+            margin-top: 2px;
+          }
+        }
+      }
+    }
+  }
+  .product-content {
+    margin: 10px 0 0;
+    h3 {
+      font-size: 16px;
+
+      margin: 0;
+    }
+    .product-rating {
+      margin: 3px 0 3px;
+      i {
+        font-size: 17px;
+
+        margin: 0 3px;
+
+        color: #5f5d5d;
+        &.yellow {
+          color: #ffa900;
+        }
+      }
+    }
+    .product-price {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      span {
+        white-space: nowrap;
+        font-size: 18px;
+        font-weight: 500;
+        
+        position: relative;
+
+        margin: 0 9px;
+
+        // color: #000;
+        color: #fe5252;
+
+        // &::before {
+        //   position: absolute;
+        //   top: 10px;
+        //   right: -13px;
+
+        //   width: 7px;
+        //   height: 2px;
+
+        //   content: "";
+
+        //   background-color: #000;
+        // }
+        &:last-child:before {
+          display: none;
+        }
+        &.old {
+          font-size: 12px;
+
+          margin-left: 1px;
+
+          text-decoration: line-through;
+
+          color: #cfcfcf;
+          line-height: 12px;
+        }
+      }
+    }
+
+
+    // span {
+    //   font-size: 24px;
+    //   line-height: 1;
+
+    //   display: inline-block;
+
+    //   color: #fe5252;
+    //   &.old {
+    //     font-size: 18px;
+
+    //     margin-left: 15px;
+
+    //     text-decoration: line-through;
+
+    //     color: #cfcfcf;
+    //   }
+    // }
+
+
+
+
+
+    .product-name {
+      font-size: 20px;
+      font-weight: bold;
+      // font-family: 'Courier New', Courier, monospace;
+      font-family: Baskerville,Georgia,Liberation Serif,Kaiti SC,STKaiti,AR PL UKai CN,AR PL UKai HK,AR PL UKai TW,AR PL UKai TW MBE,AR PL KaitiM GB, KaiTi, KaiTi_GB2312, DFKai-SB, TW-Kai, serif;
+    }
+  }
+  &:hover .hover-img {
+    visibility: visible;
+
+    transform: translate(-50%, 0);
+
+    opacity: 1;
+  }
+  &:hover .product-action > div {
+    visibility: visible;
+
+    transform: translateY(0);
+
+    opacity: 1;
+  }
+}
+
+
+
+.addon-button{
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  z-index: 1;
+  display: inline-block;
+  padding: 14px 32px 15px;
+  text-transform: uppercase;
+  color: #fff;
+  border: 1px solid transparent;
+  background-color: #343538;
+}

@@ -1,0 +1,76 @@
+.商城 {
+    // max-width: 1200px;
+    margin: 10vh auto;
+    display: flex;
+    padding: 16px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.篩選器框 {
+    width: 250px;
+}
+
+.搜尋框{
+    display: flex;
+    align-items: center;
+    margin: 10px auto;
+}
+.商品框 {
+    max-width: 1200px;
+    flex-grow: 1;
+}
+
+.商品框-網格 {
+    display: grid;
+    gap: 20px;
+}
+
+/* 列 (單行排列) */
+.商品框-網格.列 {
+    display: flex;
+    flex-direction: column;
+}
+
+.商品框-網格.列 .單商品框 {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.商品框-網格.列 .商品圖片框 img {
+    width: 100px;
+    height: auto;
+}
+
+/* 大格子 (兩欄排列) */
+.商品框-網格.大格子 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.商品框-網格.大格子 .單商品框 {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.商品框-網格.大格子 .商品圖片框 img {
+    width: 100%;
+    height: auto;
+}
+
+/* 小格子 (三欄排列) */
+.商品框-網格.小格子 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.商品框-網格.小格子 .單商品框 {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.商品框-網格.小格子 .商品圖片框 img {
+    width: 100%;
+    height: auto;
+}

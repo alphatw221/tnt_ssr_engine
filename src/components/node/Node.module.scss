@@ -1,0 +1,387 @@
+@import "@/assets/scss/my-variables";
+
+
+$node-props: (
+  top: (
+    name: "top",
+  ),
+  bottom: (
+    name: "bottom",
+  ),
+  left: (
+    name: "left",
+  ),
+  right: (
+    name: "right",
+  ),
+  display:(
+    name: "display",
+    default:block,
+  ),
+  margin-top:(
+    name: "margin-top",
+    default:0,
+  ),
+  margin-bottom:(
+    name: "margin-bottom",
+    default:0,
+  ),
+  margin-left:(
+    name: "margin-left",
+    default:0,
+  ),
+  margin-right:(
+    name: "margin-right",
+    default:0,      //due to nextjs css optimize will merge into one margin property
+  ),
+
+  background-position:(
+    name: "background-position",
+  ),
+  background-size:(
+    name: "background-size",
+  ),
+);
+
+
+.highlight-border{
+    outline-style: solid !important;
+    outline-color: red !important;
+    outline-width: 2px !important;
+}
+
+
+.highlight-top{
+    box-shadow: 0 -2px 0 0 red !important;
+}
+
+.highlight-bottom{
+    box-shadow: 0 2px 0 0 red !important;
+
+}
+
+.highlight-left{
+    box-shadow: -2px 0 0 0 red !important;
+
+}
+
+.highlight-right{
+    box-shadow: 2px 0 0 0 red !important;
+
+}
+
+.node {
+
+    overflow:visible;
+    // overflow:hidden;
+
+    // outline-style: dashed;
+    // outline-color: transparent;
+    // outline-width: 1px;
+    
+
+    opacity:var(--unreveal-opacity, 1);
+    translate: var(--unreveal-translate-x, none) var(--unreveal-translate-y, none);
+    transition: opacity var(--reveal-opacity-transition-duration, 2s) var(--reveal-opacity-transition-delay, .5s), translate var(--reveal-translate-transition-duration, 2s) var(--reveal-translate-transition-delay, .5s);
+
+
+    --unreveal-opacity:initial;
+    --unreveal-translate-x:initial;
+    --unreveal-translate-y:initial;
+    --reveal-opacity-transition-duration:initial;
+    --reveal-opacity-transition-delay:initial;
+    --reveal-translate-transition-duration:initial;
+    --reveal-translate-transition-delay:initial;
+
+    --reveal-opacity:initial;
+    --reveal-translate-x:initial;
+    --reveal-translate-y:initial;
+
+
+
+
+
+
+    --background-color-1:initial;
+    --background-color-2:initial;
+
+    --border-color-1:initial;
+    --border-color-2:initial;
+
+    border-color: var(--border-color-1);
+    background-color: var(--background-color-1);
+    &:hover{
+        border-color: var(--border-color-2, var(--border-color-1));
+        background-color: var(--background-color-2, var(--background-color-1));
+    }
+
+
+
+    @each $size, $breakpoint in $size-breakpoint-pairs {
+
+        --width-#{$size}:initial;
+        --height-#{$size}:initial;
+
+        --max-width-#{$size}:initial;
+        --min-width-#{$size}:initial;
+        --max-height-#{$size}:initial;
+        --min-height-#{$size}:initial;
+
+        --top-#{$size}: initial;
+        --bottom-#{$size}: initial;
+        --left-#{$size}: initial;
+        --right-#{$size}: initial;
+
+        --display-#{$size}: block;
+
+        --margin-top-#{$size}:initial;
+        --margin-bottom-#{$size}:initial;
+        --margin-left-#{$size}:initial;
+        --margin-right-#{$size}:initial;
+
+        --background-position-#{$size}:initial;
+        --background-size-#{$size}:initial;
+
+    }
+
+    @include generate-rwd-stylesheet($node-props);
+
+    
+
+    
+}
+
+.resize-pin{
+
+
+    position: fixed;
+    bottom:0%;
+    left:0%;
+    z-index: 1001;
+    width: 5px;
+    height: 5px;
+    background-color: white;
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    cursor:move;
+
+    // does not effect by reveal
+    opacity: 1;
+}
+
+
+.drag_bar_and_settings_dropdown{
+
+    // position: absolute;
+    // top:0%;
+    // right:0%;
+
+    position: fixed;
+    top:0%;
+    left:0%;
+
+
+    z-index: 1001;
+    display: flex;
+    flex-direction: row-reverse;
+    align-content: center;
+    align-items: center;
+    gap: 2px;
+
+    // does not effect by reveal
+    opacity: 1;
+
+    .drag-icon{
+        color: aliceblue;
+        background-color: black;
+        border-radius: 2px;
+
+        // width: 20%;
+        font-size: xx-small;
+        cursor:grab
+    }
+    // .component_settings_dropdown{
+    //     position: absolute;
+    //     top:5%;
+    //     right:1%;
+    // }
+    
+    .remove_icon{
+        width: 20%;
+        color: aliceblue;
+        background-color: black;
+        cursor: pointer;
+    }
+}
+
+.inner-base-node{
+
+    --background-position-xxl:initial;
+    --background-position-xl:initial;
+    --background-position-lg:initial;
+    --background-position-md:initial;
+    --background-position-sm:initial;
+    --background-position-xs:initial;
+    --background-position-xxs:initial;
+
+    --background-size-xxl:initial;
+    --background-size-xl:initial;
+    --background-size-lg:initial;
+    --background-size-md:initial;
+    --background-size-sm:initial;
+    --background-size-xs:initial;
+    --background-size-xxs:initial;
+
+
+    position:relative;
+    background-color: var(--background-color-1);
+    &:hover{
+        background-color: var(--background-color-2);
+    }
+
+
+
+
+    @media only screen and (min-width: 1536px){
+
+        background-position: var(--background-position-xxl);
+        background-size: var(--background-size-xxl);
+
+    }
+    @media only screen and (min-width: 1280px) and (max-width: 1535px){
+
+
+        background-position: var(--background-position-xl);
+        background-size: var(--background-size-xl);
+    }
+    @media only screen and (min-width: 1024px) and (max-width: 1279px){
+
+        background-position: var(--background-position-lg);
+        background-size: var(--background-size-lg);
+    }
+    @media only screen and (min-width: 768px) and (max-width: 1023px){
+
+        background-position: var(--background-position-md);
+        background-size: var(--background-size-md);
+    }
+    @media only screen and (min-width: 640px) and (max-width: 767px){
+
+        background-position: var(--background-position-sm);
+        background-size: var(--background-size-sm);
+    }
+    @media only screen and (min-width: 390px) and (max-width: 636px){
+
+        background-position: var(--background-position-xs);
+        background-size: var(--background-size-xs);
+    }
+    @media only screen and (max-width: 389px){
+
+        background-position: var(--background-position-xxs);
+        background-size: var(--background-size-xxs);
+    }
+
+
+
+
+}
+
+
+.reveal{
+    opacity:var(--reveal-opacity, 1);
+    translate: var(--reveal-translate-x, none) var(--reveal-translate-y, none);
+
+
+}
+
+.outter-div{
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+
+
+
+
+    --top-xxl:initial;
+    --top-xl:initial;
+    --top-lg:initial;
+    --top-md:initial;
+    --top-sm:initial;
+    --top-xs:initial;
+    --top-xxs:initial;
+
+    --bottom-xxl:initial;
+    --bottom-xl:initial;
+    --bottom-lg:initial;
+    --bottom-md:initial;
+    --bottom-sm:initial;
+    --bottom-xs:initial;
+    --bottom-xxs:initial;
+
+    --left-xxl:initial;
+    --left-xl:initial;
+    --left-lg:initial;
+    --left-md:initial;
+    --left-sm:initial;
+    --left-xs:initial;
+    --left-xxs:initial;
+
+    --right-xxl:initial;
+    --right-xl:initial;
+    --right-lg:initial;
+    --right-md:initial;
+    --right-sm:initial;
+    --right-xs:initial;
+    --right-xxs:initial;
+
+
+
+
+    @media only screen and (min-width: 1536px){
+
+        top:var(--top-xxl);
+        bottom:var(--bottom-xxl);
+        left:var(--left-xxl);
+        right:var(--right-xxl);
+
+    }
+    @media only screen and (min-width: 1280px) and (max-width: 1535px){
+        top:var(--top-xl);
+        bottom:var(--bottom-xl);
+        left:var(--left-xl);
+        right:var(--right-xl);
+    }
+    @media only screen and (min-width: 1024px) and (max-width: 1279px){
+
+        top:var(--top-lg);
+        bottom:var(--bottom-lg);
+        left:var(--left-lg);
+        right:var(--right-lg);
+    }
+    @media only screen and (min-width: 768px) and (max-width: 1023px){
+        top:var(--top-md);
+        bottom:var(--bottom-md);
+        left:var(--left-md);
+        right:var(--right-md);
+    }
+    @media only screen and (min-width: 640px) and (max-width: 767px){
+        top:var(--top-sm);
+        bottom:var(--bottom-sm);
+        left:var(--left-sm);
+        right:var(--right-sm);
+    }
+    @media only screen and (min-width: 390px) and (max-width: 636px){
+        top:var(--top-xs);
+        bottom:var(--bottom-xs);
+        left:var(--left-xs);
+        right:var(--right-xs);
+    }
+    @media only screen and (max-width: 389px){
+        top:var(--top-xxs);
+        bottom:var(--bottom-xxs);
+        left:var(--left-xxs);
+        right:var(--right-xxs);
+       
+    }
+
+}

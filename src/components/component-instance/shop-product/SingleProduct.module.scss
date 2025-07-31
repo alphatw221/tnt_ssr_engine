@@ -1,0 +1,144 @@
+/* 商品框整體樣式 */
+.單商品框 {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    background-color: #fff;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.單商品框.聚焦 {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 商品圖片 */
+.商品圖片框 {
+    position: relative;
+    text-align: center;
+}
+
+.商品主要圖片{
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    transition: opacity 0.3s ease-in-out;
+}
+.商品次要圖片 {
+    position: absolute;
+    top:0;
+    left:0;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    transition: opacity 0.3s ease-in-out;
+    z-index: 1;
+    display:none;
+}
+
+.單商品框.聚焦 .商品次要圖片 {
+    display:block;
+}
+
+/* 商品標章 */
+.特殊商品標章框 {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.新品標章,
+.特價標章 {
+    background-color: red;
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.新品標章 {
+    background-color: green;
+}
+
+/* 商品動作按鈕 */
+.商品動作框 {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.加入購物車框 {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.加入購物車-按鈕 {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.加入購物車-按鈕:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* 商品資訊 */
+.商品資訊框 {
+    text-align: center;
+}
+
+.商品名稱 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.商品價錢框 {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.折扣後價格 {
+    color: red;
+}
+
+.折扣前價格 {
+    text-decoration: line-through;
+    color: gray;
+}
+
+.商品敘述 {
+    font-size: 14px;
+    color: #555;
+    margin-top: 8px;
+}
+
+
+.快速瀏覽彈窗 {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    width: 80%;
+    height: 80%;
+    overflow: auto;
+    max-width: 600px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    // opacity: 0;
+    // visibility: hidden;
+    // transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1000;
+}

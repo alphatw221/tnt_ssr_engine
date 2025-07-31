@@ -1,0 +1,124 @@
+@import "@/assets/scss/my-variables";
+
+$props: (
+  width: (
+    name: "width",
+    default:100px,
+  ),
+  max-width:(
+    name: "max-width",
+  ),
+  min-width:(
+    name: "min-width",
+  ),
+  height:(
+    name: "height",
+    
+  ),
+  max-height:(
+    name: "max-height",
+  ),
+  min-height:(
+    name: "min-height",
+    default:100px,
+  ),
+  object-position:(
+    name: "object-position",
+    default:unset,
+  ),
+  object-fit:(
+    name: "object-fit",
+    default:unset,
+  ),
+);
+
+
+.video{
+
+    overflow: hidden;
+    object-fit: cover;
+    
+    @include generate-rwd-stylesheet($props);
+
+    // @media only screen and (min-width: 1536px){
+    //     width:var(--width-xxl, 100px);
+    //     max-width: var(--max-width-xxl);
+    //     min-width: var(--min-width-xxl);
+    //     height:var(--height-xxl);
+    //     max-height: var(--max-height-xxl);
+    //     min-height: var(--min-height-xxl, 100px);
+    //     object-position: var(--object-position-xxl);
+    //     object-fit: var(--object-fit-xxl);
+
+    // }
+    // @media only screen and (min-width: 1280px) and (max-width: 1535px){
+    //     width:var(--width-xl, 100px);
+    //     max-width: var(--max-width-xl);
+    //     min-width: var(--min-width-xl);
+    //     height:var(--height-xl);
+    //     max-height: var(--max-height-xl);
+    //     min-height: var(--min-height-xl, 100px);
+    //     object-position: var(--object-position-xl);
+    //     object-fit: var(--object-fit-xl);
+
+    // }
+    // @media only screen and (min-width: 1024px) and (max-width: 1279px){
+    //     width:var(--width-lg, 100px);
+    //     max-width: var(--max-width-lg);
+    //     min-width: var(--min-width-lg);
+    //     height:var(--height-lg);
+    //     max-height: var(--max-height-lg);
+    //     min-height: var(--min-height-lg, 100px);
+    //     object-position: var(--object-position-lg);
+    //     object-fit: var(--object-fit-lg);
+
+    // }
+    // @media only screen and (min-width: 768px) and (max-width: 1023px){
+    //     width:var(--width-md, 100px);
+    //     max-width: var(--max-width-md);
+    //     min-width: var(--min-width-md);
+    //     height:var(--height-md);
+    //     max-height: var(--max-height-md);
+    //     min-height: var(--min-height-md, 100px);
+    //     object-position: var(--object-position-md);
+    //     object-fit: var(--object-fit-md);
+
+    // }
+    // @media only screen and (min-width: 640px) and (max-width: 767px){
+    //     width:var(--width-sm, 100px);
+    //     max-width: var(--max-width-sm);
+    //     min-width: var(--min-width-sm);
+    //     height:var(--height-sm);
+    //     max-height: var(--max-height-sm);
+    //     min-height: var(--min-height-sm, 100px);
+    //     object-position: var(--object-position-sm);
+    //     object-fit: var(--object-fit-sm);
+
+    // }
+    // @media only screen and (min-width: 390px) and (max-width: 636px){
+    //     width:var(--width-xs, 100px);
+    //     max-width: var(--max-width-xs);
+    //     min-width: var(--min-width-xs);
+    //     height:var(--height-xs);
+    //     max-height: var(--max-height-xs);
+    //     min-height: var(--min-height-xs, 100px);
+    //     object-position: var(--object-position-xs);
+    //     object-fit: var(--object-fit-xs);
+
+    // }
+    // @media only screen and (max-width: 389px){
+    //     width:var(--width-xxs, 100px);
+    //     max-width: var(--max-width-xxs);
+    //     min-width: var(--min-width-xxs);
+    //     height:var(--height-xxs);
+    //     max-height: var(--max-height-xxs);
+    //     min-height: var(--min-height-xxs, 100px);
+    //     object-position: var(--object-position-xxs);
+    //     object-fit: var(--object-fit-xxs);
+
+    // }
+
+    
+
+}
+

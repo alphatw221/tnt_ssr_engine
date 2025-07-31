@@ -1,0 +1,65 @@
+@import "../../assets/scss/variables";
+
+.shop-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px 10px;
+  // @media #{$xs-layout} {
+  //   display: block;
+  // }
+  @media #{$sm-layout} {
+    display: flex;
+  }
+  .select-shoing-wrap {
+    display: flex;
+    @media #{$xs-layout} {
+      display: block;
+    }
+    @media #{$sm-layout} {
+      display: flex;
+    }
+    .shop-select {
+      margin-right: 50px;
+      select {
+        font-size: 14px;
+
+        min-width: 143px;
+        padding: 5px;
+
+        color: #606060;
+        border: 1px solid #e6e6e6;
+      }
+    }
+    p {
+      margin: 0;
+
+      color: #606060;
+      @media #{$xs-layout} {
+        margin: 5px 0 10px;
+      }
+      @media #{$sm-layout} {
+        margin: 0;
+      }
+    }
+  }
+  .shop-tab {
+    a,
+    button {
+      font-size: 18px;
+
+      margin-left: 20px;
+      padding: 0;
+
+      color: #606060;
+      border: none;
+      background: none;
+      &:first-child {
+        margin-left: 0;
+      }
+      &.active {
+        color: #fa6bff;
+      }
+    }
+  }
+}

@@ -1,0 +1,101 @@
+@import "@/assets/scss/variables";
+
+
+
+
+.slider{
+    // position: relative;
+    display: flex;
+    align-items: center;
+    
+    >div{
+      width: 100%;
+      height: 100%;
+    }
+
+
+    .settings_dropdown{
+        position: absolute;
+        z-index: 1001;
+        top: 1%;
+        left:1%;
+
+
+    }
+}
+
+
+
+.remove_and_settings_dropdown{
+
+    position: absolute;
+    top:10px;
+    right:10px;
+    z-index: 1001;
+    display: flex;
+    flex-direction: row-reverse;
+    align-content: center;
+    align-items: center;
+    gap: 2px;
+
+    // does not effect by reveal
+    opacity: 1;
+
+    .remove_icon{
+        color: aliceblue;
+        background-color: black;
+        border-radius: 2px;
+
+        font-size: xx-small;
+        cursor:pointer
+    }
+    // .component_settings_dropdown{
+    //     position: absolute;
+    //     top:5%;
+    //     right:1%;
+    // }
+    
+
+}
+
+.add-slide-btn{
+    position: absolute;
+    bottom:0%;
+    right:0%;
+    z-index: 1001;
+    width: 20px;
+    height: 20px;
+    background-color:cadetblue;
+    // border-color: black;
+    // border-style: solid;
+    // border-width: 1px;
+    cursor:pointer;
+
+    text-align: center;
+    line-height: 20px;
+
+    border-radius: 50%;
+
+    color: white;
+    // does not effect by reveal
+    opacity: 1;
+
+    &:hover {
+        width: 22px;
+        height: 22px;
+        line-height: 22px;
+    }
+}
+
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

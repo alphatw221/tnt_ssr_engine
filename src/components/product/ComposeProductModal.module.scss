@@ -1,0 +1,343 @@
+@import "../../assets/scss/variables";
+
+
+
+
+/* 任搭彈出框 */
+.任搭彈出框 {
+  // width: 600px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 頭段 */
+.彈出框-頭段 {
+  height: 50px;
+  background: #f8f8f8;
+  border-bottom: 1px solid #ddd;
+}
+
+
+.彈出框-頭段 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #ddd;
+}
+
+.彈出框-標題 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.關閉彈窗-按鈕 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+}
+
+.關閉彈窗-圖標 {
+  width: 16px;
+  height: 16px;
+  // background: url('close-icon.svg') no-repeat center;
+  background-size: contain;
+}
+
+
+
+
+/* 中段表格 */
+.彈出框-中段 {
+  padding: 16px;
+}
+
+.任搭表格 {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.表格-頭段 {
+  background: #f0f0f0;
+  font-weight: bold;
+}
+
+.表格-列 {
+  border-bottom: 1px solid #ddd;
+}
+
+.表格-欄位名稱 {
+  padding: 10px;
+  text-align: left;
+}
+
+.表格-圖片框 {
+  width: 80px;
+  text-align: center;
+}
+
+.表格-圖片 {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.表格-名稱框 {
+  padding: 10px;
+}
+
+.表格-名稱 {
+  font-size: 14px;
+  color: #333;
+}
+
+/* 數量調整 */
+.表格-數量框 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.數量減-按鈕,
+.數量加-按鈕 {
+  width: 32px;
+  height: 32px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.數量減-按鈕:hover,
+.數量加-按鈕:hover {
+  background: #ddd;
+}
+
+.數量 {
+  width: 40px;
+  height: 32px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+/* 存貨不足狀態 */
+.存貨不足 {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+/* 動作框 */
+.動作框 {
+  padding: 16px;
+  text-align: center;
+  background: #f8f8f8;
+  border-top: 1px solid #ddd;
+}
+
+.動作-按鈕 {
+  padding: 10px 20px;
+  font-size: 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.動作-按鈕:hover {
+  background: #0056b3;
+}
+
+.動作-文字 {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+
+
+
+// .table-responsive{
+//   @media #{$xs-layout} {
+//     overflow-x: ;
+//   }
+// }
+
+
+.cart-table {
+  // border-collapse: collapse;
+  // border: 1px solid #cdcdcd;
+  // font: normal 12px arial;
+  width: 100%;
+
+  // td,
+  // th {
+  //   border: 1px solid #cdcdcd;
+  //   padding: 8px;
+  // }
+  
+  .cart-td{
+
+    font-size: 15px;
+    padding: 10px;
+    text-align: center;
+    color: #333;
+
+    display: table-cell;
+    vertical-align: middle;
+    
+    @media #{$xx-layout} {
+      display:table-cell;
+      vertical-align: middle;
+
+    }
+    @media #{$xl-layout} {
+      display:table-cell;
+      vertical-align: middle;
+
+    }
+    @media #{$lg-layout} {
+      display:table-cell;
+      vertical-align: middle;
+
+    }
+    @media #{$md-layout} {
+      display:table-cell;
+      vertical-align: middle;
+    }
+
+  //   display:block;
+
+  //   @media #{$xs-layout} {
+
+  //     display:block;
+
+
+  //     border: none;
+  //     border-bottom: 1px solid #eee;
+  //     position: relative;
+  //     padding-left: 50% !important;
+  //     text-align: left !important;
+  //     width: auto !important;
+  //     a {
+  //       display: block !important; 
+  //       width: 30vw !important;
+  //     }
+
+  //   }
+
+  // }
+  
+
+  
+
+
+
+  
+  // @media #{$xs-layout} {
+  
+  //   table,
+  //   thead,
+  //   tbody,
+  //   th,
+  //   td,
+  //   tr {
+  //     display: block !important; 
+  //   }
+
+  //   thead tr {
+  //     position: absolute;
+  //     top: -9999px;
+  //     left: -9999px;
+  //   }
+
+
+
+
+
+
+  //   .cart-td:before {
+  //     position: absolute;
+  //     top: 35%;
+  //     left: 10px;
+  //     width: 45%;
+  //     padding-right: 10px;
+  //     // white-space: nowrap;
+  //     font-weight: bold;
+  //   }
+  
+  //   .cart-td:nth-of-type(1):before {
+  //     content: "選取";
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(2):before {
+  //     content: "圖片 IMAGE";
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(3):before {
+  //     content: "產品名稱 PRODUCT NAME";
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(4):before {
+  //     content: "單價 UNIT PRICE";
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(5):before {
+  //     content: "數量 QTY";
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(6):before {
+  //     content: "小記 SUBTOTAL";
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(7):before {
+  //     content: "動作 ACTION";
+  //     // color: #0e9893;
+  //   }    
+  
+
+  // }
+
+
+
+
+
+
+}
+
+
+
+}
+
+.confirm-button{
+  font-weight: bold;
+  line-height: 1;
+  z-index: 99;
+  display: inline-block;
+  padding: 23px 38px 23px;
+  text-transform: uppercase;
+  color: #fff;
+  border: none;
+  background: none;
+  background-color: #343538;
+
+  transition: all 0.5s ease-in-out 0s;
+}

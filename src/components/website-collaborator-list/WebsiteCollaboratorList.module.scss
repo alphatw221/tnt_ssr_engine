@@ -1,0 +1,18 @@
+.last-name{
+  height: 50px;
+  width: 50px;
+  line-height: 50px;
+  text-align: center;
+  border-radius: 50%;
+  z-index:var(--index);
+  transform: translateX(calc(var(--index)* -30%));
+}
+
+.collaborators-container{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+
+}
+
+

@@ -1,0 +1,223 @@
+@import "@/assets/scss/my-variables";
+
+
+$props: (
+  width: (
+    name: "width",
+  ),
+  max-width:(
+    name: "max-width",
+  ),
+  min-width:(
+    name: "min-width",
+    default:10px,
+  ),
+  height:(
+    name: "height",
+  ),
+  max-height:(
+    name: "max-height",
+  ),
+  min-height:(
+    name: "min-height",
+    default:10px,
+  ),
+  line-height:(
+    name: "line-height",
+  ),
+  font-size:(
+    name: "font-size",
+  ),
+  writing-mode:(
+    name: "writing-mode",
+  ),
+  word-spacing:(
+    name: "word-spacing",
+  ),
+  letter-spacing:(
+    name: "letter-spacing",
+  ),
+  text-orientation:(
+    name: "text-orientation",
+  ),
+
+
+);
+
+
+
+
+.text{
+    min-width: 10px;
+    min-height: 10px;
+
+    
+
+    // --width-xxl:initial;
+    // --width-xl:initial;
+    // --width-lg:initial;
+    // --width-md:initial;
+    // --width-sm:initial;
+    // --width-xs:initial;
+    // --width-xxs:initial;
+
+    // --height-xxl:initial;
+    // --height-xl:initial;
+    // --height-lg:initial;
+    // --height-md:initial;
+    // --height-sm:initial;
+    // --height-xs:initial;
+    // --height-xxs:initial;
+
+    // --max-width-xxl:initial;
+    // --max-width-xl:initial;
+    // --max-width-lg:initial;
+    // --max-width-md:initial;
+    // --max-width-sm:initial;
+    // --max-width-xs:initial;
+    // --max-width-xxs:initial;
+
+    // --min-width-xxl:initial;
+    // --min-width-xl:initial;
+    // --min-width-lg:initial;
+    // --min-width-md:initial;
+    // --min-width-sm:initial;
+    // --min-width-xs:initial;
+    // --min-width-xxs:initial;
+
+    // --max-height-xxl:initial;
+    // --max-height-xl:initial;
+    // --max-height-lg:initial;
+    // --max-height-md:initial;
+    // --max-height-sm:initial;
+    // --max-height-xs:initial;
+    // --max-height-xxs:initial;
+
+
+
+    --font-color-1:initial;
+    --font-color-2:initial;
+      // margin-bottom: initial;
+      color: var(--font-color-1, black);
+
+      &:hover{
+          color: var(--font-color-2, var(--font-color-1, black));
+      }
+    
+
+
+
+    @each $size, $breakpoint in $size-breakpoint-pairs {
+        --writing-mode-#{$size}:initial;
+        --word-spacing-#{$size}:initial;
+        --letter-spacing-#{$size}:initial;
+        --text-orientation-#{$size}:initial;
+    }
+
+
+    @include generate-rwd-stylesheet($props);
+
+    // @media only screen and (min-width: 1536px){
+    //     width:var(--width-xxl, none);
+    //     max-width: var(--max-width-xxl);
+    //     min-width: var(--min-width-xxl);
+    //     height:var(--height-xxl, none);
+    //     max-height: var(--max-height-xxl);
+    //     min-height: var(--min-height-xxl);
+    //     line-height: var(--line-height-xxl);
+    //     font-size: var(--font-size-xxl);
+    //     writing-mode: var(--writing-mode-xxl);
+    //     word-spacing: var(--word-spacing-xxl);
+    //     letter-spacing: var(--letter-spacing-xxl);
+    //     text-orientation: var(--text-orientation-xxl);
+    // }
+    // @media only screen and (min-width: 1280px) and (max-width: 1535px){
+    //     width:var(--width-xl, none);
+    //     max-width: var(--max-width-xl);
+    //     min-width: var(--min-width-xl);
+    //     height:var(--height-xl, none);
+    //     max-height: var(--max-height-xl);
+    //     min-height: var(--min-height-xl);
+    //     line-height: var(--line-height-xl);
+    //     font-size: var(--font-size-xl);
+    //     writing-mode: var(--writing-mode-xl);
+    //     word-spacing: var(--word-spacing-xl);
+    //     letter-spacing: var(--letter-spacing-xl);
+
+    //     text-orientation: var(--text-orientation-xl);
+    // }
+    // @media only screen and (min-width: 1024px) and (max-width: 1279px){
+    //     width:var(--width-lg, none);
+    //     max-width: var(--max-width-lg);
+    //     min-width: var(--min-width-lg);
+    //     height:var(--height-lg, none);
+    //     max-height: var(--max-height-lg);
+    //     min-height: var(--min-height-lg);
+    //     line-height: var(--line-height-lg);
+    //     font-size: var(--font-size-lg);
+    //     writing-mode: var(--writing-mode-lg);
+    //     word-spacing: var(--word-spacing-lg);
+    //     letter-spacing: var(--letter-spacing-lg);
+    //     text-orientation: var(--text-orientation-lg);
+    // }
+    // @media only screen and (min-width: 768px) and (max-width: 1023px){
+    //     width:var(--width-md, none);
+    //     max-width: var(--max-width-md);
+    //     min-width: var(--min-width-md);
+    //     height:var(--height-md, none);
+    //     max-height: var(--max-height-md);
+    //     min-height: var(--min-height-md);
+    //     line-height: var(--line-height-md);
+    //     font-size: var(--font-size-md);
+    //     writing-mode: var(--writing-mode-md);
+    //     word-spacing: var(--word-spacing-md);        
+    //     letter-spacing: var(--letter-spacing-md);
+
+    //     text-orientation: var(--text-orientation-md);
+    // }
+    // @media only screen and (min-width: 640px) and (max-width: 767px){
+    //     width:var(--width-sm, none);
+    //     max-width: var(--max-width-sm);
+    //     min-width: var(--min-width-sm);
+    //     height:var(--height-sm, none);
+    //     max-height: var(--max-height-sm);
+    //     min-height: var(--min-height-sm);
+    //     line-height: var(--line-height-sm);
+    //     font-size: var(--font-size-sm);
+    //     writing-mode: var(--writing-mode-sm);
+    //     word-spacing: var(--word-spacing-sm);
+    //     letter-spacing: var(--letter-spacing-sm);
+
+    //     text-orientation: var(--text-orientation-sm);
+    // }
+    // @media only screen and (min-width: 390px) and (max-width: 636px){
+    //     width:var(--width-xs, none);
+    //     max-width: var(--max-width-xs);
+    //     min-width: var(--min-width-xs);
+    //     height:var(--height-xs, none);
+    //     max-height: var(--max-height-xs);
+    //     min-height: var(--min-height-xs);
+    //     line-height: var(--line-height-xs);
+    //     font-size: var(--font-size-xs);
+    //     writing-mode: var(--writing-mode-xs);
+    //     word-spacing: var(--word-spacing-xs);
+    //     letter-spacing: var(--letter-spacing-xs);
+
+    //     text-orientation: var(--text-orientation-xs);
+    // }
+    // @media only screen and (max-width: 389px){
+    //     width:var(--width-xxs, none);
+    //     max-width: var(--max-width-xxs);
+    //     min-width: var(--min-width-xxs);
+    //     height:var(--height-xxs, none);
+    //     max-height: var(--max-height-xxs);
+    //     min-height: var(--min-height-xxs);
+    //     line-height: var(--line-height-xxs);
+    //     font-size: var(--font-size-xxs);
+    //     writing-mode: var(--writing-mode-xxs);
+    //     word-spacing: var(--word-spacing-xxs);
+    //     letter-spacing: var(--letter-spacing-xxs);
+
+    //     text-orientation: var(--text-orientation-xxs);
+    // }
+}

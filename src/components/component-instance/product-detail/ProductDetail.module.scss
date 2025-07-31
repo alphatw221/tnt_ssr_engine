@@ -1,0 +1,411 @@
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+.商品容器框 {
+    max-width: 1200px;
+    margin: 10vh auto;
+    padding: 16px;
+    font-family: Arial, sans-serif;
+}
+
+/* 商品圖片與選項 */
+.商品圖片選項框 {
+    display: flex;
+    gap: 16px;
+    align-items: start;
+}
+/* 商品圖片容器 */
+.大小圖框 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+/* 大圖顯示區域 */
+.大圖框 {
+    flex: 1;
+    max-width: 500px;
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+.單大圖框{
+    display: none;
+    &.顯示{
+        display: block;
+    }
+}
+.大圖 {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+/* 小圖選項區域 */
+.小圖框 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.單小圖框 {
+    width: 60px;
+    height: 60px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+}
+
+.單小圖框 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 滑鼠懸停或聚焦時的效果 */
+.單小圖框:hover{
+    border-color: #ff5733;
+}
+
+/* 小圖切換按鈕 */
+.小圖框按鈕1,
+.小圖框按鈕2 {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+}
+
+.小圖框按鈕1-圖標::before,
+.小圖框按鈕2-圖標::before {
+    content: '\25B2'; /* 上箭頭符號 */
+    display: block;
+    font-size: 16px;
+    color: #666;
+}
+
+.小圖框按鈕2-圖標::before {
+    content: '\25BC'; /* 下箭頭符號 */
+}
+
+
+/* 商品資訊區 */
+.商品選項框 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.商品名稱框 h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+
+
+
+
+
+
+
+
+/* 變體商品框架 */
+.變體商品框 {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* 變體類型標題 */
+  .變體1-文字, .變體2-文字 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  /* 變體選項框 */
+  .變體1框, .變體2框 {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  /* 單一變體選項 */
+  .單變體1-選項, .單變體2-選項 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  /* 選取狀態 */
+  .單變體1-選項.選取, .單變體2-選項.選取 {
+    border-color: #007bff;
+    background-color: #f0f8ff;
+  }
+  
+  /* 隱藏 radio 按鈕 */
+  .單變體1-勾選, .單變體2-勾選 {
+    display: none;
+  }
+  
+  /* 變體圖片樣式 */
+  .單變體1-圖片, .單變體2-圖片 {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  /* 變體文字區域 */
+  .單變體1-文字, .單變體2-文字 {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .單變體1-敘述, .單變體2-敘述 {
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .單變體1-價錢敘述, .單變體2-價錢敘述 {
+    font-size: 12px;
+    font-weight: bold;
+    color: #d9534f;
+  }
+
+  
+
+
+/* 任搭組數框樣式 */
+.任搭組數框 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.任搭組數-文字 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* 單個選項樣式 */
+.單任搭選項 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.單任搭選項:hover {
+    border-color: #666;
+}
+
+.單任搭選項-勾選 {
+    display: none;
+}
+
+.單任搭選項-勾選:checked + .單任搭選項-文字 {
+    font-weight: bold;
+    color: #d9534f;
+}
+
+.單任搭選項-勾選:checked + .單任搭選項-文字,
+.單任搭選項-勾選:checked ~ .單任搭選項-敘述,
+.單任搭選項-勾選:checked ~ .單任搭選項-價錢敘述 {
+    color: #d9534f;
+}
+
+/* 文字樣式 */
+.單任搭選項-文字 {
+    font-size: 14px;
+}
+
+.單任搭選項-敘述 {
+    font-size: 12px;
+    color: #666;
+}
+
+.單任搭選項-價錢敘述 {
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+}
+
+
+
+
+
+
+
+
+
+/* 價格區 */
+.商品價格框 {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.折扣後價格 {
+    font-size: 20px;
+    font-weight: bold;
+    color: red;
+}
+
+.折扣前價格 {
+    text-decoration: line-through;
+    color: gray;
+}
+
+/* 購物按鈕與數量選擇 */
+.商品數量動作框 {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.商品數量選擇框 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.商品數量 {
+    width: 40px;
+    text-align: center;
+    border: 1px solid #ddd;
+    padding: 4px;
+}
+
+.商品數量減去按鈕,
+.商品數量增加按鈕 {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.商品數量減去按鈕:hover,
+.商品數量增加按鈕:hover {
+    background-color: #ddd;
+}
+
+/* 購物動作 */
+.購物動作按鈕,
+
+
+
+
+.立即下單按鈕 {
+    padding: 8px 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+.購物動作按鈕:disabled,
+.立即下單按鈕:disabled {
+    background-color: gray;
+    cursor: not-allowed;
+}
+
+/* 商品資訊分頁 */
+.商品資訊分頁框 {
+    margin-top: 24px;
+}
+
+.導覽按鈕框 {
+    display: flex;
+    gap: 12px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+}
+
+.單導覽按鈕框 button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.單導覽按鈕框 button:hover {
+    color: #007bff;
+}
+
+/* 內容區塊 */
+.分頁框 {
+    margin-top: 16px;
+}
+
+.單分頁框 {
+    display: none;
+}
+
+.單分頁框.顯示 {
+    display: block;
+}
+
+/* 物流與付款方式 */
+.支援物流框,
+.支援付款框 {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.單物流選項框,
+.單付款選項框 {
+    border: 1px solid #ddd;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* 商品標籤與分類 */
+.商品類別框,
+.商品標籤框 {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.單商品類別框,
+.單商品標籤框 {
+    border: 1px solid #ddd;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* 相關商品 */
+.相關商品框 {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 2px solid #ddd;
+}

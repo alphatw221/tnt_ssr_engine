@@ -1,0 +1,5 @@
+{
+  "watch": ["server", "routes"],
+  "ignore": ["dist", "public", ".vite", "node_modules"],
+  "exec": "node server/server.js"
+}

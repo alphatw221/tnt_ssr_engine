@@ -1,0 +1,323 @@
+@import "@/assets/scss/my-variables";
+
+
+$props: (
+  width: (
+    name: "width",
+    default:20px,
+
+  ),
+  max-width:(
+    name: "max-width",
+  ),
+  min-width:(
+    name: "min-width",
+  ),
+  height:(
+    name: "height",
+    default:20px,
+  ),
+  max-height:(
+    name: "max-height",
+  ),
+  min-height:(
+    name: "min-height",
+  ),
+  line-height:(
+    name: "line-height",
+  ),
+  font-size:(
+    name: "font-size",
+  ),
+
+);
+
+
+$dropdown-props: (
+  width: (
+    name: "width",
+  ),
+
+
+);
+
+$dropdown-props-active: (
+  
+  height:(
+    name: "height",
+  ),
+ 
+
+);
+.drop-down-list{
+
+
+    position: relative;
+    
+
+    // --width-xxl:initial;
+    // --width-xl:initial;
+    // --width-lg:initial;
+    // --width-md:initial;
+    // --width-sm:initial;
+    // --width-xs:initial;
+    // --width-xxs:initial;
+
+    // --height-xxl:initial;
+    // --height-xl:initial;
+    // --height-lg:initial;
+    // --height-md:initial;
+    // --height-sm:initial;
+    // --height-xs:initial;
+    // --height-xxs:initial;
+
+    --background-color-1:initial;
+    --background-color-2:initial;
+
+    --font-color-1:initial;
+    --font-color-2:initial;
+    
+    .button-block{
+        text-align: center;
+        cursor: pointer;
+        color: var(--font-color-1, black) ;
+        background-color: var(--background-color-1, white) ;
+
+        min-width: 24px;
+        min-height: 24px;
+
+
+        @include generate-rwd-stylesheet($props);
+
+        // @media only screen and (min-width: 1536px){
+        //     width:var(--width-xxl, 20px);
+        //     max-width: var(--max-width-xxl);
+        //     min-width: var(--min-width-xxl);
+        //     height:var(--height-xxl, 20px);
+        //     max-height: var(--max-height-xxl);
+        //     min-height: var(--min-height-xxl);
+        //     line-height: var(--line-height-xxl);
+        //     font-size: var(--font-size-xxl);
+        // }
+        // @media only screen and (min-width: 1280px) and (max-width: 1535px){
+        //     width:var(--width-xl, 20px);
+        //     max-width: var(--max-width-xl);
+        //     min-width: var(--min-width-xl);
+        //     height:var(--height-xl, 20px);
+        //     max-height: var(--max-height-xl);
+        //     min-height: var(--min-height-xl);
+        //     line-height: var(--line-height-xl);
+        //     font-size: var(--font-size-xl);
+        // }
+        // @media only screen and (min-width: 1024px) and (max-width: 1279px){
+        //     width:var(--width-lg, 20px);
+        //     max-width: var(--max-width-lg);
+        //     min-width: var(--min-width-lg);
+        //     height:var(--height-lg, 20px);
+        //     max-height: var(--max-height-lg);
+        //     min-height: var(--min-height-lg);
+        //     line-height: var(--line-height-lg);
+        //     font-size: var(--font-size-lg);
+        // }
+        // @media only screen and (min-width: 768px) and (max-width: 1023px){
+        //     width:var(--width-md, 20px);
+        //     max-width: var(--max-width-md);
+        //     min-width: var(--min-width-md);
+        //     height:var(--height-md, 20px);
+        //     max-height: var(--max-height-md);
+        //     min-height: var(--min-height-md);
+        //     line-height: var(--line-height-md);
+        //     font-size: var(--font-size-md);
+        // }
+        // @media only screen and (min-width: 640px) and (max-width: 767px){
+        //     width:var(--width-sm, 20px);
+        //     max-width: var(--max-width-sm);
+        //     min-width: var(--min-width-sm);
+        //     height:var(--height-sm, 20px);
+        //     max-height: var(--max-height-sm);
+        //     min-height: var(--min-height-sm);
+        //     line-height: var(--line-height-sm);
+        //     font-size: var(--font-size-sm);
+        // }
+        // @media only screen and (min-width: 390px) and (max-width: 636px){
+        //     width:var(--width-xs, 20px);
+        //     max-width: var(--max-width-xs);
+        //     min-width: var(--min-width-xs);
+        //     height:var(--height-xs, 20px);
+        //     max-height: var(--max-height-xs);
+        //     min-height: var(--min-height-xs);
+        //     line-height: var(--line-height-xs);
+        //     font-size: var(--font-size-xs);
+        // }
+        // @media only screen and (max-width: 389px){
+        //     width:var(--width-xxs, 20px);
+        //     max-width: var(--max-width-xxs);
+        //     min-width: var(--min-width-xxs);
+        //     height:var(--height-xxs, 20px);
+        //     max-height: var(--max-height-xxs);
+        //     min-height: var(--min-height-xxs);
+        //     line-height: var(--line-height-xxs);
+        //     font-size: var(--font-size-xxs);
+        // }
+
+
+
+        &:hover{
+            color: var(--font-color-2, var(--font-color-1, black)) ;
+            background-color: var(--background-color-2, var(--background-color-1, white)) ;
+        }
+    }
+
+    
+
+    .dropdown {
+        position: absolute;
+        z-index: 220;
+        // top: 105%;
+        // right: 0%;
+
+        visibility: hidden;
+
+        // width: 125px;
+        // min-width: 24px;
+        // min-height: 12px;
+        width:100px;
+        height:0px;
+
+
+        @include generate-rwd-stylesheet($dropdown-props);
+        &.active {
+            @include generate-rwd-stylesheet($dropdown-props-active);
+        }
+
+        // @media only screen and (min-width: 1536px){
+        //     width:var(--width-xxl);
+        //     &.active {
+        //         height:var(--height-xxl);
+        //     }
+            
+        // }
+        // @media only screen and (min-width: 1280px) and (max-width: 1535px){
+        //     width:var(--width-xl);
+        //     &.active {
+        //         height:var(--height-xl);
+        //     }
+        // }
+        // @media only screen and (min-width: 1024px) and (max-width: 1279px){
+        //     width:var(--width-lg);
+        //     &.active {
+        //         height:var(--height-lg);
+        //     }
+        // }
+        // @media only screen and (min-width: 768px) and (max-width: 1023px){
+        //     width:var(--width-md);
+        //     &.active {
+        //         height:var(--height-md);
+        //     }
+        // }
+        // @media only screen and (min-width: 640px) and (max-width: 767px){
+        //     width:var(--width-sm);
+        //     &.active {
+        //         height:var(--height-sm);
+        //     }
+        // }
+        // @media only screen and (min-width: 390px) and (max-width: 636px){
+        //     width:var(--width-xs);
+        //     &.active {
+        //         height:var(--height-xs);
+        //     }
+        // }
+        // @media only screen and (max-width: 389px){
+        //     width:var(--width-xxs);
+        //     &.active {
+        //         height:var(--height-xxs);
+        //     }
+        // }
+
+        // height:50px;
+        // padding: 4px 4px ;
+
+        transition: all 0.5s ease 0s;
+        text-align: left;
+
+        opacity: 0;
+        background: #fff none repeat scroll 0 0;
+        box-shadow: 0 1px 7px -2px rgba(0, 0, 0, 0.3);
+
+        color: #000;
+
+        &.dimension1{
+            top: 100%;
+            right: 0%;
+            // transform: rotateX(90deg);
+            // transform-origin: center top 0;
+
+        }
+
+        &.dimension2{
+            top: 100%;
+            left: 0%;
+            // transform: rotateX(90deg);
+
+            // transform-origin: center top 0;
+
+        }
+
+        &.dimension3{
+            bottom: 100%;
+            left:0%;
+            // transform: rotateX(90deg);
+
+            // transform-origin: center bottom 0;
+
+        }
+
+        &.dimension4{
+            bottom: 100%;
+            right: 0%;
+            // transform: rotateX(90deg);
+
+            // transform-origin: center bottom 0;
+
+        }
+
+        &.active {
+            visibility: visible;
+
+            // transform: rotateX(0deg);
+
+            opacity: 1;
+        }
+
+        &.can-drop{
+            border: solid;
+            border-width: 1px;
+            border-color: #006eff;
+        }
+    
+        &.is-over{
+            border: solid;
+            border-width: 1px;
+            border-color: #26ff00;
+        }
+    
+    }
+    
+
+    .dropdown-resize-pin{
+        position: absolute;
+        bottom:0%;
+        right:0%;
+        z-index: 1001;
+        width: 5px;
+        height: 5px;
+        background-color: white;
+        border-color: black;
+        border-style: solid;
+        border-width: 1px;
+        cursor:move;
+
+        // does not effect by reveal
+        opacity: 1;
+    }
+}

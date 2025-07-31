@@ -1,0 +1,31 @@
+.chat-message{
+
+    margin: 5px 10px;
+    padding: 10px 10px;
+
+
+    white-space: wrap;
+    &.user{
+        background-color: lightblue;
+        border-radius: 10px 10px 10px 0px;
+
+    }
+
+    &.customer{
+        background-color:dodgerblue;
+        border-radius: 10px 10px 0px 10px;
+    }
+
+
+
+
+
+
+
+    
+}
+
+.datetime{
+    color: gray;
+    font-size: 12px;
+}

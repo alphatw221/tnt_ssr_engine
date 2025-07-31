@@ -1,3 +1,5 @@
+Error.stackTraceLimit = 100;
+
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { fileURLToPath } from 'url';
@@ -35,10 +37,13 @@ const createServer = async ()=>{
       app.use('/assets', express.static(resolve(root, 'dist/client/assets')));
   }
 
-
+  app.get('/favicon.ico', (req, res) => {
+    res.status(204).end(); // 204 = No Content
+  });
   //   // CSR & SSR 路由
+  app.use('/website_backend', csrRoutes);
   app.use('/', ssrRoutes);
-  app.use('_backend', csrRoutes);
+  
 
   const port = process.env.PORT || 3000;
 

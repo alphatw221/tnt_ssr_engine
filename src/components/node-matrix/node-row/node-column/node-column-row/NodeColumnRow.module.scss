@@ -1,0 +1,39 @@
+
+.component_column_row_container{
+    // margin-top: 1px;
+    // margin-bottom: 1px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+
+    &.is_over_current{
+
+        &.hover_bottom{
+            border-bottom: solid;
+            border-bottom-width: 2px;
+            border-color: lightseagreen;
+        }
+        &.hover_top{
+            border-top: solid;
+            border-top-width: 2px;
+            border-color: lightseagreen;
+        }
+        &.hover_left{
+            border-left: solid;
+            border-left-width: 2px;
+            border-color: lightseagreen;
+        }
+        &.hover_right{
+            border-right: solid;
+            border-right-width: 2px;
+            border-color: lightseagreen;
+        }
+        
+    }
+
+
+
+}
+
+

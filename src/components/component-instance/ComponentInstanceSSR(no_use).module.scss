@@ -1,0 +1,38 @@
+.ssr-component{
+
+    visibility: hidden;
+    
+    border: 1px solid transparent;
+    background-color: transparent;
+    color:transparent;
+
+    h1,h2,h3,h4,h5,h6{
+        color:transparent;
+    }
+    p{
+        color:transparent !important;
+    }
+    img{
+        display:none
+    }
+    button{
+        border: 1px solid transparent;
+        background-color: transparent;
+        color:transparent;
+
+        // background: transparent;
+    }
+
+    ul{
+        li{
+            div{
+                h1,h2,h3,h4,h5,h6{
+                    color:transparent;
+                }
+                p{
+                    color:transparent !important;
+                }
+            }
+        }
+    }
+}

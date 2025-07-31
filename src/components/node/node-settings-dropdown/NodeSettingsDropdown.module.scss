@@ -1,0 +1,184 @@
+@import "../../../assets/scss/variables";
+
+.settings {
+    // color: $theme-text-color-1;
+    line-height: 0;
+    position: relative ;
+    .icon{
+      // width: 10px;
+      font-size: xx-small;
+      color: aliceblue;
+      background-color: black;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .drop_down_list{
+      position: absolute ;
+      z-index: 9999;
+      // top: 10px;
+      // right:10px;
+      padding: 0px;
+      background: $theme-color-3;
+      width: 0px;
+      height: 0px;
+      transition: width .2s, height 1s ;
+      overflow-y: scroll;
+
+      line-height: 24px;
+      &.dimension1{
+        top: 10px;
+        right:10px;
+      }
+
+      &.dimension2{
+        top: 10px;
+        left:10px;
+      }
+
+      &.dimension3{
+        bottom: 10px;
+        left:10px;
+      }
+
+      &.dimension4{
+        bottom: 10px;
+        right:10px;
+      }
+
+      &.show{
+        padding: 10px;
+        width: 300px;
+        height: fit-content;
+        max-height: 40vh;
+      }
+
+      .title{
+          color: $theme-color-2;
+          font-size: 16px;
+          font-weight: 400;
+      }
+
+      .form{
+
+      
+        ul{
+          li {
+            white-space: nowrap;
+            margin: 0 5px;
+            cursor: pointer;
+
+          }
+        }
+
+        .sketch_picker{
+
+        }
+
+        input {
+          font-size: 8px;
+        
+          width: 100%;
+          height: 5%;
+          // padding-left: 10px;
+        
+          color: $theme-text-color-2;
+          border: 2px solid $theme-text-color-2;
+          background: $theme-color-2;
+          box-shadow: none;
+        
+          &:focus{
+            color: $theme-text-color-1;
+            border: 2px solid $theme-text-color-1;
+            }
+          }
+        
+          label {
+              padding-top: 2%;
+              color: $theme-color-2;
+              font-size: 8px;
+              font-weight: 400;
+          }
+        
+        
+        .select {
+            font-size: 14px;
+            width: 100%;
+            height: 45px;
+            color: $theme-text-color-2;
+            background: $theme-color-2;
+            box-shadow: none;
+            border: 2px solid $theme-text-color-2;
+        }
+        
+        .option {
+            font-size: 14px;
+            padding-left: 10px;
+            border: 2 solid $theme-color-2;
+            background: $theme-color-2;
+        }
+        
+        .textarea {
+            font-size: 14px;
+        
+            width: 100%;
+            padding: 10px;
+        
+            resize: vertical;
+            color: $theme-text-color-2;
+            border: 2px solid $theme-text-color-2;
+            background: $theme-color-2;
+            &:focus {
+                color: $theme-text-color-1;
+                border: 2px solid $theme-text-color-1;
+                outline: none;
+            }
+        }
+        
+        .p {
+            font-family: $poppins;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 24px;
+            margin-bottom: 0;
+            color: $theme-text-color-2;
+            background: transparent;
+          }
+          
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+    }
+   
+  }
+  
+
+
+  

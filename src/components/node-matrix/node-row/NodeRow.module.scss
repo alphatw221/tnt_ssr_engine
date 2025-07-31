@@ -1,0 +1,31 @@
+
+.component_row_container{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    // margin-top: 1px;
+    // margin-bottom: 1px;
+    // padding-left: 2px;
+    // padding-right: 2px;
+    
+    &.is_over_current{
+
+        &.hover_bottom{
+            border-bottom: solid;
+            border-bottom-width: 1px;
+            border-color: lightseagreen;
+        }
+        &.hover_top{
+            border-top: solid;
+            border-top-width: 1px;
+            border-color: lightseagreen;
+        }
+        
+    }
+
+
+
+}
+
+

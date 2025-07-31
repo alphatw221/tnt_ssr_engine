@@ -1,0 +1,30 @@
+
+@import "../../../assets/scss/variables";
+
+
+
+
+.accordion {
+  --bs-accordion-border-radius:0rem;
+  text-align: center;
+}
+
+.header{
+  position: relative;
+  display:flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 5px 0;
+  .title{
+  
+  }
+  .add_btn{
+    position:absolute;
+    right:0;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+  }
+
+}

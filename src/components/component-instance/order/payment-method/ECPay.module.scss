@@ -1,0 +1,36 @@
+/* 綠界付款元素 */
+// .綠界付款元素 {
+//     width: 100%;
+//     height: 200px; /* 根據需求調整 */
+//     background-color: #f4f4f4; /* 淺灰背景 */
+//     border: 1px solid #ccc;
+//     border-radius: 8px;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     text-align: center;
+//     font-size: 16px;
+//     color: #666;
+// }
+
+/* 送出按鈕框 */
+.送出按鈕框 {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* 送出按鈕 */
+.送出按鈕 {
+    background-color: #28a745;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.送出按鈕:hover {
+    background-color: #218838;
+}

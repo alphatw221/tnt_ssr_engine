@@ -1,0 +1,20 @@
+@import "../../assets/scss/variables";
+
+.blog-grid{
+    min-width: 10vw;
+    min-height: 5vh;
+    width: 80vw;
+
+    padding-top: 20px;
+    padding-bottom: 20px;
+
+    @media #{$md-layout} {
+        width: 95vw;
+    }
+    @media #{$xs-layout} {
+        width: 95vw;
+    }
+}
+
+
+

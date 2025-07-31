@@ -1,0 +1,196 @@
+@import "@/assets/scss/my-variables";
+
+
+$props: (
+  width: (
+    name: "width",
+  ),
+  max-width:(
+    name: "max-width",
+  ),
+  min-width:(
+    name: "min-width",
+  ),
+  height:(
+    name: "height",
+    
+  ),
+  max-height:(
+    name: "max-height",
+  ),
+  min-height:(
+    name: "min-height",
+  ),
+  background-position:(
+    name: "background-position",
+  ),
+  background-size:(
+    name: "background-size",
+  ),
+
+  writing-mode:(
+    name: "writing-mode",
+  ),
+  word-spacing:(
+    name: "word-spacing",
+  ),
+  letter-spacing:(
+    name: "letter-spacing",
+  ),
+  text-orientation:(
+    name: "text-orientation",
+  ),
+);
+
+
+$text-props: (
+  line-height: (
+    name: "line-height",
+  ),
+  font-size:(
+    name: "font-size",
+  ),
+  
+);
+
+
+.kp-link{
+
+    text-align: center;
+    cursor: pointer;
+    color: var(--font-color-1, black);
+    // position:'relative';
+    
+    &:hover{
+        color: var(--font-color-2, var(--font-color-1, black));
+
+    }
+    // &:visited{
+    //     color: var(--font-color-1, black);
+    // }
+    &:focus{
+       color: var(--font-color-1, black);
+    }
+    
+
+    --font-color-1:initial;
+    --font-color-2:initial;
+
+
+    @include generate-rwd-stylesheet($props);
+
+    span,i{
+        @include generate-rwd-stylesheet($text-props);
+    }
+
+    // @media only screen and (min-width: 1536px){
+    //     width:var(--width-xxl);
+    //     max-width: var(--max-width-xxl);
+    //     min-width: var(--min-width-xxl);
+    //     height:var(--height-xxl);
+    //     max-height: var(--max-height-xxl);
+    //     min-height: var(--min-height-xxl);
+    //     background-position: var(--background-position-xxl);
+    //     background-size: var(--background-size-xxl);
+    //     span,i{
+    //         line-height: var(--line-height-xxl);
+    //         font-size: var(--font-size-xxl);
+    //     }
+    // }
+    // @media only screen and (min-width: 1280px) and (max-width: 1535px){
+    //     width:var(--width-xl);
+    //     max-width: var(--max-width-xl);
+    //     min-width: var(--min-width-xl);
+    //     height:var(--height-xl);
+    //     max-height: var(--max-height-xl);
+    //     min-height: var(--min-height-xl);
+    //     background-position: var(--background-position-xl);
+    //     background-size: var(--background-size-xl);
+    //     span,i{
+    //         line-height: var(--line-height-xl);
+    //         font-size: var(--font-size-xl);
+    //     }
+    // }
+    // @media only screen and (min-width: 1024px) and (max-width: 1279px){
+    //     width:var(--width-lg);
+    //     max-width: var(--max-width-lg);
+    //     min-width: var(--min-width-lg);
+    //     height:var(--height-lg);
+    //     max-height: var(--max-height-lg);
+    //     min-height: var(--min-height-lg);
+    //     background-position: var(--background-position-lg);
+    //     background-size: var(--background-size-lg);
+    //     span,i{
+    //         line-height: var(--line-height-lg);
+    //         font-size: var(--font-size-lg);
+    //     }
+    // }
+    // @media only screen and (min-width: 768px) and (max-width: 1023px){
+    //     width:var(--width-md);
+    //     max-width: var(--max-width-md);
+    //     min-width: var(--min-width-md);
+    //     height:var(--height-md);
+    //     max-height: var(--max-height-md);
+    //     min-height: var(--min-height-md);
+    //     background-position: var(--background-position-md);
+    //     background-size: var(--background-size-md);
+    //     span,i{
+    //         line-height: var(--line-height-md);
+    //         font-size: var(--font-size-md);
+    //     }
+    // }
+    // @media only screen and (min-width: 640px) and (max-width: 767px){
+    //     width:var(--width-sm);
+    //     max-width: var(--max-width-sm);
+    //     min-width: var(--min-width-sm);
+    //     height:var(--height-sm);
+    //     max-height: var(--max-height-sm);
+    //     min-height: var(--min-height-sm);
+    //     background-position: var(--background-position-sm);
+    //     background-size: var(--background-size-sm);
+    //     span,i{
+    //         line-height: var(--line-height-sm);
+    //         font-size: var(--font-size-sm);
+    //     }
+    // }
+    // @media only screen and (min-width: 390px) and (max-width: 636px){
+    //     width:var(--width-xs);
+    //     max-width: var(--max-width-xs);
+    //     min-width: var(--min-width-xs);
+    //     height:var(--height-xs);
+    //     max-height: var(--max-height-xs);
+    //     min-height: var(--min-height-xs);
+    //     background-position: var(--background-position-xs);
+    //     background-size: var(--background-size-xs);
+    //     span,i{
+    //         line-height: var(--line-height-xs);
+    //         font-size: var(--font-size-xs);
+    //     }
+    // }
+    // @media only screen and (max-width: 389px){
+    //     width:var(--width-xxs);
+    //     max-width: var(--max-width-xxs);
+    //     min-width: var(--min-width-xxs);
+    //     height:var(--height-xxs);
+    //     max-height: var(--max-height-xxs);
+    //     min-height: var(--min-height-xxs);
+    //     background-position: var(--background-position-xxs);
+    //     background-size: var(--background-size-xxs);
+    //     span,i{
+    //         line-height: var(--line-height-xxs);
+    //         font-size: var(--font-size-xxs);
+    //     }
+    // }
+
+    
+        i{
+            // color: var(--font-color-1, black);
+            transition: all 0s ease 0s;
+        }
+        span{
+            // color: var(--font-color-1, black);
+             transition: all 0s ease 0s;
+            
+        }
+    
+}

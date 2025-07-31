@@ -1,0 +1,363 @@
+// @import "@/assets/scss/my-variables";
+
+
+
+// $props: (
+//   width: (
+//     name: "width",
+//   ),
+//   max-width:(
+//     name: "max-width",
+//   ),
+//   min-width:(
+//     name: "min-width",
+//   ),
+//   height:(
+//     name: "height",
+//   ),
+//   max-height:(
+//     name: "max-height",
+//   ),
+//   min-height:(
+//     name: "min-height",
+    
+//   ),
+
+// );
+
+// .購物車框 {
+//     @include generate-rwd-stylesheet($props);
+
+//     position: relative;
+//     display: inline-block;
+// }
+// .購物車按鈕 {
+//     display: flex;
+//     align-items: center;
+//     gap: 8px;
+//     background-color: #007bff;
+//     color: white;
+//     border: none;
+//     padding: 10px 16px;
+//     border-radius: 4px;
+//     cursor: pointer;
+//     font-size: 14px;
+//     position: relative;
+// }
+// .購物車按鈕:hover {
+//     background-color: #0056b3;
+// }
+// .購物車按鈕-圖標 {
+//     width: 20px;
+//     height: 20px;
+//     // background-image: url('cart-icon.svg'); /* 可替換為你的購物車圖示 */
+//     // background-size: cover;
+// }
+// .購物車按鈕-商品數 {
+//     background: red;
+//     color: white;
+//     font-size: 12px;
+//     font-weight: bold;
+//     border-radius: 50%;
+//     padding: 3px 6px;
+//     position: absolute;
+//     top: -5px;
+//     right: -5px;
+// }
+// .購物車-下拉 {
+//     display: none;
+//     position: absolute;
+//     top: 100%;
+//     right: 0;
+//     background: white;
+//     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+//     border-radius: 6px;
+//     width: 280px;
+//     padding: 12px;
+//     z-index: 10;
+// }
+// .購物車-下拉.顯示 {
+//     display: block;
+// }
+// .購物車列表框 {
+//     max-height: 250px;
+//     overflow-y: auto;
+// }
+// .購物車商品框 {
+//     display: flex;
+//     align-items: center;
+//     gap: 10px;
+//     padding: 10px;
+//     border-bottom: 1px solid #ddd;
+// }
+// .購物車商品框.缺貨 {
+//     opacity: 0.5;
+// }
+// .購物車商品-圖片框 img {
+//     width: 50px;
+//     height: 50px;
+//     object-fit: cover;
+//     border-radius: 4px;
+// }
+// .購物車商品-資訊框 {
+//     flex: 1;
+//     font-size: 14px;
+// }
+// .購物車商品-名稱 {
+//     font-weight: bold;
+//     margin: 0;
+//     color: #333;
+// }
+// .購物車商品-數量,
+// .購物車商品-價錢,
+// .購物車商品-變體類別1,
+// .購物車商品-變體類別2 {
+//     font-size: 12px;
+//     color: #666;
+// }
+// .購物車商品-動作框 {
+//     text-align: right;
+// }
+// .購物車商品-刪除按鈕 {
+//     background: #ff4d4f;
+//     color: white;
+//     border: none;
+//     padding: 5px 8px;
+//     border-radius: 4px;
+//     cursor: pointer;
+//     font-size: 12px;
+// }
+// .購物車商品-刪除按鈕:hover {
+//     background: #d9363e;
+// }
+// .超連結框 {
+//     display: flex;
+//     justify-content: space-between;
+//     padding-top: 10px;
+// }
+// .購物車-超連結,
+// .結帳-超連結 {
+//     font-size: 14px;
+//     color: #007bff;
+//     text-decoration: none;
+//     font-weight: bold;
+// }
+// .購物車-超連結:hover,
+// .結帳-超連結:hover {
+//     text-decoration: underline;
+// }
+
+
+
+// // .button-block{
+
+// //     .my-cart-block{
+// //         display: flex;
+// //         flex-direction: row;
+// //         align-items: center;
+// //         justify-content: center;
+// //         // align-content: center;
+// //         cursor: pointer;
+
+        
+// //     }
+
+
+// //     button{
+// //         // font-size: 23px;
+// //         border: none;
+// //         background: none;
+// //         color: #000;
+
+        
+
+// //         .my_cart_block{
+// //             display: flex;
+// //             flex-direction: row;
+// //             align-items: center;
+
+// //             cursor: pointer;
+
+            
+// //         }
+// //     }
+
+// //     .cart-item-nums{
+
+// //         position: absolute;
+// //         top: -50%;
+// //         right:-50%;
+// //         line-height: 20px;
+
+// //         font-weight: bold;
+// //         text-align: center;
+// //         color: black;
+// //         padding: 0px 8px 0px 8px;
+
+// //         background-color: rgb(173, 12, 12);
+// //         border-radius: 50%;
+// //     }
+
+// //     .dropdown {
+// //         position: absolute;
+// //         z-index: 220;
+// //         // top: 105%;
+// //         // right: 0%;
+
+// //         visibility: hidden;
+
+// //         // width: 125px;
+// //         min-width: 200px;
+// //         padding: 8px 12px 10px;
+
+// //         transition: all 0.5s ease 0s;
+// //         // transform: rotateX(90deg);
+// //         // transform-origin: center top 0;
+// //         text-align: left;
+
+// //         opacity: 0;
+// //         background: #fff none repeat scroll 0 0;
+// //         box-shadow: 0 1px 7px -2px rgba(0, 0, 0, 0.3);
+
+// //         color: #000;
+
+// //         &.dimension1{
+// //             top: 105%;
+// //             right: 0%;
+// //             transform: rotateX(90deg);
+
+// //             transform-origin: center top 0;
+
+// //         }
+
+// //         &.dimension2{
+// //             top: 105%;
+// //             left: 0%;
+// //             transform: rotateX(90deg);
+
+// //             transform-origin: center top 0;
+
+// //         }
+
+// //         &.dimension3{
+// //             bottom: 105%;
+// //             left:0%;
+// //             transform: rotateX(90deg);
+
+// //             transform-origin: center bottom 0;
+
+// //         }
+
+// //         &.dimension4{
+// //             bottom: 105%;
+// //             right: 0%;
+// //             transform: rotateX(90deg);
+
+// //             transform-origin: center bottom 0;
+
+// //         }
+
+// //         &.active {
+// //             visibility: visible;
+
+// //             transform: rotateX(0deg);
+
+// //             opacity: 1;
+// //         }
+        
+
+
+// //         ul {
+// //             overflow-y: auto;
+    
+// //             max-height: 400px;
+// //             margin-right: -15px;
+// //             padding-top: 20px;
+// //             padding-right: 15px;
+// //             li {
+// //             position: relative;
+    
+// //             display: flex;
+// //             flex-wrap: nowrap;
+    
+// //             margin-bottom: 20px;
+// //             padding-bottom: 15px;
+    
+// //             border-bottom: 1px solid #ebebeb;
+// //             .shopping_cart_img {
+// //                 flex: 0 0 82px;
+    
+// //                 margin-right: 15px;
+// //             }
+// //             .shopping_cart_title {
+// //                 h4 {
+// //                 font-size: 15px;
+// //                 line-height: 16px;
+    
+// //                 margin: 0;
+// //                 margin-right: 20px;
+// //                 a {
+// //                     line-height: 1.2;
+    
+// //                     color: #000;
+// //                     &:hover {
+// //                     color: $theme-color;
+// //                     }
+// //                 }
+// //                 }
+// //                 h6 {
+// //                 font-size: 13px;
+    
+// //                 margin: 5px 0 8px;
+// //                 }
+// //                 span {
+// //                 font-size: 14px;
+// //                 }
+// //             }
+// //             .shopping_cart_delete {
+// //                 position: absolute;
+// //                 top: 0;
+// //                 right: 0;
+// //                 a,
+// //                 button {
+// //                 font-size: 16px;
+    
+// //                 color: $theme-color;
+// //                 &:hover {
+// //                     color: #333;
+// //                 }
+// //                 }
+// //             }
+// //             }
+// //         }
+// //         .shopping-cart-total {
+// //             h4 {
+// //             font-size: 14px;
+    
+// //             margin-top: 17px;
+// //             margin-bottom: 17px;
+// //             span {
+// //                 float: right;
+// //             }
+// //             }
+// //         }
+// //         .shopping-cart-btn {
+// //             margin-top: 12px;
+// //             a {
+// //             font-size: 14px;
+// //             font-weight: 500;
+    
+// //             display: block;
+    
+// //             margin-bottom: 10px;
+// //             padding: 16px 40px 17px;
+
+// //             border: 1px solid black;
+// //             }
+// //         }
+// //     }
+
+
+
+    
+// // }

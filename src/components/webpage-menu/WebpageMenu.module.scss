@@ -1,0 +1,83 @@
+.title-block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  // padding: 10px 10px;
+  // padding-left: 0px;
+  // padding-right: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+
+
+  .title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: white;
+  }
+
+}
+
+.body-block {
+  // padding: 0 0.5rem;
+
+  .no-item-text {
+    display: block;
+    color: #999;
+    font-style: italic;
+    padding: 0.5rem;
+    font-size: 0.95rem;
+  }
+}
+
+
+.add-btn {
+    position:relative;
+    width: 30px;
+    height: 30px;
+    background-color: #4884c4;
+    color: #fff;
+    border: none;
+    // padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // gap: 0.5rem;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #0056b3;
+
+
+      .tooltip{
+        visibility: visible;
+        opacity: 1;
+      }
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+}
+
+
+.tooltip {
+  visibility: hidden;
+  width: 100px;
+  background-color: white;
+  color: black;
+  text-align: center;
+  border-radius: 5px 0px 5px 5px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  top: 70%; /* 在元素上方显示 */
+  right: 70%;
+  // margin-left: -60px; /* 居中对齐 */
+  opacity: 0;
+  transition: opacity 0.3s;
+}

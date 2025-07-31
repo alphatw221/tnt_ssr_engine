@@ -1,0 +1,85 @@
+/* 訂單明細區塊 */
+.訂單明細框 {
+    width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.訂單明細標題框 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.訂單明細標題 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 訂單表格樣式 */
+.訂單商品-表格 {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+}
+
+.表格-列 {
+    border-bottom: 1px solid #ddd;
+}
+
+.表格-欄位名稱 {
+    background-color: #f1f1f1;
+    padding: 10px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.單訂單商品框, .單任搭商品框 {
+    text-align: center;
+}
+
+.訂單商品-圖片框 img, .單任搭商品-圖片框 img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+/* 訂單總結區塊 */
+.訂單總結框 {
+    width: 100%;
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.訂單總結標題框 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.訂單總結標題 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 訂單金額明細 */
+.小計框, .使用紅利框, .紅利折抵框, .運費框, .稅金框, .合計框 {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.合計框 {
+    font-weight: bold;
+    font-size: 18px;
+}

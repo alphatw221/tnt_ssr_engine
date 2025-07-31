@@ -1,0 +1,111 @@
+
+
+.購物車 {
+  width: 80%;
+  max-width: 1200px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.標題框 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.標題 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.無商品框 {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.購物車-表格 {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.表格-欄位名稱 {
+  background: #f1f1f1;
+  padding: 10px;
+  text-align: left;
+}
+
+.表格-列 {
+  border-bottom: 1px solid #ddd;
+}
+
+.表格-列 td {
+  padding: 10px;
+}
+
+.表格-圖片框 img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.商品數量選擇框 button {
+  border: none;
+  background: #ddd;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.商品數量選擇框 input {
+  width: 40px;
+  text-align: center;
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.刪除商品按鈕 {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.購物車-動作框 {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.cart-shiping-update a, .cart-clear button {
+  background: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 4px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.購物車-總計框 {
+  background: #f1f1f1;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: right;
+}
+
+.結帳連結 {
+  display: inline-block;
+  background: #28a745;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 4px;
+  text-decoration: none;
+  margin-top: 10px;
+}
