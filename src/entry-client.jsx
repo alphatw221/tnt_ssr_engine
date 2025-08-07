@@ -25,23 +25,36 @@ const props = window.__INITIAL_PROPS__ || {};
 
 // console.log(isSSR)
 
-
+const csrBootstrap = async ()=>{
+  const { default: AppCSR } = await import('./AppCSR.jsx');
+  createRoot(container).render(<AppCSR {...props} />);
+}
 if (isSSR) {
   console.log('is ssr')
-
-  //TODO 取得pageName objectUUID
-  const res = await customer_retrieve_wepage({page_name:'undefined', object_uuid:'undefined'})
   const store = createSSRStore();
-  hydrateRoot(container,  <Provider store={store}>
+  customer_retrieve_wepage({webpage_name:window.__SSR_PARAMS__?.webpageName||'', object_uuid:window.__SSR_PARAMS__?.objectUUID||''}).then(res=>{
+    hydrateRoot(container,  <Provider store={store}>
     {/* <PersistGate loading={null} persistor={persistor}> */}
       <WebpageBody website={res.data} webpage={res.data.webpage} mode='prod'/>
       {/* </PersistGate> */}
   </Provider>);
+  })
+  //TODO 取得pageName objectUUID
+  // const res = await customer_retrieve_wepage({webpage_name:window.__SSR_PARAMS__?.webpageName||'', object_uuid:window.__SSR_PARAMS__?.objectUUID||''})
+  // const store = createSSRStore();
+  // hydrateRoot(container,  <Provider store={store}>
+  //   {/* <PersistGate loading={null} persistor={persistor}> */}
+  //     <WebpageBody website={res.data} webpage={res.data.webpage} mode='prod'/>
+  //     {/* </PersistGate> */}
+  // </Provider>);
   
 } else {  //csr
+
+
+
+
   console.log('csr')
-  const { default: AppCSR } = await import('./AppCSR.jsx');
-  createRoot(container).render(<AppCSR {...props} />);
+  csrBootstrap();
 }
 
 

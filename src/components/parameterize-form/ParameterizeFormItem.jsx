@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React, { Fragment, useState, useEffect, lazy, useRef } from "react";
 import style from './ParameterizeFormItem.module.scss'
-import { SketchPicker } from 'react-color'
+import react_color from 'react-color'
 import SelectFileModal from "../select-file-modal/SelectFileModal";
 import SelectIconModal from "../select-icon-modal/SelectIconModal"
 import Select from "react-select";
@@ -13,6 +13,9 @@ import DateTimePicker from 'react-datetime-picker';
 import Editor from "@monaco-editor/react";
 import { useAccordionButton } from 'react-bootstrap/AccordionButton';
 import clsx from "clsx";
+
+
+const { SketchPicker } = react_color
 const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
     const updateData = (value)=>{
         const d = {...data}
@@ -513,6 +516,7 @@ const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
                 </textarea> */}
 
                 <textarea
+                    rows={item?.rows||10}
                     className={style.textarea}  
                     value={jsonString}
                     onChange={handleChange}

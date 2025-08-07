@@ -446,7 +446,7 @@ const NodeMenuItem =({position, hierarchy, node,
                     node?.type=='webpage'?{type:'button',action:()=>{
                       //disconnect socket
                       actions?.socket?.disconnect();
-                      router.push(`/website_backend/website_editor/${node?.name}`);},name:'前往'}:{},
+                      router.push(`/website_backend_v2/website_editor/${node?.name}`);},name:'前往'}:{},
 
                     {type:'button',action:removeCurrentNode,name:'刪除', style:{marginTop:'20px'}, variant:'danger'},
                   ]} 

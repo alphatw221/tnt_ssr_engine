@@ -41,7 +41,7 @@ const createServer = async ()=>{
     res.status(204).end(); // 204 = No Content
   });
   //   // CSR & SSR 路由
-  app.use('/website_backend', csrRoutes);
+  app.use('/website_backend_v2', csrRoutes);
   app.use('/', ssrRoutes);
   
 

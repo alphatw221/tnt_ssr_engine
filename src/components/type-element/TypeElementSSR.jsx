@@ -5,7 +5,7 @@ import React, { lazy } from "react";
 // import ClientOnly from '@/components/client-only/ClientOnly'
 
 
-import CustomSliderSSR from "@/components/component-instance/custom-slider/CustomSliderSSR"
+import CustomSliderCSR from "@/components/component-instance/custom-slider/CustomSliderCSR"
 
 import LoginForm from "../component-instance/LoginForm"
 import RegisterForm from "../component-instance/RegisterForm"
@@ -36,7 +36,7 @@ const TypeElementSSR = ({
 
         case 'custom_slider':
             return (
-                    <CustomSliderSSR 
+                    <CustomSliderCSR 
                     element={element}  {...props}/>)  
         case 'ck_editor':
             return (<CKEditorSSR 

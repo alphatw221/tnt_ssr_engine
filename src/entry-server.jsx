@@ -15,11 +15,11 @@ export function render(url, context = {}) {
   return { html, context };
 }
 
-export async function getWebpageHtml(page_name, object_uuid, context={}){
+export async function getWebpageHtml(webpage_name, object_uuid, context={}){
     
   const store = createSSRStore();
 
-    const res = await customer_retrieve_wepage({page_name, object_uuid})
+    const res = await customer_retrieve_wepage({webpage_name, object_uuid})
     const websiteUUID = res.data?.uuid;
     const body =  renderToString(<Provider store={store}>
                           <WebpageBody website={res.data} webpage={res.data.webpage} mode='prod'/>

@@ -1,5 +1,5 @@
-import React, { Fragment, useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import React, { Fragment, useState, useEffect, useRef, useMemo } from "react";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 
 import EditorSideMenu from "@/components/editor-side-menu/EditorSideMenu"
 import WebpageCSR from "@/components/webpage/WebpageCSR.jsx"
@@ -32,6 +32,7 @@ import Cookies from 'js-cookie'
 
 import {
   websiteFindAndReplaceElement, 
+  websiteFindAndReplaceElementData, 
   websiteFindAndRemoveElement,
   websiteFindElement, 
   websiteFindAndInsertElement,
@@ -58,6 +59,7 @@ const WebsiteEditor = () => {
 
   const params = useParams()
   const searchParams = useSearchParams()
+  const navigate = useNavigate();
 
   // const websiteEditorState = useAppSelector((state) => {return state.website_editor});
   const userState = useAppSelector((state) => {return state.user});
@@ -115,17 +117,19 @@ const WebsiteEditor = () => {
 
     const collaboratorUpdateElement = (element, sender_socket_id)=>{
       const _element = JSON.parse(element)
+      console.log(_element)
       const _website = JSON.parse(JSON.stringify(website))
       if(socket?.id!=sender_socket_id){
-        websiteFindAndReplaceElement(_website, _element)
+        console.log('websiteFindAndReplaceElementData')
+        websiteFindAndReplaceElementData(_website, _element)
         setWebsite(_website)
       }
     }
   
-    const collaboratorRemoveElement = (element_uuid, sender_socket_id)=>{
+    const collaboratorRemoveElement = (parent_relation_uuid, sender_socket_id)=>{
       const _website = JSON.parse(JSON.stringify(website))
       if(socket?.id!=sender_socket_id){
-        websiteFindAndRemoveElement(_website, element_uuid)
+        websiteFindAndRemoveElement(_website, parent_relation_uuid)
         setWebsite(_website)
       }
     }
@@ -370,6 +374,9 @@ const WebsiteEditor = () => {
     setWebsite({...website, 'data':data})
   }
 
+  const switchWebpage = (webpageName)=>{
+      navigate(`/website_backend_v2/website_editor/${webpageName}`, { replace: false });
+  }
   const actions = {
       addWebpage,
       addWebpageElement,
@@ -394,6 +401,7 @@ const WebsiteEditor = () => {
       updateWebsiteSettings,
 
       hideElementDictToggle,
+      switchWebpage,
   }
 
   //init keydown shortcut
@@ -534,9 +542,12 @@ const WebsiteEditor = () => {
       }
 
   
-  const webpage = params?.page_name ? website.webpages.find(wp=>wp.name==params?.page_name) : website.webpages?.[0]
+  // const webpage = params?.page_name ? website.webpages.find(wp=>wp.name==params?.page_name) : website.webpages?.[0]
+  // const webpageRef = useRef(params?.page_name ? website.webpages.find(wp=>wp.name==params?.page_name) : website.webpages?.[0])
+  const selectedWebpage = useMemo(() => {
+    return params?.page_name ? website.webpages.find(wp=>wp.name==params?.page_name) : website.webpages?.[0]
+  }, [params?.page_name, website?.webpages]);
 
- 
   return (
     <Fragment>
       {/* {!sideMenuActive&&
@@ -572,7 +583,7 @@ const WebsiteEditor = () => {
       {/* 佈告欄 */}
 
 
-      < WebpageCSR website={website} webpage={webpage} mode='dev' hideElementDict={hideElementDict} actions={actions} routingTable={routingTable}/>
+      < WebpageCSR website={website} webpage={selectedWebpage} mode='dev' hideElementDict={hideElementDict} actions={actions} routingTable={routingTable}/>
 
       {/* <Modal show={showBulletinBoard} onHide={()=>{setShowBulletinBoard(false)}}>
         <Modal.Header closeButton>

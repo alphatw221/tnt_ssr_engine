@@ -23,7 +23,7 @@ import { getToFixedNumber } from "@/lib/utils/toFixedHelper";
 
 
 const MyOrders = ({  
-    // node,  
+    // element,  
     // mode, 
     // actions,
     // routingTable, 
@@ -87,12 +87,12 @@ const MyOrders = ({
 
 
     const [pageSize, setPageLimit] = useState(20);
-    const [page, setPage] = useState(cache?.[node?.uuid]?.page||1);
-    const [status, setStatus]=useState(cache?.[node?.uuid]?.status||transformOrderStatus(node?.data?.default_order_status)||'')
+    const [page, setPage] = useState(cache?.[element?.uuid]?.page||1);
+    const [status, setStatus]=useState(cache?.[element?.uuid]?.status||transformOrderStatus(element?.data?.default_order_status)||'')
 
 
 
-    const [selectedFilter, setSelectedFilter]=useState(cache?.[node?.uuid]?.selectedFilter||'全部')
+    const [selectedFilter, setSelectedFilter]=useState(cache?.[element?.uuid]?.selectedFilter||'全部')
 
     const defaultStatus = ''
     const defaultPage = 1
@@ -110,7 +110,7 @@ const MyOrders = ({
 
     //       console.log(res.data)
     //       dispatch(setCacheKey({
-    //           'key':node?.uuid,
+    //           'key':element?.uuid,
     //           status,
     //           page,
     //           page_size,
@@ -134,10 +134,10 @@ const MyOrders = ({
 
 
           if(
-            !cache?.[node?.uuid]||
-            (cache?.[node?.uuid]?.status||defaultStatus)!=status||
-            (cache?.[node?.uuid]?.page||defaultPage)!=page||
-            (cache?.[node?.uuid]?.pageSize||defaultPageSize)!=pageSize
+            !cache?.[element?.uuid]||
+            (cache?.[element?.uuid]?.status||defaultStatus)!=status||
+            (cache?.[element?.uuid]?.page||defaultPage)!=page||
+            (cache?.[element?.uuid]?.pageSize||defaultPageSize)!=pageSize
           ){
 
             customer_search_order({
@@ -148,7 +148,7 @@ const MyOrders = ({
 
                 console.log(res.data)
                 dispatch(setCacheKey({
-                    'key':node?.uuid,
+                    'key':element?.uuid,
                     status,
                     page,
                     pageSize,
@@ -220,7 +220,7 @@ const MyOrders = ({
                  
                   }}>
                     <span className={clsx(style['單訂單狀態-文字'], '單訂單狀態-文字')}>待付款</span>
-                    {(cache?.[node?.uuid]?.awaiting_payment_count||0)>0&&<span className={clsx(style['單訂單狀態-數量'], '單訂單狀態-數量')}>{`(${(cache?.[node?.uuid]?.awaiting_payment_count||0)})`}</span>}
+                    {(cache?.[element?.uuid]?.awaiting_payment_count||0)>0&&<span className={clsx(style['單訂單狀態-數量'], '單訂單狀態-數量')}>{`(${(cache?.[element?.uuid]?.awaiting_payment_count||0)})`}</span>}
                   </button>
                 </div>
                 <div className={clsx(style['單訂單狀態框'], '單訂單狀態框', selectedFilter=='處理中'?`${style['選取']} 選取`:'')}>
@@ -233,7 +233,7 @@ const MyOrders = ({
                  
                   }}>
                     <span className={clsx(style['單訂單狀態-文字'], '單訂單狀態-文字')}>處理中</span>
-                    {(cache?.[node?.uuid]?.awaiting_deliver_count||0)>0&&<span className={clsx(style['單訂單狀態-數量'], '單訂單狀態-數量')}>{`(${(cache?.[node?.uuid]?.awaiting_deliver_count||0)})`}</span>}
+                    {(cache?.[element?.uuid]?.awaiting_deliver_count||0)>0&&<span className={clsx(style['單訂單狀態-數量'], '單訂單狀態-數量')}>{`(${(cache?.[element?.uuid]?.awaiting_deliver_count||0)})`}</span>}
                   </button>
                 </div>
                 <div className={clsx(style['單訂單狀態框'], '單訂單狀態框', selectedFilter=='待自取'?`${style['選取']} 選取`:'')}>
@@ -245,7 +245,7 @@ const MyOrders = ({
                    
                   }}>
                     <span className={clsx(style['單訂單狀態-文字'], '單訂單狀態-文字')}>待自取</span>
-                    {(cache?.[node?.uuid]?.awaiting_receive_count||0)>0&&<span className={clsx(style['單訂單狀態-數量'], '單訂單狀態-數量')}>{`(${(cache?.[node?.uuid]?.awaiting_receive_count||0)})`}</span>}
+                    {(cache?.[element?.uuid]?.awaiting_receive_count||0)>0&&<span className={clsx(style['單訂單狀態-數量'], '單訂單狀態-數量')}>{`(${(cache?.[element?.uuid]?.awaiting_receive_count||0)})`}</span>}
                   </button>
                 </div>
                 <div className={clsx(style['單訂單狀態框'], '單訂單狀態框', selectedFilter=='已完成'?`${style['選取']} 選取`:'')}>
@@ -284,7 +284,7 @@ const MyOrders = ({
             </div>
 
             {
-              (cache?.[node?.uuid]?.results||[]).length<=0 &&
+              (cache?.[element?.uuid]?.results||[]).length<=0 &&
               <div className={clsx(style['無訂單框'], '無訂單框')}>
                 <div className={clsx(style['無訂單-圖標框'], '無訂單-圖標框')}>
                     <i className={clsx(style['無訂單-圖標'], '無訂單-圖標', 'pe-7s-cart')}></i>
@@ -305,7 +305,7 @@ const MyOrders = ({
             }
 
             {
-              (cache?.[node?.uuid]?.results||[]).length>0 &&
+              (cache?.[element?.uuid]?.results||[]).length>0 &&
               <table className={clsx(style['訂單-表格'], '訂單-表格')}>
                 <thead className={clsx(style['表格-頭段'], '表格-頭段')}>
                   <tr className={clsx(style['表格-列'], '表格-列')}>
@@ -322,7 +322,7 @@ const MyOrders = ({
                 </thead>
                 <tbody className={clsx(style['表格-身體'], '表格-身體')}>
                   {
-                    (cache?.[node?.uuid]?.results||[]).map((order, key)=>{
+                    (cache?.[element?.uuid]?.results||[]).map((order, key)=>{
 
 
                       return (
@@ -413,7 +413,7 @@ const MyOrders = ({
 
                 <div className={clsx(style['分頁器框'], "分頁器框")}>
                     {/* <Paginator
-                        totalRecords={(cache?.[node?.uuid]?.count||0)}
+                        totalRecords={(cache?.[element?.uuid]?.count||0)}
                         pageLimit={pageSize}
                         pageNeighbours={2}
                         setOffset={()=>{}}

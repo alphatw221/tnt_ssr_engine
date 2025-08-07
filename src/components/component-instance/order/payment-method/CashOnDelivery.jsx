@@ -11,8 +11,7 @@ import style from "./CashOnDelivery.module.scss"
 
 import { createValidator } from "@/lib/validator"
 
-// import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+
 
 import {customer_select_cash_on_delivery} from '@/api/order.js'
 import { useAppDispatch } from "@/redux/hooks";
@@ -23,8 +22,11 @@ import {removeCache} from "@/redux/slices/order-slice"
 const CashOnDelivery = ({ order, paymentService, routingTable}) => {
 
     
-    const router = useRouter()
-    const searchParams = useSearchParams()
+
+
+    const searchParams = new URLSearchParams(window.location.search);
+
+
     const dispatch = useAppDispatch()
 
     // const hasIntersection = (arr1, arr2) =>{
@@ -54,7 +56,8 @@ const CashOnDelivery = ({ order, paymentService, routingTable}) => {
                     customer_select_cash_on_delivery({'order_uuid':order?.uuid, 'payment_service_uuid':paymentService?.uuid, 'guest_uuid':searchParams.get('guest_uuid')}).then(res=>{
                         // setAwaitSubmitButton(false)
                         // dispatch(removeCache())
-                        router.push(`/${routingTable?.['order_route']}/${order?.uuid}?guest_uuid=${searchParams.get('guest_uuid')}`)
+                        window.location.href = `/${routingTable?.['order_route']}/${order?.uuid}?guest_uuid=${searchParams.get('guest_uuid')}`
+
                         // console.log(`/${routingTable?.['order_route']}/${order?.uuid}`)
                         dispatch(removeCache())
                     }).catch(err=>{

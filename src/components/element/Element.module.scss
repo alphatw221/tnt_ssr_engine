@@ -1,0 +1,50 @@
+.drag-over-left{
+    border-left: solid !important;
+    border-left-width: 1px !important;
+    border-color: red !important;
+}
+.drag-over-right{
+    border-right: solid !important;
+    border-right-width: 1px !important;
+    border-color: red !important;
+}
+.drag-over-in{
+    border: solid !important;
+    border-width: 1px !important;
+    border-color: red !important;
+}
+
+
+
+.icursor-hover-left{
+    outline: 1px solid red !important;
+    border-left: solid !important;
+    border-left-width: 2px !important;
+    border-color: lightgreen !important;
+    cursor: text;
+}
+.icursor-hover-right{
+    outline: 1px solid red !important;
+    border-right: solid !important;
+    border-right-width: 2px !important;
+    border-color: lightgreen !important;
+    cursor: text;
+}
+.icursor-hover-in{
+    outline: 1px solid red !important;
+    border: solid !important;
+    border-width: 2px !important;
+    border-color: lightgreen !important;
+    cursor: text;
+}
+
+.arrow-hover
+{
+    outline: 1px solid red !important;
+}
+
+.drag-hover
+{
+    outline: 1px solid red !important;
+    cursor: grab;
+}

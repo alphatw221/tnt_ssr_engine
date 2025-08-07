@@ -233,6 +233,10 @@ const WebpageMenuItem =({
             user_update_webpage_cache({'webpage_uuid':webpage.uuid}).then(res=>{console.log(res.data)})
         }
     }
+
+    const navigateToWebpage = ()=>{
+        actions?.switchWebpage?.(webpage?.name)
+    }
  
 
     drag(drop(webpageMenuItemRef))
@@ -241,8 +245,9 @@ const WebpageMenuItem =({
 
     const globalSettings = [
         {"type":"inline","inline_items":[
-            {type:'button',action:updateWebpageCache,name:'發佈更新', style:{marginTop:'20px'}, variant:'danger'},
-            {type:'button',action:removeWebpage,name:'刪除網頁', style:{marginTop:'20px'}, variant:'danger'},
+            {type:'button',action:navigateToWebpage,name:'前往', style:{marginRight:'10px'}, variant:'danger'},
+            {type:'button',action:updateWebpageCache,name:'發佈更新', style:{marginRight:'10px'}, variant:'danger'},
+            {type:'button',action:removeWebpage,name:'刪除網頁', style:{}, variant:'danger'},
         ]},
         {"key": "uuid", "name": "節點UUID", "type": "text"}, 
         {"key": "name", "name": "名稱", "type": "input",  "inputType": "text"}, 

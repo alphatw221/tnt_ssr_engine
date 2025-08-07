@@ -1,7 +1,7 @@
 // src/pages/LoginPage.jsx
 
-import './UserLoginPage.css'; // 匯入 CSS
 
+import style from './UserLoginPage.module.scss'
 
 
 
@@ -73,13 +73,13 @@ export default function LoginPage() {
 
 
       dispatch(setUser(res.data.user_data))
-      navigate(redirect||'/website_backend/website_editor', {replace:true})
+      navigate(redirect||'/website_backend_v2/website_editor', {replace:true})
       // TODO
 
 
-      // router.push(searchParams.get('redirect')||(routeNames.website_backend + '/' + routeNames.website_editor))
+      // router.push(searchParams.get('redirect')||(routeNames.website_backend_v2 + '/' + routeNames.website_editor))
 
-      // window.location.href = routeNames.website_backend + '/' + routeNames.website_editor
+      // window.location.href = routeNames.website_backend_v2 + '/' + routeNames.website_editor
     })
 
   }
@@ -91,11 +91,11 @@ export default function LoginPage() {
 
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h2 className="login-title">使用者登入</h2>
-        <form  className="login-form">
-          <div className="form-group">
+    <div className={style["login-container"]}>
+      <div className={style["login-card"]}>
+        <h2 className={style["login-title"]}>使用者登入</h2>
+        <form  className={style["login-form"]}>
+          <div className={style["form-group"]}>
             <label>帳號 Account</label>
             <input
               type="text"
@@ -107,12 +107,13 @@ export default function LoginPage() {
                   loginFormValidator.current.showMessageFor("required")
                   forceUpdate(new Date())
                 }}
+              onKeyDown={(e)=>{if(e.key==='Enter'){handleLogin();}}}
               />
-              {loginFormValidator.current.message("required", loginData.account, "required")}
+              {loginFormValidator.current.message("required", loginData.account, "required", {className:style['invalid-message']})}
 
           </div>
 
-          <div className="form-group">
+          <div className={style["form-group"]}>
             <label>密碼 Password</label>
             <input
               type="password"
@@ -124,11 +125,12 @@ export default function LoginPage() {
                 loginFormValidator.current.showMessageFor("password")
                 forceUpdate(new Date())
               }}
+              onKeyDown={(e)=>{if(e.key==='Enter'){handleLogin();}}}
             />
-             {loginFormValidator.current.message("password", loginData.password, "required")}
+             {loginFormValidator.current.message("password", loginData.password, "required", {className:style['invalid-message']})}
           </div>
 
-          <button type="button" className="login-button" onClick={handleLogin}>
+          <button type="button" className={style["login-button"]} onClick={handleLogin}>
             登入
           </button>
         </form>

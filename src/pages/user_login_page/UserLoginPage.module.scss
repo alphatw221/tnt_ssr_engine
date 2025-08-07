@@ -1,7 +1,7 @@
 /* src/pages/LoginPage.css */
 .login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #e0f7ff, #f0f0f0);
+  background: #1b304de6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9,11 +9,11 @@
 }
 
 .login-card {
-  background: white;
+  background: #193871;
   padding: 2.5rem;
-  border-radius: 1rem;
+
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  width: 100%;
+  width: 40vw;
   max-width: 400px;
 }
 
@@ -21,7 +21,7 @@
   text-align: center;
   font-size: 2rem;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: white;
 }
 
 .login-form {
@@ -32,7 +32,8 @@
 
 .form-group label {
   font-size: 0.9rem;
-  color: #555;
+  font-weight: 500;
+  color: white;
   margin-bottom: 0.3rem;
   display: block;
 }
@@ -41,9 +42,10 @@
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  // border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.3s;
+  box-sizing: border-box;
 }
 
 .form-group input:focus {
@@ -53,17 +55,18 @@
 
 .login-button {
   padding: 0.75rem;
-  background-color: #3399ff;
+  background-color: #11254b;
   color: white;
   border: none;
-  border-radius: 8px;
+  // border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .login-button:hover {
-  background-color: #0077e6;
+  background-color: #4a5d7e;
 }
 
 .login-footer {
@@ -80,4 +83,8 @@
 
 .login-footer a:hover {
   text-decoration: underline;
+}
+
+.invalid-message{
+  color: #319eac;
 }

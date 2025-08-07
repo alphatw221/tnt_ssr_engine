@@ -4,19 +4,18 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  base:'/ssr_engine_vite',
   build: {
-    ssr: 'src/entry-server.jsx',
-    outDir: 'dist/server',
+    outDir: 'dist/client',
+    emptyOutDir: true,
     rollupOptions: {
       input: {
-        client: path.resolve(__dirname, 'index.html'),
-        main: 'src/entry-client.jsx'
+        main: 'index.html'
       },
     },
   },
   ssr: {
     external: ['react', 'react-dom'],
-    // noExternal: ['prop-types'], // ✅ 加這行
   },
   resolve: {
     alias: {

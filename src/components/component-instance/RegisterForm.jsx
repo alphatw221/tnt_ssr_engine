@@ -29,7 +29,7 @@ const RegisterForm = ({
     // update,
     // children, routingTable, ...props
 
-
+    routingTable,
     element, 
     elementProps,
     mode,

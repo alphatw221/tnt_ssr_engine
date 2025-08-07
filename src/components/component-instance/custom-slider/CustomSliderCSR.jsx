@@ -102,6 +102,9 @@ const CustomSliderCSR = ({
     const initSwiper = (swiper)=>{
         console.log('init swiper')
         swiperRef.current = swiper;
+
+        const ele = document?.querySelector('.'+ CSS.escape(element.parent_relation_uuid))
+        ele.swiper = swiper;
         const slideWidth = swiper.slides?.[0]?.offsetWidth||0;
         swiper.slides?.forEach((slide, index)=>{
             const p = (index * slideWidth) + (slideWidth/2) + swiper.translate + (slideWidth/2)
@@ -126,12 +129,12 @@ const CustomSliderCSR = ({
 
         })
 
-        swiper.on('slideChange', (swiper)=>{
-            // console.log('realIndex')
-            // console.log(swiper?.realIndex)
-            const customEvent = new CustomEvent(`${element?.uuid}_換頁`, {detail:{param:`${swiper?.realIndex}`}});
-            document.dispatchEvent(customEvent);
-        })
+        // swiper.on('slideChange', (swiper)=>{
+        //     // console.log('realIndex')
+        //     // console.log(swiper?.realIndex)
+        //     const customEvent = new CustomEvent(`${element?.uuid}_換頁`, {detail:{param:`${swiper?.realIndex}`}});
+        //     document.dispatchEvent(customEvent);
+        // })
       
     }
 

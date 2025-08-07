@@ -25,7 +25,7 @@ const LoginForm = ({
     // actions, 
     // update, children, routingTable, ...props
 
-
+    routingTable,
     element, 
     elementProps,
     mode,

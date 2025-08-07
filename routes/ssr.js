@@ -7,15 +7,15 @@ const router = express.Router();
 
 
 const getHtmlCacheKey = (host)=>{ return `website_uuid:${host}`}
-const getWebsiteUUIDCacheKey = (websiteUUID, pageName, objectUUID)=>{ return `html:${websiteUUID}:${pageName||''}:${objectUUID||''}`}
+const getWebsiteUUIDCacheKey = (websiteUUID, webpageName, objectUUID)=>{ return `html:${websiteUUID}:${webpageName||''}:${objectUUID||''}`}
 
 router.get([
     '/', 
-    '/:pageName', 
-    '/:pageName/:objectUUID'
+    '/:webpageName', 
+    '/:webpageName/:objectUUID'
 ], async (req, res, next) => {
   try {
-    const { pageName, objectUUID } = req.params;
+    const { webpageName, objectUUID } = req.params;
 
 
 
@@ -31,7 +31,7 @@ router.get([
     const websiteUUIDCacheKey = getHtmlCacheKey(req.get('host'))
     const websiteUUID = await redis.get(websiteUUIDCacheKey);
     if(websiteUUID){
-      const htmlCacheKey = getWebsiteUUIDCacheKey(websiteUUID, pageName, objectUUID)
+      const htmlCacheKey = getWebsiteUUIDCacheKey(websiteUUID, webpageName, objectUUID)
       const cachedHtml = await redis.get(htmlCacheKey);
       if (cachedHtml) {
         console.log(`[Cache] 命中 ${req.get('host')} ${htmlCacheKey}`);
@@ -61,11 +61,13 @@ router.get([
     }
 
 
-    const {head, body, websiteUUID:uncachedWebsiteUUID} = await render(pageName, objectUUID);
+    const {head, body, websiteUUID:uncachedWebsiteUUID} = await render(webpageName, objectUUID);
 
-    const semiFinalHTML = template.replace(`<!--app-head-->`, head);
-    const finalHTML = semiFinalHTML.replace(`<!--app-body-->`, body)
-    const htmlCacheKey = getWebsiteUUIDCacheKey(uncachedWebsiteUUID, pageName, objectUUID)
+    const safeParams = JSON.stringify({ webpageName, objectUUID }).replace(/</g, '\\u003c');
+    const finalHTML = template.replace(`<!--app-head-->`, head).replace(`<!--app-body-->`, body).replace(`'__SSR_PARAMS_PLACEHOLDER__'`, safeParams);
+    const htmlCacheKey = getWebsiteUUIDCacheKey(uncachedWebsiteUUID, webpageName, objectUUID)
+
+    
 
     await redis.set(htmlCacheKey, finalHTML)
     await redis.set(websiteUUIDCacheKey, uncachedWebsiteUUID)

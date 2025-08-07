@@ -4,6 +4,7 @@ import clsx from "clsx";
 
 import {convertToReactProps} from '@/lib/utils/propsConverter.js'
 import TypeElement from '@/components/type-element/TypeElement'
+import ElementDev from "./ElementDev";
 // import ErrorBoundary from '@/components/ErrorBoundary.jsx'
    // parent_relation_uuid
     // uuid
@@ -27,6 +28,7 @@ const Element = ({ element, ...props}) => {
 
         if(element?.template){
             // console.log(element?.template)
+            //TODO
         }
         const mergedProps = {
             ...((element?.template||{})?.props||{}),
@@ -39,21 +41,33 @@ const Element = ({ element, ...props}) => {
         if(element?.template?.type||element?.type){
 
             // return <div>{element?.template?.type||element?.type}</div>
-            return <TypeElement element={element} elementProps = {reactMergedProps} {...props}/>
+            return <Fragment>
+                    <TypeElement element={element} elementProps = {reactMergedProps} {...props}/>
+                    { props?.mode=='dev' && <ElementDev element={element} {...props}/>}
+                </Fragment>
         
         } 
 
         const TagName = element?.template?.tag_name || element?.tag_name || "div";
 
         if(!['', null, undefined].includes(element?.template?.inner_html||element?.inner_html)) {
-            return <TagName {...reactMergedProps}  dangerouslySetInnerHTML={{ __html: element?.template?.inner_html||element?.inner_html }}/>
+            return <Fragment>
+                    <TagName {...reactMergedProps}  dangerouslySetInnerHTML={{ __html: element?.template?.inner_html||element?.inner_html }}/>
+                    { props?.mode=='dev' && <ElementDev element={element} {...props}/>}
+                </Fragment>
         }
 
-        if((element?.children||[]).length>0) return <TagName {...reactMergedProps}>
-            {(element?.children||[]).map((e,i)=><Element key={i} element={e} {...props}/>)}
-        </TagName>
+        if((element?.children||[]).length>0) return <Fragment>
+                <TagName {...reactMergedProps}>
+                    {(element?.children||[]).map((e,i)=><Element key={i} element={e} {...props}/>)}
+                </TagName>
+                { props?.mode=='dev' && <ElementDev element={element} {...props}/>}
+            </Fragment>
 
-        return  <TagName {...reactMergedProps}/>
+        return  <Fragment>
+            <TagName {...reactMergedProps}/>
+            { props?.mode=='dev' && <ElementDev element={element} {...props}/>}
+        </Fragment>
 
    
 

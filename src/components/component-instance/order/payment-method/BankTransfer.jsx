@@ -12,15 +12,16 @@ import style from "./BankTransfer.module.scss"
 import { createValidator } from "@/lib/validator"
 import { customer_upload_receipt } from "@/api/order";
 // import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+
 import { useAppDispatch } from "@/redux/hooks";
 import {removeCache} from "@/redux/slices/order-slice"
 
 const BankTransfer = ({ orderUUID, paymentServiceUUID, bankName, bankAccount, bankDescription, images,  routingTable}) => {
 
 
-    const router = useRouter()
-    const searchParams = useSearchParams()
+
+    const searchParams = new URLSearchParams(window.location.search);
+
     // let { object_id } = useParams();
 
     const [, forceUpdate] = useState();
@@ -79,7 +80,8 @@ const BankTransfer = ({ orderUUID, paymentServiceUUID, bankName, bankAccount, ba
         }).then(res=>{
             console.log(res.data)
             dispatch(removeCache())
-            router.push(`/${routingTable?.['order_route']}/${orderUUID}?guest_uuid=${searchParams.get('guest_uuid')}`)
+            window.location.href = `/${routingTable?.['order_route']}/${orderUUID}?guest_uuid=${searchParams.get('guest_uuid')}`
+
         }).catch(err=>{
             console.log(err)
             setAwaitSubmitButton(false)

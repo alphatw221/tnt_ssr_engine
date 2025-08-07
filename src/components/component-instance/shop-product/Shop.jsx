@@ -21,7 +21,7 @@ import style from './Shop.module.scss'
 
 import { customer_search_product } from "@/api/product"
 const Shop = ({ 
-    // node,  
+    // element,  
     // mode, 
     // actions,
     // routingTable, 
@@ -55,31 +55,31 @@ const Shop = ({
     const defaultKeyword = ''
 
 
-    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[node?.uuid]?.keyword||defaultKeyword);
-    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[node?.uuid]?.keyword||defaultKeyword);
+    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
+    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
     
-    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):(cache?.[node?.uuid]?.categoryUUIDs||'').split(',')||[]);
-    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[node?.uuid]?.pageSize||defaultPageSize);
-    const [page, setPage] = useState(searchParams.get('page')||cache?.[node?.uuid]?.page||defaultPage);
-    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[node?.uuid]?.orderBy||defaultOrderBy);
-    const [layoutOption, setLayoutOption] = useState(node?.data?.default_layout||'大格子');
+    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):(cache?.[element?.uuid]?.categoryUUIDs||'').split(',')||[]);
+    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[element?.uuid]?.pageSize||defaultPageSize);
+    const [page, setPage] = useState(searchParams.get('page')||cache?.[element?.uuid]?.page||defaultPage);
+    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[element?.uuid]?.orderBy||defaultOrderBy);
+    const [layoutOption, setLayoutOption] = useState(element?.data?.default_layout||'大格子');
 
 
     const dispatch = useAppDispatch()
     
 
     useEffect(()=>{
-        console.log(cache?.[node?.uuid])
+        console.log(cache?.[element?.uuid])
         if(
-            !cache?.[node?.uuid]||
-            (cache?.[node?.uuid]?.keyword||defaultKeyword)!=keyword||
-            (cache?.[node?.uuid]?.categoryUUIDs||'')!=categoryUUIDs?.join(',')||
-            (cache?.[node?.uuid]?.page||defaultPage)!=page||
-            (cache?.[node?.uuid]?.pageSize||defaultPageSize)!=pageSize||
-            (cache?.[node?.uuid]?.orderBy||defaultOrderBy)!=orderBy
+            !cache?.[element?.uuid]||
+            (cache?.[element?.uuid]?.keyword||defaultKeyword)!=keyword||
+            (cache?.[element?.uuid]?.categoryUUIDs||'')!=categoryUUIDs?.join(',')||
+            (cache?.[element?.uuid]?.page||defaultPage)!=page||
+            (cache?.[element?.uuid]?.pageSize||defaultPageSize)!=pageSize||
+            (cache?.[element?.uuid]?.orderBy||defaultOrderBy)!=orderBy
         ){
             // dispatch(setCacheKey({
-            //     'key':node?.uuid,
+            //     'key':element?.uuid,
             //     keyword,
             //     page,
             //     pageSize,
@@ -102,7 +102,7 @@ const Shop = ({
             ).then(res=>{
                 console.log(res.data)
                 dispatch(setCacheKey({
-                    'key':node?.uuid,
+                    'key':element?.uuid,
                     keyword,
                     page,
                     pageSize,
@@ -115,7 +115,7 @@ const Shop = ({
             })
         }
 
-    },[node?.uuid, keyword, categoryUUIDs, page, pageSize, orderBy, cache])
+    },[element?.uuid, keyword, categoryUUIDs, page, pageSize, orderBy, cache])
 
     return (
         <div 
@@ -140,13 +140,13 @@ const Shop = ({
                 <div className={clsx(style['商品類別框'], "商品類別框")}>
                     <label className={clsx(style['商品類別-標籤'], "商品類別-標籤")}>商品類別</label>
                     {
-                        (cache?.[node?.uuid]?.categories||[]).length == 0 &&
+                        (cache?.[element?.uuid]?.categories||[]).length == 0 &&
                         <div className={clsx(style['無商品類別框'], "無商品類別框")}>
                             <span className={clsx(style['無商品類別文字'], "無商品類別文字")}>無商品類別</span>
                         </div>
                     }
                     {
-                        (cache?.[node?.uuid]?.categories||[]).map((category,key)=>(                            
+                        (cache?.[element?.uuid]?.categories||[]).map((category,key)=>(                            
                             <div key={key} className={clsx(style['單商品類別框'], "單商品類別框")}>
                                 <input className={clsx(style['單商品類別-勾選'], "單商品類別-勾選")} 
                                     type="checkbox" 
@@ -183,7 +183,7 @@ const Shop = ({
                 </div>
                 <div className={clsx(style['商品框-網格'], "商品框-網格", style[layoutOption], layoutOption)}>
                     {
-                        (cache?.[node?.uuid]?.results||[]).map((product,key)=>(                            
+                        (cache?.[element?.uuid]?.results||[]).map((product,key)=>(                            
                             <SingleProduct 
                                 key={key} 
                                 product={product} 
@@ -198,7 +198,7 @@ const Shop = ({
 
                 <div className={clsx(style['分頁器框'], "分頁器框")}>
                     {/* <Paginator
-                        totalRecords={cache?.[node?.uuid]?.count||0}
+                        totalRecords={cache?.[element?.uuid]?.count||0}
                         pageLimit={pageSize}
                         pageNeighbours={2}
                         currentPage={page}

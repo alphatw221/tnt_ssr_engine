@@ -4,7 +4,7 @@ import { useState, useEffect, Fragment, useRef, createRef } from "react";
 // import Button from 'react-bootstrap/Button';
 
 
-import { useRouter, useSearchParams } from "next/navigation";
+
 
 
 import {customer_get_ecpay_trade_token, customer_create_ecpay_payment} from "../../../../api/ecpay_payment"
@@ -26,8 +26,9 @@ const ECPay = ({orderUUID, paymentServiceUUID, routingTable, ecpayMerchantID, pr
 
     const [merchantTradeNo, setMerchantTradeNo] = useState('')
 
-    const router = useRouter()
-    const searchParams = useSearchParams()
+
+
+    const searchParams = new URLSearchParams(window.location.search);
     const dispatch = useAppDispatch()
 
     useEffect(() => {
@@ -120,7 +121,8 @@ const ECPay = ({orderUUID, paymentServiceUUID, routingTable, ecpayMerchantID, pr
                                 window.location.href = res?.data?.three_d_url
                             }else{
                                 dispatch(removeCache())
-                                router.push(`/${routingTable?.['order_route']}/${orderUUID}?guest_uuid=${searchParams.get('guest_uuid')}`)
+                                window.location.href = `/${routingTable?.['order_route']}/${orderUUID}?guest_uuid=${searchParams.get('guest_uuid')}`
+
                             }
 
 

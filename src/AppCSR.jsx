@@ -10,7 +10,7 @@ const AppCSR = ({}) =>{
 
     return <BrowserRouter>
         <Routes>
-            <Route path="/website_backend/website_editor" 
+            <Route path="/website_backend_v2/website_editor" 
                 element={
                     <Providers >
                         <PersistProvider>
@@ -20,7 +20,7 @@ const AppCSR = ({}) =>{
                         </PersistProvider>
                     </Providers>
                 }/>
-            <Route path="/website_backend/website_editor/:page_name" 
+            <Route path="/website_backend_v2/website_editor/:page_name" 
                 element={
                     <Providers >
                         <PersistProvider>
@@ -30,7 +30,7 @@ const AppCSR = ({}) =>{
                         </PersistProvider>
                     </Providers>
                 }/>
-            <Route path="/website_backend/website_editor/:page_name/:object_uuid" 
+            <Route path="/website_backend_v2/website_editor/:page_name/:object_uuid" 
                 element={
                     <Providers >
                         <PersistProvider>
@@ -40,7 +40,7 @@ const AppCSR = ({}) =>{
                         </PersistProvider>
                     </Providers>
                 }/>
-            <Route path="/website_backend/user_login" element={
+            <Route path="/website_backend_v2/user_login" element={
                  <Providers >
                         <PersistProvider>
                             <UserLoginPage/>

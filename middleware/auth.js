@@ -4,7 +4,7 @@ export function userAuthMiddleware(req, res, next) {
   
     if (!token) {
       const redirect = encodeURIComponent(req.originalUrl);
-      return res.redirect(`/website_backend/user_login?redirect=${redirect}`);
+      return res.redirect(`/website_backend_v2/user_login?redirect=${redirect}`);
     }
   
     // 可以在這裡驗證 token 的有效性，例如 JWT 驗證

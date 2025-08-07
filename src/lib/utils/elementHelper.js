@@ -45,6 +45,49 @@ export function websiteFindElement(website, target_parent_relation_uuid){
 
 
 
+function findAndReplaceElementData(currentElement, replacementElement){
+
+    for(let i=0;i<(currentElement?.children||[]).length;i++){
+
+        if((currentElement?.children[i]?.uuid||'')===replacementElement?.uuid){
+            currentElement.children[i] = {...replacementElement, children: currentElement.children[i]?.children||[]}
+        }
+
+        findAndReplaceElementData(currentElement?.children[i], replacementElement)
+    }
+    
+}
+
+
+
+export function websiteFindAndReplaceElementData(website, replacementElement){
+
+
+    for(let k=0;k<(website?.webpages||[]).length;k++){
+        const webpage = website?.webpages[k]
+        for(let i=0;i<(webpage?.head_elements||[]).length;i++){
+
+            if((webpage?.head_elements[i]?.uuid||'')===replacementElement?.uuid){
+                webpage.head_elements[i] = {...replacementElement, children:webpage.head_elements[i]?.children||[]}
+            }
+
+            findAndReplaceElementData(webpage.head_elements[i], replacementElement)
+        }
+        for(let j=0;j<(webpage?.body_elements||[]).length;j++){
+
+            if((webpage?.body_elements[j]?.uuid||'')===replacementElement?.uuid){
+                webpage.body_elements[j] = {...replacementElement, children:webpage.body_elements[j]?.children||[]}
+            }
+
+            findAndReplaceElementData(webpage.body_elements[j], replacementElement)
+        }
+    }
+}
+
+
+
+
+
 function findAndReplaceElement(currentElement, replacementElement){
 
     for(let i=0;i<(currentElement?.children||[]).length;i++){
