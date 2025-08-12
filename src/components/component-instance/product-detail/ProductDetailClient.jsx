@@ -24,6 +24,11 @@ const ProductDetailClient = ({
     // params, searchParams,
 
     product,
+
+
+    routingTable,
+    element, 
+    elementProps,
     mode,
     actions,
     ...props
@@ -329,16 +334,7 @@ const ProductDetailClient = ({
     return (
         
         <div 
-            id={props?.id}
-            className={
-                clsx(
-                    props?.className,
-                    '商品容器框',
-                    style['商品容器框']
-                )}
-            style={{
-                ...props?.style||{},
-            }}
+            {...elementProps}
             >
              
 

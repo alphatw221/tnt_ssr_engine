@@ -38,7 +38,7 @@ const Element = ({ element, ...props}) => {
 
         const reactMergedProps = convertToReactProps(mergedProps)
 
-        if(element?.template?.type||element?.type){
+        if(element?.type||element?.template?.type){
 
             // return <div>{element?.template?.type||element?.type}</div>
             return <Fragment>
@@ -48,11 +48,11 @@ const Element = ({ element, ...props}) => {
         
         } 
 
-        const TagName = element?.template?.tag_name || element?.tag_name || "div";
+        const TagName = element?.tag_name || element?.template?.tag_name || "div";
 
-        if(!['', null, undefined].includes(element?.template?.inner_html||element?.inner_html)) {
+        if(!['', null, undefined].includes(element?.inner_html||element?.template?.inner_html)) {
             return <Fragment>
-                    <TagName {...reactMergedProps}  dangerouslySetInnerHTML={{ __html: element?.template?.inner_html||element?.inner_html }}/>
+                    <TagName {...reactMergedProps}  dangerouslySetInnerHTML={{ __html: element?.inner_html||element?.template?.inner_html }}/>
                     { props?.mode=='dev' && <ElementDev element={element} {...props}/>}
                 </Fragment>
         }

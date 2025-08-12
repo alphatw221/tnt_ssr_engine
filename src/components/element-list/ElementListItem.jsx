@@ -5,7 +5,7 @@ import style from './ElementListItem.module.scss'
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";        
 // import Button from 'react-bootstrap/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCaretRight, faCaretDown, faGear, faEye, faEyeSlash, faBars, faChevronLeft, faChevronRight, faChevronUp, faChevronDown,faNotesMedical, faFile } from '@fortawesome/free-solid-svg-icons'
+import { faCaretRight, faCaretDown, faGear, faEye, faEyeSlash, faBars, faStar, faChevronLeft, faChevronRight, faChevronUp, faChevronDown,faNotesMedical, faFile } from '@fortawesome/free-solid-svg-icons'
 import MyModal from '@/components/modal/MyModal.jsx'
 import ParameterizeForm from "@/components/parameterize-form/ParameterizeForm.jsx";
 import ElementList from "./ElementList";
@@ -250,8 +250,10 @@ const ElementListItem =({
 
 
 const removeElement = ()=>{
-    actions?.globleRemoveElement(element?.parent_relation_uuid)
-    user_delete_element({'parent_relation_uuid':element?.parent_relation_uuid}).then(res=>{console.log(res.data)})
+    if(confirm('刪除元素')){
+        actions?.globleRemoveElement(element?.parent_relation_uuid)
+        user_delete_element({'parent_relation_uuid':element?.parent_relation_uuid}).then(res=>{console.log(res.data)})
+    }
 }
 const createChildElement = ()=>{
     const sudoElement = {name:'未命名'}
@@ -342,9 +344,21 @@ const elementBaseSettingsB = getElementBaseSettingsB()
                     icon={faBars} 
                     onMouseEnter={()=>{setCanDrag(true)}} 
                     onMouseLeave={()=>{setCanDrag(false)}} />
-
-                <h3 ref={nameRef} className={`${style['name']}`}>{element?.name||'未命名'}</h3>
-
+                
+                
+                <h3 ref={nameRef} className={`${style['name']}`}>
+                    
+                    {element?.name||'未命名'}
+                    {
+                        (element?.parent_relation_count||1)>1 &&
+                        <FontAwesomeIcon 
+                            className={`${style['star-icon']}`}  
+                            icon={faStar} 
+                        />
+                    }
+                
+                </h3>
+                
                 <FontAwesomeIcon 
                     className={`${style['expand-icon']}`}
                     icon={expandElementDict?.[element?.parent_relation_uuid]?faCaretDown:faCaretRight}

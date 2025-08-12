@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 // import { addToCart, decreaseQuantity, deleteFromCart, deleteAllFromCart } from "../../store/slices/cart-slice";
 // import { setBaseCurrency, setExchangeRates } from "@/redux/slices/estore-slice";
 // import { cartItemStock } from "../../helpers/product";
-// import { deleteCartProduct, setCartProducts, deleteAllCartProduct } from "@/redux/slices/cart-slice";
+import { setCartProducts } from "@/redux/slices/cart-slice";
 // import { customer_delete_cart_product, customer_update_cart_product, customer_clear_cart_product } from "../../api/cart";
 // import cogoToast from 'cogo-toast';
 
@@ -94,6 +94,13 @@ const CartDetail = ({
     }, [estore, baseCurrency])
 
 
+    //cart products preloader
+    useEffect(()=>{
+        if(localStorage.getItem("cart_products")){
+            const _cartProducts = JSON.parse(localStorage.getItem("cart_products"));
+            dispatch(setCartProducts(_cartProducts));
+        }
+    },[])
 
     useEffect(()=>{
         const {subtotal, items, final_exclude_uuids} = getCartSummarize(

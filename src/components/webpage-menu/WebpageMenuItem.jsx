@@ -459,12 +459,19 @@ const WebpageMenuItem =({
 
                         `} >
                         <h5 className={`${style['title']}`}>HEAD元素</h5>
+                        <FontAwesomeIcon 
+                            className={`${style['expand-head-icon']}`}
+                            icon={expandWebpageDict?.[`${webpage?.uuid}_head`]?faCaretDown:faCaretRight}
+                            onClick={()=>{expandWebpageDictToggle(`${webpage?.uuid}_head`)}}
+                        />
                         <button className={`${style['add-btn']}`} onClick={()=>{addElement('head')}}>
                             <FontAwesomeIcon icon={faPlus}/>
                         <div className={style['tooltip']} >新增元素</div>
                         </button>
                     </div>
-                    <ElementList elements={webpage?.head_elements} actions={actions} level={0} {...props}/>
+                    { expandWebpageDict?.[`${webpage?.uuid}_head`] &&
+                        <ElementList elements={webpage?.head_elements} actions={actions} level={0} {...props}/>
+                    }
                     <div ref={webpageBodyBlockRef} 
                         className={`
                         ${style['title-block']} 
@@ -473,11 +480,18 @@ const WebpageMenuItem =({
                         ${cursor?.type=='webpage' && cursor?.data?.uuid==webpage?.uuid && selectedTool=='iCursor'&& cursor?.position=='in' && !cursor?.head ? style[`focus-in`]:''}
                         `} >
                         <h5 className={`${style['title']}`}>BODY元素</h5>
+                        <FontAwesomeIcon 
+                            className={`${style['expand-body-icon']}`}
+                            icon={expandWebpageDict?.[`${webpage?.uuid}_body`]?faCaretDown:faCaretRight}
+                            onClick={()=>{expandWebpageDictToggle(`${webpage?.uuid}_body`)}}
+                        />
                         <button className={`${style['add-btn']}`} onClick={()=>{addElement('body')}}><FontAwesomeIcon icon={faPlus}/>
                         <div className={style['tooltip']} >新增元素</div>
                         </button>
                     </div>
-                    <ElementList elements={webpage?.body_elements} actions={actions} level={0} {...props}/>
+                    { expandWebpageDict?.[`${webpage?.uuid}_body`] &&
+                        <ElementList elements={webpage?.body_elements} actions={actions} level={0} {...props}/>
+                    }
                 </Fragment>
               
             }

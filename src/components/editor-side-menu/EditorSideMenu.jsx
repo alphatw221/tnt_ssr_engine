@@ -126,20 +126,26 @@ const EditorSideMenu = ({ website, actions, ...props}) => {
         <button className={clsx(style['close-side-menu-button'],style[position])} onClick={() => setActive(false)}>
           <FontAwesomeIcon icon={faChevronLeft}/>
         </button>
+        
+
+
+
+        <WebsiteCollaboratorList/>
+        <div className={style['bar']}>
+          <EditorToolBar/>
+
+          <div className={style['bar-button']} onClick={()=>{setShowWebsiteSettings(true)}}>
+            <FontAwesomeIcon icon={faGear}/>
+            <div className={style['tooltip']} >網站設定</div>
+          </div>
+          
+        </div>
+        
+          
+
 
         {/* SCROLLABLE AREA */}
         <div className={clsx(style['scrollable-area'], style[position])}>
-          <WebsiteCollaboratorList/>
-          <div className={style['bar']}>
-            <EditorToolBar/>
-
-            <div className={style['bar-button']} onClick={()=>{setShowWebsiteSettings(true)}}>
-              <FontAwesomeIcon icon={faGear}/>
-              <div className={style['tooltip']} >網站設定</div>
-            </div>
-            
-          </div>
-          
           
      
 

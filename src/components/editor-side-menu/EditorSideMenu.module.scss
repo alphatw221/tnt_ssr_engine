@@ -6,7 +6,7 @@
 .editor-side-menu::-webkit-scrollbar { width: 0 !important }
 
 .editor-side-menu {
-    overflow-x: scroll;
+    // overflow-x: scroll;
     position: fixed;
     z-index: 1000;
   
@@ -76,15 +76,15 @@
   
 }
 
-// .scrollable-area::-webkit-scrollbar { width: 0 !important }
+.scrollable-area::-webkit-scrollbar { width: 0 !important }
 .scrollable-area{
   margin-bottom: 100px;
   // ::-webkit-scrollbar{
   //   width: 0 !important
   // }
-    // height:100%;
-    // overflow-y:scroll;
-    // overflow-x: hidden;
+    height:85vh;
+    overflow-y:scroll;
+    overflow-x: hidden;
 }
 
 .drag-bar{

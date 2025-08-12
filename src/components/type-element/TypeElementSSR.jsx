@@ -21,6 +21,7 @@ import GoogleMap from "../component-instance/GoogleMap"
 import ContactUsForm from "../component-instance/ContactUsForm"
 import Shop from "@/components/component-instance/shop-product/Shop"
 import CKEditorSSR from '../component-instance/my-ckeditor/CKEditorSSR'
+// import CKEditor from '../component-instance/my-ckeditor/CKEditor'
 import ProductDetailCSR from "@/components/component-instance/product-detail/ProductDetailCSR"
 import BlogPostDetailCSR from '../component-instance/blog-post-detail/BlogPostDetailCSR'
 

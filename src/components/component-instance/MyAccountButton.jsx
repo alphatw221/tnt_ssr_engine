@@ -23,6 +23,7 @@ import {useClickOutsideEvent} from '@/lib/utils/clickOutside.js'
 // import  Link  from 'next/link';
 import { setCustomer } from '@/redux/slices/customer-slice'
 // import {  useRouter } from 'next/navigation';
+import {customer_get_account} from "@/api/customer.js"
 
 const MyAccountButton = ({  
     // node,  mode, actions, update, routingTable, children, ...props
@@ -33,22 +34,37 @@ const MyAccountButton = ({
     ...props
 }) => {
     
-    // const websiteEditorState = useAppSelector((state) => state.website_editor);
-
-
 
     const dispatch = useAppDispatch();
-    // const router = useRouter()
-    
     const customer  = useAppSelector((state) => state.customer);
+
+    //customer preloader
+    useEffect(()=>{
+        if(Cookies.get('customer_access_token')){
+            if(localStorage.getItem("customer")){
+                const _customer = JSON.parse(localStorage.getItem("customer"));
+                dispatch(setCustomer(_customer));
+            }else{
+                customer_get_account().then(res=>{
+                    console.log(res.data)
+                    localStorage.setItem("customer", JSON.stringify(res.data));
+                    dispatch(setCustomer(res.data))
+                }).catch(err=>{
+                    Cookies.remove('customer_access_token')
+                })
+            }
+        }else{
+            localStorage.removeItem("customer");
+            dispatch(setCustomer({uuid:null}))
+        }
+    },[])
 
 
     const logout = e =>{
         Cookies.remove('customer_access_token')
         dispatch(setCustomer({uuid:null}))
-        // location.reload()
-        // router.push('/')
-        window.location.href = ''
+        localStorage.removeItem("customer");
+        window.location.reload();
     }
     const dropDown = useRef(null);
     const [showDropDown, setShowDropDown] = useState(false)

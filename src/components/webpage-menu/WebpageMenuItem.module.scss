@@ -38,6 +38,24 @@
     color: #fff;
   }
 }
+
+
+.expand-head-icon,
+.expand-body-icon
+{
+  color: #aaa;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  margin-left:auto;
+  margin-right: 5px;
+  &:hover {
+    color: #fff;
+  }
+}
+
+
+
 .drag-icon{
   color: #aaa;
   font-size: 1.1rem;

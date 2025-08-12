@@ -4,7 +4,7 @@ import clsx from "clsx";
 import style from './BlogPostDetail.module.scss'
 import ShareButton from './ShareButton'
 const _BlogPostDetail = ({  
-    params, searchParams,
+
     // template_nodes,
     // node,  
     // mode, 
@@ -13,9 +13,19 @@ const _BlogPostDetail = ({
     // children, 
     // isSudoNode, 
     blogPost,
+    // mode,
+    // actions,
+    // ...props,
+
+    routingTable,
+    element, 
+    elementProps,
     mode,
     actions,
-    ...props})=>{
+    ...props
+
+
+})=>{
 
 //     return (
 //         <div className={
@@ -64,16 +74,7 @@ const _BlogPostDetail = ({
     return (
         <Fragment>
             <div 
-                className={
-                    clsx(
-                    props?.className,
-                    '文章容器框',
-                    style['文章容器框']
-                    )}
-                style={{
-                    ...props?.style,
-                }}
-                id = {props.id}
+                {...elementProps}
             >
 
             

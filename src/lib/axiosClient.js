@@ -3,7 +3,7 @@ import Cookies from 'js-cookie'
 // import { toast } from 'react-toastify';
 import cogoToast from 'cogo-toast';
 
-const _baseURL = import.meta.env.NODE_ENV=='production' 
+const _baseURL = import.meta.env.MODE=='production' 
     ?
     undefined
     // `${import.meta.env.VITE_APP_API_PROTOCAL}://${import.meta.env.VITE_APP_API_HOSTNAME}${import.meta.env.VITE_APP_API_PORT?':'+import.meta.env.VITE_APP_API_PORT:''}`

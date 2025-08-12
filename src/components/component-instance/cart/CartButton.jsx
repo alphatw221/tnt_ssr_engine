@@ -29,7 +29,7 @@ import cogoToast from 'cogo-toast';
 
 // import { getRWDStyles} from "@/lib/utils/rwdHelper"
 import { getToFixedNumber } from "@/lib/utils/toFixedHelper";
-
+import { setCartProducts } from "@/redux/slices/cart-slice";
 const CartButton = ({  
     // node,  mode, actions, update, children, routingTable, ...props
 
@@ -57,6 +57,14 @@ const CartButton = ({
         setShowDropDown(false)
     },showDropDown)
 
+
+    //cart products preloader
+    useEffect(()=>{
+        if(localStorage.getItem("cart_products")){
+            const _cartProducts = JSON.parse(localStorage.getItem("cart_products"));
+            dispatch(setCartProducts(_cartProducts));
+        }
+    },[])
 
     // TODO
     // const store = useAppSelector((state) => state.estore);

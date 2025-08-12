@@ -188,8 +188,10 @@ const ElementDev = ({ element, actions, ...props}) => {
         }
         
         const removeElement = ()=>{
-            actions?.globleRemoveElement(element?.parent_relation_uuid)
-            user_delete_element({'parent_relation_uuid':element?.parent_relation_uuid}).then(res=>{console.log(res.data)})
+            if(confirm('刪除元素')){
+                actions?.globleRemoveElement(element?.parent_relation_uuid)
+                user_delete_element({'parent_relation_uuid':element?.parent_relation_uuid}).then(res=>{console.log(res.data)})
+            }
         }
         const createChildElement = ()=>{
             const sudoElement = {name:'未命名'}

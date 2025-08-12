@@ -9,7 +9,15 @@ import _BlogPostDetail from './_BlogPostDetail'
 
 import {user_retrieve_blog_post} from '../../../api/blog_post'
 const BlogPostDetailCSR = ({  
-    template_nodes, node,  mode, actions, children, hierarchy, ...props}) => {
+    // template_nodes, node,  mode, actions, children, hierarchy, ...props,
+  
+  
+    element, 
+    elementProps,
+    mode,
+    actions,
+    ...props
+  }) => {
 
 
     const [blogPost, setBlogPost] = useState(null)
@@ -18,19 +26,21 @@ const BlogPostDetailCSR = ({
 
         // console.log(actions?.getStoreUUID())
         // console.log(actions)
-        if( blogPost===null && actions?.getStoreUUID() && node?.data?.preview_data?.uuid){
-            user_retrieve_blog_post(actions?.getStoreUUID(), node?.data?.preview_data?.uuid).then(res=>{
+        if( blogPost?.uuid!=element?.data?.preview_data?.uuid && actions?.getStoreUUID() && element?.data?.preview_data?.uuid){
+            user_retrieve_blog_post(actions?.getStoreUUID(), element?.data?.preview_data?.uuid).then(res=>{
                 console.log(res.data)
                 setBlogPost(res.data)
             })
         }
         
-    },[blogPost, actions, node?.data?.preview_data])
+    },[blogPost, actions, element?.data?.preview_data])
 
 
         return (
             <Fragment>
               <_BlogPostDetail 
+                element={element}
+                elementProps={elementProps}
                 blogPost={blogPost}
                 mode={mode}
                 {...props}

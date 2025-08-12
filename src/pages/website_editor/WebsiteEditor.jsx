@@ -406,7 +406,6 @@ const WebsiteEditor = () => {
 
   //init keydown shortcut
   const keyDownShoutCutHandler = (e)=>{
-    console.log(e?.key)
     if ((e?.key||'').toLowerCase() === 'e' && e.ctrlKey|| e.metaKey) {
 
     }
@@ -419,20 +418,22 @@ const WebsiteEditor = () => {
     else if ((e?.key||'').toLowerCase() === 'd' && e.ctrlKey|| e.metaKey){
 
     }
-    else if ((e?.key||'').toLowerCase() === 'c' && e.ctrlKey|| e.metaKey){
+    else if ((e?.key||'').toLowerCase() === 'c' && e.ctrlKey|| e.metaKey && editorMemory?.selectedTool=='iCursor'){
         if(!editorMemory?.cursor){
           console.log('no selected element or webpage')
         }else{
           console.log(editorMemory?.cursor)
-          dispatch(setClipBoard(JSON.parse(JSON.stringify(editorMemory?.cursor))))
+          if(confirm('複製')){
+            dispatch(setClipBoard(JSON.parse(JSON.stringify(editorMemory?.cursor))))
+          }
         }
-    }else if ((e?.key||'').toLowerCase() === 'v' && e.ctrlKey|| e.metaKey){
+    }else if ((e?.key||'').toLowerCase() === 'v' && e.ctrlKey|| e.metaKey && editorMemory?.selectedTool=='iCursor'){
         if(!editorMemory?.clipBoard){
           console.log('no copied element or webpage')
           return
         }
-
         console.log(editorMemory?.clipBoard)
+        if(!confirm('確認貼上')) return;
         if(editorMemory?.cursor?.type=='webpage'){
   
           webpageCheckDropValidHelper(editorMemory?.clipBoard?.type, null, 
@@ -523,6 +524,7 @@ const WebsiteEditor = () => {
     editorMemory?.cursor,
     editorMemory?.clipBoard,
     editorMemory?.cursorDirection,
+    editorMemory?.selectedTool,
     website,
     socket
   ]);

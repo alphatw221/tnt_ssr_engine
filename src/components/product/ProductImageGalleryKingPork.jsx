@@ -8,7 +8,7 @@ import "yet-another-react-lightbox/plugins/thumbnails.css";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
-import Swiper, { SwiperSlide } from "../../components/swiper/SwiperSlider";
+import Swiper, { SwiperSlide } from "../swiper/SwiperSlider";
 
 const ProductImageGallery = ({ product, selectedProduct }) => {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
