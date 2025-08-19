@@ -5,10 +5,10 @@ import ReactDOM from 'react-dom/client';
 import { createPortal } from 'react-dom';
 
 
-function MyModal({ isOpen, onClose, title, children }) {
+function MyModal({ isOpen, onClose, title, placement, children }) {
 
 
-  const [placement, setPlacement] = useState('right')
+  const [_placement, setPlacement] = useState(placement||'right')
   useEffect(() => {
 
     if (isOpen) {
@@ -37,11 +37,11 @@ function MyModal({ isOpen, onClose, title, children }) {
 
   const modal = (
     <div className={`${style["modal-backdrop"]}`} onClick={handleClickBackground}>
-      <div className={`${style["modal-content"]} ${style?.[placement||'center-full']}`}>
+      <div className={`${style["modal-content"]} ${style?.[_placement||'center-full']}`}>
         <div className={`${style["top-right"]}`}>
           {
-            placement=='center-full' ?
-            <button className={`${style["modal-right"]}`} onClick={()=>{setPlacement('right')}}>
+            _placement=='center-full' ?
+            <button className={`${style["modal-right"]}`} onClick={()=>{setPlacement(placement||'right')}}>
               最小化
             </button>
             :

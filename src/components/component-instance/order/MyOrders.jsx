@@ -100,31 +100,6 @@ const MyOrders = ({
     const dispatch = useAppDispatch()
     
 
-    
-    
-    // const searchOrders = (status, page, page_size)=>{
-    //   customer_search_order({
-    //     'status':status, 
-    //     'page':page, 
-    //     'page_size':page_size}).then(res=>{
-
-    //       console.log(res.data)
-    //       dispatch(setCacheKey({
-    //           'key':element?.uuid,
-    //           status,
-    //           page,
-    //           page_size,
-    //           'results':res.data?.results||[],
-    //           'count':res.data?.count||0,
-
-    //           'awaiting_payment_count':res?.data?.awaiting_payment_count||0,
-    //           'awaiting_deliver_count':res?.data?.awaiting_deliver_count||0,
-    //           'awaiting_receive_count':res?.data?.awaiting_receive_count||0,
-    //       }))
-    //   })
-    // }
-
-
     useEffect(()=>{
 
         if(![undefined, null, ''].includes(Cookies.get('customer_access_token')) ||
@@ -132,38 +107,40 @@ const MyOrders = ({
                  ![undefined, null, ''].includes(new URLSearchParams(window.location.search).get('guest_uuid'))
         ){
 
+   
+            if(
+              !cache?.[element?.uuid]||
+              (cache?.[element?.uuid]?.status||defaultStatus)!=status||
+              (cache?.[element?.uuid]?.page||defaultPage)!=page||
+              (cache?.[element?.uuid]?.pageSize||defaultPageSize)!=pageSize
+            ){
 
-          if(
-            !cache?.[element?.uuid]||
-            (cache?.[element?.uuid]?.status||defaultStatus)!=status||
-            (cache?.[element?.uuid]?.page||defaultPage)!=page||
-            (cache?.[element?.uuid]?.pageSize||defaultPageSize)!=pageSize
-          ){
+              customer_search_order({
+                'guest_uuid':new URLSearchParams(window.location.search).get('guest_uuid'),
+                'status':status, 
+                'page':page, 
+                'page_size':pageSize}).then(res=>{
 
-            customer_search_order({
-              'guest_uuid':new URLSearchParams(window.location.search).get('guest_uuid'),
-              'status':status, 
-              'page':page, 
-              'page_size':pageSize}).then(res=>{
+                  console.log(res.data)
+                  const myOrdersResult = {
+                      'key':element?.uuid,
+                      status,
+                      page,
+                      pageSize,
+                      selectedFilter,
+                      'results':res.data?.results||[],
+                      'count':res.data?.count||0,
 
-                console.log(res.data)
-                dispatch(setCacheKey({
-                    'key':element?.uuid,
-                    status,
-                    page,
-                    pageSize,
-                    selectedFilter,
-                    'results':res.data?.results||[],
-                    'count':res.data?.count||0,
-
-                    'awaiting_payment_count':res?.data?.awaiting_payment_count||0,
-                    'awaiting_deliver_count':res?.data?.awaiting_deliver_count||0,
-                    'awaiting_receive_count':res?.data?.awaiting_receive_count||0,
-                }))
-            })
+                      'awaiting_payment_count':res?.data?.awaiting_payment_count||0,
+                      'awaiting_deliver_count':res?.data?.awaiting_deliver_count||0,
+                      'awaiting_receive_count':res?.data?.awaiting_receive_count||0,
+                  }
+                  dispatch(setCacheKey(myOrdersResult))
+              })
 
 
-          }
+            }
+          
 
             
         }else{
@@ -306,6 +283,8 @@ const MyOrders = ({
 
             {
               (cache?.[element?.uuid]?.results||[]).length>0 &&
+
+              <Fragment>
               <table className={clsx(style['訂單-表格'], '訂單-表格')}>
                 <thead className={clsx(style['表格-頭段'], '表格-頭段')}>
                   <tr className={clsx(style['表格-列'], '表格-列')}>
@@ -411,7 +390,11 @@ const MyOrders = ({
                   }
                 </tbody>
 
-                <div className={clsx(style['分頁器框'], "分頁器框")}>
+                
+
+
+              </table>
+              <div className={clsx(style['分頁器框'], "分頁器框")}>
                     {/* <Paginator
                         totalRecords={(cache?.[element?.uuid]?.count||0)}
                         pageLimit={pageSize}
@@ -425,10 +408,8 @@ const MyOrders = ({
                         pagePrevText="«"
                         pageNextText="»"
                     /> */}
-                </div>
-
-
-              </table>
+              </div>
+              </Fragment>
             }
 
          </div>)

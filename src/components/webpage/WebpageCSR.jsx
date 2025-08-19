@@ -6,6 +6,7 @@ import Element from "@/components/element/Element";
 // import WebpageHead from './WebpageHead';
 import React, { Fragment, useState, useEffect ,lazy, useRef } from "react";
 import {convertToReactProps} from '@/lib/utils/propsConverter.js'
+import StoreSettingsPreloader from "@/components/website/StoreSettingsPreloader";
 
 const WebpageCSR =  ({ website, webpage, ...props})=>{
 
@@ -73,6 +74,8 @@ const WebpageCSR =  ({ website, webpage, ...props})=>{
             {
                 (webpage?.body_elements||[]).map((e,i)=><Element key={i} element={e} {...props}/>)
             }
+
+            <StoreSettingsPreloader bonus_point_policy={website?.bonus_point_policy} e_commerce_settings={website?.e_commerce_settings}/>
       </Fragment>
     )
 

@@ -5,7 +5,7 @@
   "scripts": {
     "start": "dotenvx run -- nodemon",
     "dev": "dotenvx run --env-file=.env.prod.local -- nodemon",
-    "build:client":"vite build --mode production"
+    "build:client": "vite build --mode production"
   },
   "main": "server.js",
   "license": "MIT",

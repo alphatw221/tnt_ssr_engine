@@ -7,7 +7,7 @@
 
 
 
-    .upload_file_tab{
+    .upload-file-tab{
         padding: 5%;
         display: flex;
         flex-direction: column;
@@ -155,3 +155,56 @@
 
 
 }
+
+.actions-container{
+    margin-top: 20px;
+    text-align: center;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+.remove-button{
+    cursor: pointer;
+    &:hover{
+        transform: scale(1.1);
+    }
+}
+.upload-button{
+    cursor: pointer;
+    &:hover{
+        transform: scale(1.1);
+    }
+}
+
+ .file-upload {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .file-upload input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+    height: 100%;
+    width: 100%;
+  }
+
+  .file-upload-btn {
+    display: inline-block;
+    background-color: #130ba9; /* Tailwind 的 indigo-600 */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .file-upload-btn:hover {
+    background-color: #4339ab; /* hover 色 */
+  }

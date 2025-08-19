@@ -9,7 +9,7 @@ import style from './OrderPayment.module.scss'
 // import { faHouse, faGear, faBars } from '@fortawesome/free-solid-svg-icons'
 
 // import { useSelector, useDispatch } from "react-redux"; 
-import { useAppSelector } from "@/redux/hooks";           
+// import { useAppSelector } from "@/redux/hooks";           
 // import { setSideMenuActive, setComponentMenuActive} from '../../store/slices/website-editor-slice'
 
 
@@ -29,8 +29,11 @@ const CashOnDelivery = lazy(()=>import("./payment-method/CashOnDelivery"))
 
 const OrderPayment = ({  
     // node,  mode, actions, update, routingTable, ...props,
-    routingTable,
+    
+    guestUUID,
+    objectUUID,
 
+    routingTable,
     element, 
     elementProps,
     mode,
@@ -43,13 +46,13 @@ const OrderPayment = ({
 
 
     
-    // const { order } = useAppSelector((state) => state.order);
+
     const [order, setOrder] = useState(null)
     const [selectPaymentServiceIndex, setSelectPaymentServiceIndex] = useState(null)
 
 
-    const object_id = '' // TODO
-    const searchParams = new URLSearchParams(window.location.search);
+
+
 
     const [paymentServices, setPaymentServices] = useState([])
     const [country, setCountry] = useState(null)
@@ -77,10 +80,10 @@ const OrderPayment = ({
     useEffect(()=>{
         if(![undefined, null, ''].includes(Cookies.get('customer_access_token')) ||
                 ![undefined, null, ''].includes(Cookies.get('guest_access_token')) ||
-                ![undefined, null, ''].includes(searchParams.get('guest_uuid'))
+                ![undefined, null, ''].includes(guestUUID)
         ){
-            if(order==null && object_id){
-                customer_retrieve_order({'order_uuid':object_id, 'guest_uuid':searchParams.get('guest_uuid')}).then(res=>{
+            if(order==null && objectUUID){
+                customer_retrieve_order({'order_uuid':objectUUID, 'guest_uuid':guestUUID}).then(res=>{
                     console.log(res.data)
                     setOrder(res.data)
                 })
@@ -89,11 +92,11 @@ const OrderPayment = ({
             const redirect = encodeURIComponent(location.pathname + location.search + location.hash)
             window.location.href = `/${routingTable?.['customer_login_route']}?redirect=${redirect}`
         }
-    },[object_id])
+    },[objectUUID])
 
     useEffect(()=>{
         if( !['', null, undefined].includes(order?.status) && order?.status!='awaiting_payment'){
-            window.location.href = `/${routingTable?.['order_route']}/${order?.uuid}?guest_uuid=${searchParams.get('guest_uuid')}`
+            window.location.href = `/${routingTable?.['order_route']}/${order?.uuid}?guest_uuid=${guestUUID}`
         }
     },[order])
 

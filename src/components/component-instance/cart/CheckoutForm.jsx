@@ -26,7 +26,7 @@ import { getToFixedNumber } from "@/lib/utils/toFixedHelper";
 import { customer_checkout_cart } from "@/api/cart";
 import GuestCheckoutNotification from '@/components/guest-checkout-notification/GuestCheckoutNotification'
 import Cookies from "js-cookie";
-import { deleteAllCartProduct } from "@/redux/slices/cart-slice";
+import { deleteAllCartProduct, setCartProducts } from "@/redux/slices/cart-slice";
 import { setCustomer} from "@/redux/slices/customer-slice";
 
 const CheckoutForm = ({  
@@ -101,6 +101,34 @@ const CheckoutForm = ({
     
     const [country, setCountry] = useState(null)
     
+
+    //cart products preloader ?
+    useEffect(()=>{
+        if(localStorage.getItem("cart_products")){
+            const _cartProducts = JSON.parse(localStorage.getItem("cart_products"));
+            dispatch(setCartProducts(_cartProducts));
+        }
+    },[])
+    //customer preloader ?
+    useEffect(()=>{
+            if(Cookies.get('customer_access_token')){
+                if(localStorage.getItem("customer")){
+                    const _customer = JSON.parse(localStorage.getItem("customer"));
+                    dispatch(setCustomer(_customer));
+                }else{
+                    // customer_get_account().then(res=>{
+                    //     console.log(res.data)
+                    //     localStorage.setItem("customer", JSON.stringify(res.data));
+                    //     dispatch(setCustomer(res.data))
+                    // }).catch(err=>{
+                    //     Cookies.remove('customer_access_token')
+                    // })
+                }
+            }else{
+                localStorage.removeItem("customer");
+                dispatch(setCustomer({uuid:null}))
+            }
+        },[])
     useEffect(()=>{   
         getClientIPCountryCode().then(_country=>{
             setCountry(_country)

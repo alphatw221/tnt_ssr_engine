@@ -172,7 +172,7 @@ const GuestCheckoutNotification = ({
 
                     <div className={clsx(style['按鈕框'], "按鈕框")}>
                         <div className={clsx(style['送出按鈕框'], "送出按鈕框")}>
-                            <button  desabled={awaitSubmitButton} className={clsx(style['送出按鈕'], "送出按鈕", awaitSubmitButton?`${style['等待']} 等待`:'')} disabled={awaitSubmitButton} onClick={()=>{verifyOTPCode()}} >確認</button>
+                            <button  desabled={awaitSubmitButton?"true":"false"} className={clsx(style['送出按鈕'], "送出按鈕", awaitSubmitButton?`${style['等待']} 等待`:'')} disabled={awaitSubmitButton} onClick={()=>{verifyOTPCode()}} >確認</button>
                         </div>
                         <div className={clsx(style['取消按鈕框'], '取消按鈕框')}>
                             <button className={clsx(style['取消按鈕'], '取消按鈕')} onClick={()=>{setShow(false)}} >取消</button>

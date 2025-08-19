@@ -1,8 +1,11 @@
 import { Fragment, useState, useEffect, createRef, useRef } from "react";
 import PropTypes from "prop-types";
+
 import { Modal } from "react-bootstrap";
 import Tab from "react-bootstrap/Tab";
 import Nav from "react-bootstrap/Nav";
+import Button from 'react-bootstrap/Button';
+
 import { useDispatch, useSelector } from "react-redux";
 import style from './SelectFileModal.module.scss'
 
@@ -11,9 +14,10 @@ import {user_upload_medium, user_list_medium, user_delete_medium} from '@/api/me
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {  faX, faTrash, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
 
-import Button from 'react-bootstrap/Button';
+import MyModal from '@/components/modal/MyModal.jsx'
 
-function SelectFileModal({ show, onHide, acceptType, filterType, setHoverFile, setSelectFile ,}) {
+
+const SelectFileModal = ({ show, onHide, acceptType, filterType, setHoverFile, setSelectFile ,})=>{
 
   const dispatch = useDispatch();
 
@@ -86,14 +90,56 @@ function SelectFileModal({ show, onHide, acceptType, filterType, setHoverFile, s
   }
 
   return (
-    <Modal show={show} onHide={onHide} className={style.modal} >
-    <Modal.Header closeButton className={style.modal_header}></Modal.Header>
-
-    <div className={style.modal_body}>
+    <MyModal isOpen={show} onClose={onHide} title='上傳媒體' placement='center'>
+      <div className={style['modal-body']}>
 
 
 
 
+         <div className={style['upload-file-tab']}>
+
+          {
+            previewFile 
+            ?
+            <div className={style['preview-container']}>
+
+              {
+                (fileType||'')?.startsWith('image/')?
+                <img src={previewFile} className={style['preview-image']}/>
+                :
+                (fileType||'')?.startsWith('video/')?
+                <video className={style['preview-image']} autoplay loop muted>
+                  <source src={previewFile} type={fileType}/>
+                </video>
+                :
+                <div style={{textAlign:'center'}}>{uploadFile?.name}</div>
+
+              }
+
+              {/* <FontAwesomeIcon className={style['remove_image_icon']} icon={faX} onClick={()=>{removeUploadFile()}} /> */}
+              <div className={style['actions-container']}>
+                <button  className={style['remove-button']}  onClick={()=>{removeUploadFile()}}>移除</button>
+                <button  className={style['upload-button']}  onClick={()=>{upload()}}>確定</button>
+              </div>
+              
+
+            </div>
+            :
+            <div className={style['file-upload']}>
+                <span className={style['file-upload-btn']}>📂 選擇檔案</span>
+                <input type={"file"} ref={fileInputRef} accept={acceptType} onChange={handleFileChange}/>
+            </div>
+          }
+
+
+          
+
+        </div>
+      </div>
+
+
+
+      {/* 
         <Tab.Container defaultActiveKey="uploadFile">
             <Nav
                 variant="pills"
@@ -109,11 +155,6 @@ function SelectFileModal({ show, onHide, acceptType, filterType, setHoverFile, s
                     <h4>我的檔案</h4>
                 </Nav.Link>
                 </Nav.Item>
-                {/* <Nav.Item>
-                <Nav.Link eventKey="publicFile">
-                    <h4>檔案素材</h4>
-                </Nav.Link>
-                </Nav.Item> */}
           </Nav>
           <Tab.Content>
             <Tab.Pane eventKey="uploadFile">
@@ -145,7 +186,7 @@ function SelectFileModal({ show, onHide, acceptType, filterType, setHoverFile, s
                   </div>
                   :
                   <input ref={fileInputRef} type={"file"} accept={acceptType} onChange={handleFileChange} 
-                  // onClick={(e)=>{console.log(e)}}
+
                   />
                 }
 
@@ -226,25 +267,19 @@ function SelectFileModal({ show, onHide, acceptType, filterType, setHoverFile, s
                 }
               </div>
             </Tab.Pane>
-            {/* <Tab.Pane eventKey="publicFile">
-              <div className={style.public_files_tab}>
-                
-              </div>
-            </Tab.Pane> */}
+       
           </Tab.Content>
-        </Tab.Container>
+        </Tab.Container> */}
+    </MyModal>
+    
+
+
+
         
-    </div>
-  </Modal>
+
   );
 }
 
-SelectFileModal.propTypes = {
-  onHide: PropTypes.func,
-  show: PropTypes.bool,
-  acceptType: PropTypes.array, 
-  setHoverFile: PropTypes.func, 
-  setSelectFile: PropTypes.func,
-};
+
 
 export default SelectFileModal;

@@ -13,6 +13,7 @@ import Cookies from "js-cookie";
 
 import OrderItemsSummary from "./OrderItemsSummary"
 import PaymentInfo from "./payment-info/PaymentInfo"
+// import { useParams, useSearchParams } from "react-router-dom";
 
 const OrderDetail = ({  
     // node,  mode, actions, update, routingTable, ...props
@@ -21,6 +22,8 @@ const OrderDetail = ({
     // elementProps,
     // mode,
     // ...props
+    guestUUID, 
+    objectUUID,
 
     routingTable,
     element, 
@@ -30,23 +33,23 @@ const OrderDetail = ({
 
 }) => {
 
-
+    // const params = useParams()
     // let { pathname } = useLocation();
     // let { object_id } = useParams();
-    // let searchParams = useSearchParams()
+    // const searchParams = useSearchParams()
+    // const searchParams = new URLSearchParams(window.location.search);
+
+
+
     const [order, setOrder] = useState(null)
-
-    const searchParams = new URLSearchParams(window.location.search);
-
-    const object_id = '' //TODO
     useEffect(()=>{
         
         if(![undefined, null, ''].includes(Cookies.get('customer_access_token')) ||
          ![undefined, null, ''].includes(Cookies.get('guest_access_token')) ||
-         ![undefined, null, ''].includes(searchParams.get('guest_uuid'))
+         ![undefined, null, ''].includes(guestUUID)
         ){
-            if(order==null && object_id){
-                customer_retrieve_order({'order_uuid':object_id, 'guest_uuid':searchParams.get('guest_uuid')}).then(res=>{
+            if(order==null && objectUUID){
+                customer_retrieve_order({'order_uuid':objectUUID, 'guest_uuid':guestUUID}).then(res=>{
                   console.log(res.data)
                   setOrder(res.data)
                 }).catch(err=>{
@@ -56,8 +59,8 @@ const OrderDetail = ({
         }else{
             window.location.href = `/${routingTable?.['customer_login_route']}?redirect=${encodeURIComponent(location.pathname + location.search + location.hash)}`
         }
-    },[object_id])
-
+    },[objectUUID])
+    //TODO SSR. 把window.__ssr__ object_id 抓出來
     const order_status = {
         'awaiting_payment':'待付款',
         'awaiting_deliver':'處理中',
@@ -128,7 +131,7 @@ const OrderDetail = ({
                 <span className={clsx(style['訂單狀態'], '訂單狀態', `${order_status?.[order?.status]}`)}>{order_status?.[order?.status]}</span>
 
                 {(order?.status=='awaiting_payment') && 
-                <a className={clsx(style['付款-超連結'], '付款-超連結')} href={`/${routingTable?.['order_payment_route']}/${order?.uuid}?guest_uuid=${searchParams.get('guest_uuid')}`}> 去付款</a>}
+                <a className={clsx(style['付款-超連結'], '付款-超連結')} href={`/${routingTable?.['order_payment_route']}/${order?.uuid}?guest_uuid=${guestUUID}`}> 去付款</a>}
 
             </div>
             

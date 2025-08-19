@@ -13,8 +13,8 @@ import CartDetail from "@/components/component-instance/cart/CartDetail"
 import CheckoutForm from "@/components/component-instance/cart/CheckoutForm"
 import CartButton from "@/components/component-instance/cart/CartButton"
 import MyOrders from "@/components/component-instance/order/MyOrders"
-import OrderDetail from "@/components/component-instance/order/OrderDetail"
-import OrderPayment from "@/components/component-instance/order/OrderPayment"
+import OrderDetailSSR from "@/components/component-instance/order/OrderDetailSSR"
+import OrderPaymentSSR from "@/components/component-instance/order/OrderPaymentSSR"
 import MyAccountButton from "../component-instance/MyAccountButton"
 import WebsiteSearchBar from "../component-instance/WebsiteSearchBar"
 import GoogleMap from "../component-instance/GoogleMap"
@@ -58,10 +58,10 @@ const TypeElementSSR = ({
             return (<CheckoutForm 
                 element={element}  {...props}/>) 
         case 'order_detail':
-            return (<OrderDetail 
+            return (<OrderDetailSSR 
                 element={element}  {...props}/>)  
         case 'order_payment':
-            return (<OrderPayment 
+            return (<OrderPaymentSSR 
             element={element}  {...props}/>)  
         case 'my_orders':
             return (<MyOrders 
