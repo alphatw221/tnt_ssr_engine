@@ -1,6 +1,7 @@
 
 import Element from "@/components/element/Element";
 import React, { Fragment,  } from "react";
+import {convertToReactProps} from '@/lib/utils/propsConverter.js'
 
 
 const WebpageBody =  ({ website, webpage, ...props})=>{
@@ -19,13 +20,22 @@ const WebpageBody =  ({ website, webpage, ...props})=>{
         'blog_post_route':website?.data?.blog_post_route,
     }
 
+    const webpageProps = {
+        ...(webpage?.props||{}),
+        class: [webpage?.props?.class||'', webpage?.uuid||''].filter(Boolean).join(" "),
+    };
+    
+    const reactWebpageProps = convertToReactProps(webpageProps)
+    
+
+
     // 動態
     return(
-      <Fragment>
+      <div {...reactWebpageProps}>
         {
             (webpage?.body_elements||[]).map((e,i)=><Element key={i} element={e} routingTable={routingTable} {...props}/>)
         }
-      </Fragment>
+      </div>
     )
 
 }

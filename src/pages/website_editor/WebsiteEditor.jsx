@@ -23,7 +23,7 @@ import { useAppDispatch, useAppSelector} from '@/redux/hooks'
 import { user_retrieve_website }from "@/api/website"
 import { user_r_action_to_element} from "@/api/element"
 
-import cogoToast from 'cogo-toast';
+
 // import CSRWebsite from "@/components/website/CSRWebsite";
 import Cookies from 'js-cookie'
 
@@ -32,8 +32,8 @@ import Cookies from 'js-cookie'
 
 import {
   websiteFindAndReplaceElement, 
-  websiteFindAndReplaceElementData, 
   websiteFindAndRemoveElement,
+  websiteFindAndRemoveElementRelation,
   websiteFindElement, 
   websiteFindAndInsertElement,
   websiteFindAndInsertChildElement,
@@ -47,7 +47,7 @@ import {
 import { initSocketConnection } from '@/lib/utils/socket.js'
 
 
-import { user_delete_element, user_r_create_element} from '@/api/element.js'
+
 import { user_create_webpage , user_update_webpage, user_delete_webpage, user_r_action_to_webpage} from '@/api/webpage.js'
 import { elementCheckDropValidHelper,  webpageCheckDropValidHelper} from "@/lib/utils/dragDropHelperV2";
 // import { checkDropValidHelper } from "@/lib/utils/dragDropHelper";
@@ -116,27 +116,82 @@ const WebsiteEditor = () => {
     }
 
     const collaboratorUpdateElement = (element, sender_socket_id)=>{
-      const _element = JSON.parse(element)
-      console.log(_element)
-      const _website = JSON.parse(JSON.stringify(website))
+      
+      
+      
       if(socket?.id!=sender_socket_id){
-        console.log('websiteFindAndReplaceElementData')
-        websiteFindAndReplaceElementData(_website, _element)
+        const _website = JSON.parse(JSON.stringify(website))
+        console.log('websiteFindAndReplaceElement')
+        const _element = JSON.parse(element)
+        console.log(_element)
+        websiteFindAndReplaceElement(_website, _element?.uuid, _element)
         setWebsite(_website)
       }
     }
   
-    const collaboratorRemoveElement = (parent_relation_uuid, sender_socket_id)=>{
-      const _website = JSON.parse(JSON.stringify(website))
+    const collaboratorRemoveElement = (element_uuid, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
-        websiteFindAndRemoveElement(_website, parent_relation_uuid)
+        const _website = JSON.parse(JSON.stringify(website))
+        websiteFindAndRemoveElement(_website, element_uuid)
         setWebsite(_website)
       }
     }
-  
+    const collaboratorRemoveElementRelation = (parent_relation_uuid, sender_socket_id)=>{
+      if(socket?.id!=sender_socket_id){
+        const _website = JSON.parse(JSON.stringify(website))
+        websiteFindAndRemoveElementRelation(_website, parent_relation_uuid)
+        setWebsite(_website)
+      }
+    }
+    const collaboratorDoElementAction = (action, source_element_relation_uuid, new_parent_relation_uuid, target_webpage_uuid, target_webpage_position, target_element_relation_uuid, target_relative_position, sender_socket_id)=>{
+      if(socket?.id!=sender_socket_id){
+        const _website = JSON.parse(JSON.stringify(website))
+        const sourceElement = websiteFindElement(_website, source_element_relation_uuid)
+        const newElement = {...sourceElement, parent_relation_uuid:new_parent_relation_uuid}
+
+
+        if(action=='move'){
+          websiteFindAndRemoveElementRelation(_website, source_element_relation_uuid)
+        }
+
+        if(![null, undefined, '', 'null', 'undefined'].includes(target_webpage_uuid)){
+          _addWebpageElement(_website, target_webpage_uuid, target_webpage_position, newElement)
+        }else{
+          if(target_relative_position=='before'){
+            websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 0)
+          }else if(target_relative_position=='after'){
+            websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 1)
+          }else if(target_relative_position=='in'){
+            websiteFindAndInsertChildElement(_website, target_element_relation_uuid, 0, 0, newElement)
+          }
+        }
+        setWebsite(_website)
+       
+      }
+    }
+
+    const collaboratorCreateElement = (element, new_parent_relation_uuid, target_webpage_uuid, target_webpage_position, target_element_relation_uuid, target_relative_position, sender_socket_id)=>{
+      if(socket?.id!=sender_socket_id){
+        const _website = JSON.parse(JSON.stringify(website))
+        const newElement = {...element, parent_relation_uuid:new_parent_relation_uuid}
+        if(![null, undefined, '', 'null', 'undefined'].includes(target_webpage_uuid)){
+          _addWebpageElement(_website, target_webpage_uuid, target_webpage_position, newElement)
+        }else{
+          if(target_relative_position=='before'){
+            websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 0)
+          }else if(target_relative_position=='after'){
+            websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 1)
+          }else if(target_relative_position=='in'){
+            websiteFindAndInsertChildElement(_website, target_element_relation_uuid, 0, 0, newElement)
+          }
+        }
+        setWebsite(_website)
+      } 
+    }
+
     const collaboratorUpdateWebsite = (_website, sender_socket_id)=>{
-      _website = JSON.parse(_website)
       if(socket?.id!=sender_socket_id){
+        _website = JSON.parse(_website)
         setWebsite(_website)
       }
     }
@@ -165,17 +220,23 @@ const WebsiteEditor = () => {
     socket?.on('website_collabtory_roommate_left', onWebsiteCollabtoryRoommateLeft)
     socket?.on('website_collabtory_roommate_join', onWebsiteCollabtoryRoommateJoin)
     socket?.on('collaborator_state_update', onCollaboratorStateUpdate)
+    socket?.on('collaborator_do_element_action', collaboratorDoElementAction)
+    socket?.on('collaborator_create_element', collaboratorCreateElement)
     socket?.on('collaborator_update_element', collaboratorUpdateElement)
     socket?.on('collaborator_remove_element', collaboratorRemoveElement)
+    socket?.on('collaborator_remove_element_relation', collaboratorRemoveElementRelation)
     socket?.on('collaborator_update_website', collaboratorUpdateWebsite)
 
     return ()=>{
       socket?.off('connect', onConnect)
       socket?.off('website_collabtory_roommate_left', onWebsiteCollabtoryRoommateLeft)
       socket?.off('website_collabtory_roommate_join', onWebsiteCollabtoryRoommateJoin)
-      socket?.off('collaborator_state_update', onCollaboratorStateUpdate)
+      socket?.off('collaborator_state_update', onCollaboratorStateUpdate);
+      socket?.off('collaborator_do_element_action', collaboratorDoElementAction);
+      socket?.off('collaborator_create_element', collaboratorCreateElement);
       socket?.off('collaborator_update_element', collaboratorUpdateElement);
       socket?.off('collaborator_remove_element', collaboratorRemoveElement);
+      socket?.off('collaborator_remove_element_relation', collaboratorRemoveElementRelation);
       socket?.off('collaborator_update_website', collaboratorUpdateWebsite);
 
     }
@@ -190,44 +251,46 @@ const WebsiteEditor = () => {
   const globleMoveNextTo = (sourceElement, targetElement, after)=>{
     const _website = JSON.parse(JSON.stringify(website))
     const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
-    websiteFindAndRemoveElement(_website, sourceElement?.parent_relation_uuid)
+    websiteFindAndRemoveElementRelation(_website, sourceElement?.parent_relation_uuid)
     websiteFindAndInsertElement(_website, targetElement?.parent_relation_uuid, sourceElementClone, after)
     setWebsite(_website)
   }
   const globleMoveInto = (sourceElement, targetElement, sequence, after)=>{
     const _website = JSON.parse(JSON.stringify(website))
     const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
-    websiteFindAndRemoveElement(_website, sourceElement?.parent_relation_uuid)
+    websiteFindAndRemoveElementRelation(_website, sourceElement?.parent_relation_uuid)
     websiteFindAndInsertChildElement(_website, targetElement?.parent_relation_uuid, sequence, after, sourceElementClone)
     setWebsite(_website)
   }
-  const globleInsertNextTo = (sourceElement, targetElement, after)=>{
+  const globleInsertNextTo = (sourceElement, targetParentRelationUUID, after)=>{
     const _website = JSON.parse(JSON.stringify(website))
     const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
-    websiteFindAndInsertElement(_website, targetElement?.parent_relation_uuid, sourceElementClone, after)
+    websiteFindAndInsertElement(_website, targetParentRelationUUID, sourceElementClone, after)
     setWebsite(_website)
   }
 
-  const globleInsertInto = (sourceElement, targetElement, sequence, after)=>{
+  const globleInsertInto = (sourceElement, targetParentRelationUUID, sequence, after)=>{
     const _website = JSON.parse(JSON.stringify(website))
     const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
-    websiteFindAndInsertChildElement(_website, targetElement?.parent_relation_uuid, sequence, after, sourceElementClone)
+    websiteFindAndInsertChildElement(_website, targetParentRelationUUID, sequence, after, sourceElementClone)
     setWebsite(_website)
+    return _website
   }
 
-  const globleUpdateElement = (element)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    websiteFindAndReplaceElement(_website, element)
+  const globleUpdateElement = (element_uuid, element, __website)=>{
+    const _website = __website?__website:JSON.parse(JSON.stringify(website))
+    websiteFindAndReplaceElement(_website, element_uuid, element)
     setWebsite(_website)
+    return _website
   }
 
   const globleRemoveElement = (target_parent_relation_uuid)=>{
     const _website = JSON.parse(JSON.stringify(website))
-    websiteFindAndRemoveElement(_website, target_parent_relation_uuid)
+    websiteFindAndRemoveElementRelation(_website, target_parent_relation_uuid)
     setWebsite(_website)
   }
 
-  const globleFindNode = (target_parent_relation_uuid)=>{
+  const globleFindElement = (target_parent_relation_uuid)=>{
     return websiteFindElement(website, target_parent_relation_uuid)
   }
 
@@ -264,7 +327,7 @@ const WebsiteEditor = () => {
   const moveIntoWebpageBody = (sourceElement, targetWebpage, sequence)=>{
     const _website = JSON.parse(JSON.stringify(website))
     const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
-    websiteFindAndRemoveElement(_website, sourceElement?.parent_relation_uuid)
+    websiteFindAndRemoveElementRelation(_website, sourceElement?.parent_relation_uuid)
     for(let i=0;i<(_website?.webpages||[]).length;i++){
       if(_website?.webpages[i]?.uuid===targetWebpage?.uuid){
         _website.webpages?.[i]?.body_elements?.splice(sequence, 0, sourceElementClone)
@@ -276,7 +339,7 @@ const WebsiteEditor = () => {
   const moveIntoWebpageHead = (sourceElement, targetWebpage, sequence)=>{
     const _website = JSON.parse(JSON.stringify(website))
     const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
-    websiteFindAndRemoveElement(_website, sourceElement?.parent_relation_uuid)
+    websiteFindAndRemoveElementRelation(_website, sourceElement?.parent_relation_uuid)
     for(let i=0;i<(_website?.webpages||[]).length;i++){
       if(_website?.webpages[i]?.uuid===targetWebpage?.uuid){
         _website.webpages?.[i]?.head_elements?.splice(sequence, 0, sourceElementClone)
@@ -317,16 +380,20 @@ const WebsiteEditor = () => {
     setWebsite(_website)
   }
 
+  const _addWebpageElement = (_website, webpage_uuid, position, _element)=>{
+    _website.webpages=(_website.webpages||[]).map((w)=>
+      w.uuid==webpage_uuid
+      ?
+      position==='head'?{...w, head_elements:[_element, ...(w?.head_elements||[])]}:{...w, body_elements:[_element, ...(w?.body_elements||[])]}
+      :
+      w
+    )
+  }
   const addWebpageElement = (webpage_uuid, position, _element)=>{
     const _website = JSON.parse(JSON.stringify(website))
-    _website.webpages=(_website.webpages||[]).map((w)=>
-    w.uuid==webpage_uuid
-    ?
-    position==='head'?{...w, head_elements:[_element, ...(w?.head_elements||[])]}:{...w, body_elements:[_element, ...(w?.body_elements||[])]}
-    :
-    w
-  )
+    _addWebpageElement(_website, webpage_uuid, position, _element)
     setWebsite(_website)
+    return _website
   }
 
 
@@ -395,7 +462,7 @@ const WebsiteEditor = () => {
       globleInsertInto,
       globleUpdateElement,
       globleRemoveElement,
-      globleFindNode,
+      globleFindElement,
       getWebsiteUUID,
       getStoreUUID,
       updateWebsiteSettings,
@@ -444,7 +511,7 @@ const WebsiteEditor = () => {
                 insertIntoWebpageHead(editorMemory?.clipBoard?.data, editorMemory?.cursor?.data, 0)
                 user_r_action_to_element({
                   'parent_relation_uuid':editorMemory?.clipBoard?.data?.parent_relation_uuid,
-                  'action':e?.shiftKey?'share':'clone',
+                  'action':e?.shiftKey?'mirror':'clone',
                   'target_webpage_uuid':editorMemory?.cursor?.data?.uuid,
                   'target_webpage_position':'head',
                 }).then(res=>{console.log(res.data)})
@@ -452,7 +519,7 @@ const WebsiteEditor = () => {
                 insertIntoWebpageBody(editorMemory?.clipBoard?.data, editorMemory?.cursor?.data, 0)
                 user_r_action_to_element({
                   'parent_relation_uuid':editorMemory?.clipBoard?.data?.parent_relation_uuid,
-                  'action':e?.shiftKey?'share':'clone',
+                  'action':e?.shiftKey?'mirror':'clone',
                   'target_webpage_uuid':editorMemory?.cursor?.data?.uuid,
                   'target_webpage_position':'body',
                 }).then(res=>{console.log(res.data)})
@@ -474,19 +541,19 @@ const WebsiteEditor = () => {
           elementCheckDropValidHelper(editorMemory?.clipBoard?.data, editorMemory?.cursor?.data,
             ()=>{
               if(editorMemory?.cursor?.position=='in'){
-                globleInsertInto(editorMemory?.clipBoard?.data, editorMemory?.cursor?.data, 0, 0)
+                globleInsertInto(editorMemory?.clipBoard?.data, editorMemory?.cursor?.data?.parent_relation_uuid, 0, 0)
                 user_r_action_to_element({
                   'parent_relation_uuid':editorMemory?.clipBoard?.data?.parent_relation_uuid, 
-                  'action':e?.shiftKey?'share':'clone',
+                  'action':e?.shiftKey?'mirror':'clone',
                   'target_webpage_uuid':null, 
                   'target_element_relation_uuid':editorMemory?.cursor?.data?.parent_relation_uuid, 
                   'target_relative_position':'in'
                 }).then(res=>{console.log(res.data)})
               }else{
-                globleInsertNextTo(editorMemory?.clipBoard?.data, editorMemory?.cursor?.data, editorMemory?.cursor?.position=='after'?1:0)
+                globleInsertNextTo(editorMemory?.clipBoard?.data, editorMemory?.cursor?.data?.parent_relation_uuid, editorMemory?.cursor?.position=='after'?1:0)
                 user_r_action_to_element({
                   'parent_relation_uuid':editorMemory?.clipBoard?.data?.parent_relation_uuid, 
-                  'action':e?.shiftKey?'share':'clone',
+                  'action':e?.shiftKey?'mirror':'clone',
                   'target_webpage_uuid':null, 
                   'target_element_relation_uuid':editorMemory?.cursor?.data?.parent_relation_uuid, 
                   'target_relative_position':editorMemory?.cursor?.position
@@ -495,10 +562,10 @@ const WebsiteEditor = () => {
             },
             ()=>{},
             ()=>{
-              globleInsertNextTo(editorMemory?.clipBoard?.data, editorMemory?.cursor?.data, editorMemory?.cursor?.position=='after'?1:0)
+              globleInsertNextTo(editorMemory?.clipBoard?.data, editorMemory?.cursor?.data?.parent_relation_uuid, editorMemory?.cursor?.position=='after'?1:0)
               user_r_action_to_element({
                   'parent_relation_uuid':editorMemory?.clipBoard?.data?.parent_relation_uuid, 
-                  'action':e?.shiftKey?'share':'clone',
+                  'action':e?.shiftKey?'mirror':'clone',
                   'target_webpage_uuid':null, 
                   'target_element_relation_uuid':editorMemory?.cursor?.data?.parent_relation_uuid, 
                   'target_relative_position':editorMemory?.cursor?.position

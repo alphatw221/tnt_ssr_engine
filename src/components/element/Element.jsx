@@ -33,7 +33,7 @@ const Element = ({ element, ...props}) => {
         const mergedProps = {
             ...((element?.template||{})?.props||{}),
             ...(element?.props||{}),
-            class: [element?.props?.class||'', element?.parent_relation_uuid||'', element?.uuid||''].filter(Boolean).join(" "),
+            class: [(element?.props?.class||'').replace('\n', ' '), element?.parent_relation_uuid||'', element?.uuid||''].filter(Boolean).join(" "),
         };
 
         const reactMergedProps = convertToReactProps(mergedProps)

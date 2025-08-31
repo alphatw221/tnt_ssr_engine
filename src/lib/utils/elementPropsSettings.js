@@ -10,7 +10,7 @@ export function getElementPropsSettingsA(element){
 
     return [
         {"type":"accordion",  "key":`expand_props_accordion`, "name":'屬性', "accordion_items":[
-            {"key": "class", "name": "類別", "type": "input",  "inputType": "text"  }, 
+            {"key": "class", "name": "類別", "type": "textarea",  "inputType": "text"  }, 
         ]},
     ]       
     

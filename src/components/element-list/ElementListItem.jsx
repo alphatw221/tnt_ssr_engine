@@ -23,7 +23,7 @@ import { elementCheckDropValidHelper } from "../../lib/utils/dragDropHelperV2";
 import { getElementPropsSettingsA, getElementPropsSettingsB } from "@/lib/utils/elementPropsSettings"
 import { getElementDataSettings } from "@/lib/utils/elementDataSettings"
 import { getElementBaseSettingsA, getElementBaseSettingsB } from "@/lib/utils/elementBaseSettings"
-
+import { v4 as uuidv4 } from 'uuid';
 const ElementListItem =({
     element, 
     actions, 
@@ -60,7 +60,7 @@ const ElementListItem =({
             'element_uuid':_element?.uuid, 
             'data':_element
         }).then(res=>{console.log(res.data)})
-        actions?.globleUpdateElement(_element)
+        actions?.globleUpdateElement(_element?.uuid, _element)
     }
     const updateElementProps = (props)=>{
         updateElement({...element, props:props})
@@ -256,15 +256,22 @@ const removeElement = ()=>{
     }
 }
 const createChildElement = ()=>{
-    const sudoElement = {name:'未命名'}
+
+    const tempUUID = uuidv4()
+    const sudoElement = {uuid:tempUUID, name:'未命名'}
+
+    let _website = actions?.globleInsertInto(sudoElement, element?.parent_relation_uuid, 0, 0)
+    _website = JSON.parse(JSON.stringify(_website))
     user_r_create_element({
                 'target_webpage_uuid':null, 
                 'target_webpage_position':null,
                 'target_element_relation_uuid':element?.parent_relation_uuid, 
                 'target_relative_position':'in', 
                 'data':sudoElement
-    }).then(res=>{console.log(res.data)})
-    actions?.globleInsertInto(sudoElement, element, 0, 0)
+    }).then(res=>{
+        _website = actions?.globleUpdateElement(tempUUID, res.data, _website)
+    })
+    
 }
 
 

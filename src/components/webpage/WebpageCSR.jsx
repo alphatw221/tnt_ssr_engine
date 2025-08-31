@@ -16,32 +16,40 @@ const WebpageCSR =  ({ website, webpage, ...props})=>{
 
 
 
-    const getRoute = (route)=>{
-        return website?.data?.[route]||route;
-    }
+    // const getRoute = (route)=>{
+    //     return website?.data?.[route]||route;
+    // }
 
-    const getRoutingTable = ()=>{
-      return {
-        'customer_login_route':website?.data?.customer_login_route,
-        'customer_register_route':website?.data?.customer_register_route,
-        'cart_route':website?.data?.cart_route,
-        'checkout_route':website?.data?.checkout_route,
-        'order_route':website?.data?.order_route,
-        'my_orders_route':website?.data?.my_orders_route,
-        'order_payment_route':website?.data?.order_payment_route,
-        'shop_route':website?.data?.shop_route,
-        'product_route':website?.data?.product_route,
-        'blog_route':website?.data?.blog_route,
-        'blog_post_route':website?.data?.blog_post_route,
-      }
-    }
+    // const getRoutingTable = ()=>{
+    //   return {
+    //     'customer_login_route':website?.data?.customer_login_route,
+    //     'customer_register_route':website?.data?.customer_register_route,
+    //     'cart_route':website?.data?.cart_route,
+    //     'checkout_route':website?.data?.checkout_route,
+    //     'order_route':website?.data?.order_route,
+    //     'my_orders_route':website?.data?.my_orders_route,
+    //     'order_payment_route':website?.data?.order_payment_route,
+    //     'shop_route':website?.data?.shop_route,
+    //     'product_route':website?.data?.product_route,
+    //     'blog_route':website?.data?.blog_route,
+    //     'blog_post_route':website?.data?.blog_post_route,
+    //   }
+    // }
 
-    const actions = {
-        getRoute,
-        getRoutingTable
-    }
+    // const actions = {
+    //     getRoute,
+    //     getRoutingTable
+    // }
 
     const allowedTags = new Set(['meta', 'link', 'style', 'script']);
+
+    const webpageProps = {
+            ...(webpage?.props||{}),
+            class: [(webpage?.props?.class||'').replace('\n', ' '), webpage?.uuid||''].filter(Boolean).join(" "),
+    };
+        
+    const reactWebpageProps = convertToReactProps(webpageProps)
+        
 
     // 動態
     return(
@@ -71,10 +79,11 @@ const WebpageCSR =  ({ website, webpage, ...props})=>{
                 }
               </Helmet>
             </HelmetProvider>
-            {
-                (webpage?.body_elements||[]).map((e,i)=><Element key={i} element={e} {...props}/>)
-            }
-
+            <div {...reactWebpageProps}>
+              {
+                  (webpage?.body_elements||[]).map((e,i)=><Element key={i} element={e} {...props}/>)
+              }
+            </div>
             <StoreSettingsPreloader bonus_point_policy={website?.bonus_point_policy} e_commerce_settings={website?.e_commerce_settings}/>
       </Fragment>
     )

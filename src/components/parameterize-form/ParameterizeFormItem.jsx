@@ -426,11 +426,12 @@ const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
             return ( 
             <Fragment>
                 <label className={style.label}>{item.name}</label>
-                <textarea className={style.textarea}  
-
-                 onBlur={(e)=>{updateData(_cache)}}
-                 onChange={(e)=>{setCache(e.target.value)}}
-                 value={_cache}
+                <textarea 
+                    className={style.textarea}  
+                    rows={item?.rows||5}
+                    onBlur={(e)=>{updateData(_cache)}}
+                    onChange={(e)=>{setCache(e.target.value)}}
+                    value={_cache}
                 >
 
                 </textarea>

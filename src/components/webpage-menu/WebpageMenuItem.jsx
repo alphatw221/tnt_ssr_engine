@@ -25,6 +25,8 @@ import {webpageMenuItemHoverDropHelper} from '@/lib/utils/dragDropHelperV2.js'
 import { 
   setCursor
 } from '@/redux/slices/editor-memory-slice'
+
+import { v4 as uuidv4 } from 'uuid';
 const WebpageMenuItem =({
     webpage, 
     actions, 
@@ -54,22 +56,30 @@ const WebpageMenuItem =({
     const updateWebpage = (_webpage)=>{
         actions?.updateWebpage(_webpage)
     }
+    const updateWebpageProps = (props)=>{
+        updateElement({...webpage, props:props})
+    }
     const updateWebpageData = (data)=>{
         actions?.updateWebpage({...webpage, data:data})
     }
 
 
     const addElement = (position)=>{
-        const sudoElement = {name:'未命名'}
+        const tempUUID = uuidv4()
+        const sudoElement = {uuid:tempUUID, name:'未命名'}
+
+        let _website = actions?.addWebpageElement(webpage?.uuid, position, sudoElement)
+        _website = JSON.parse(JSON.stringify(_website))
         user_r_create_element({
             'target_webpage_uuid':webpage?.uuid, 
             'target_webpage_position':position,
             'target_element_relation_uuid':null, 
             'target_relative_position':null, 
             'data':sudoElement
-        }).then(res=>{console.log(res.data)})
+        }).then(res=>{
+            _website = actions?.globleUpdateElement(tempUUID, res.data, _website)
+        })
 
-        actions?.addWebpageElement(webpage?.uuid, position, sudoElement)
     }
 
     const removeWebpage = ()=>{
@@ -266,7 +276,9 @@ const WebpageMenuItem =({
             {"key": "visible_end_time", "name": "結束公開時間", "type": "datetime"} ,
 
         ]},
-
+        {"type":"accordion", "key":`expand_webpage_accordion`, "name":'頁面', "accordion_items":[
+            {"key": "props", "name": "屬性", "type": "json", "rows":10}, 
+        ]},
         
     ]
 
@@ -282,6 +294,11 @@ const WebpageMenuItem =({
             {'key': `og_image2`, "name": `OpenGraph圖片2`, "type": "image"},
         ]}
        
+    ]
+    const webpagePropsSettings = [
+        {"type":"accordion",  "key":`expand_props_accordion`, "name":'屬性', "accordion_items":[
+            {"key": "class", "name": "類別", "type": "textarea",  "inputType": "text"  }, 
+        ]},
     ]
 
     const onMouseHoverMoveHandler = (e)=>{
@@ -504,6 +521,11 @@ const WebpageMenuItem =({
                     settings={globalSettings} 
                     data={webpage} 
                     setData={updateWebpage}>            
+                </ParameterizeForm>  
+                <ParameterizeForm  
+                    settings={webpagePropsSettings} 
+                    data={webpage.props} 
+                    setData={updateWebpageProps}>            
                 </ParameterizeForm>  
                 <ParameterizeForm  
                     settings={webpageDataSettings} 

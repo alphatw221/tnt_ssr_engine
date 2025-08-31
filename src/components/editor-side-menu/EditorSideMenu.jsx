@@ -14,7 +14,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import style from "./EditorSideMenu.module.scss"
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCoffee, faChevronLeft, faChevronRight, faBars, faGear } from '@fortawesome/free-solid-svg-icons'
+import { faCoffee, faChevronLeft, faChevronRight, faBars, faGear, faFolder } from '@fortawesome/free-solid-svg-icons'
 import React, { Fragment, useState, useEffect } from "react";
 
 // import PageMenu from './page-menu/PageMenu'
@@ -41,7 +41,7 @@ import ParameterizeForm from "@/components/parameterize-form/ParameterizeForm.js
 // import CustomizeTagForm from '@/components/listen-events-form/listen-event-form/CustomizeTagForm.jsx'
 import WebpageMenu from "@/components/webpage-menu/WebpageMenu";
 
-
+import FileBrowser from "@/components/file-browser/FileBrowser.jsx"
 
 const EditorSideMenu = ({ website, actions, ...props}) => {
   
@@ -56,6 +56,7 @@ const EditorSideMenu = ({ website, actions, ...props}) => {
   // const dispatch = useAppDispatch();
   
   const [showWebsiteSettings, setShowWebsiteSettings] = useState(false)
+  const [showFileBrowser, setShowFileBrowser] = useState(false)
   const [active, setActive] = useState(false)
 
   const [nodeMenuActive, setNodeMenuActive] = useState(false)
@@ -134,6 +135,11 @@ const EditorSideMenu = ({ website, actions, ...props}) => {
         <div className={style['bar']}>
           <EditorToolBar/>
 
+          <div className={style['file-browser-button']} onClick={()=>{setShowFileBrowser(true)}}>
+            <FontAwesomeIcon icon={faFolder}/>
+            <div className={style['tooltip']} >檔案素材</div>
+          </div>
+
           <div className={style['bar-button']} onClick={()=>{setShowWebsiteSettings(true)}}>
             <FontAwesomeIcon icon={faGear}/>
             <div className={style['tooltip']} >網站設定</div>
@@ -184,6 +190,13 @@ const EditorSideMenu = ({ website, actions, ...props}) => {
         </ParameterizeForm>         
       </Offcanvas.Body>
     </Offcanvas> */}
+
+
+      
+      <MyModal isOpen={showFileBrowser} onClose={setShowFileBrowser} title='檔案管理' placement='center-lg'>
+        <FileBrowser actions={actions}/>
+      </MyModal>
+
 
       <MyModal isOpen={showWebsiteSettings} onClose={setShowWebsiteSettings} title='網站設定' placement='right'>
          <ParameterizeForm  

@@ -65,7 +65,9 @@ const CartDetail = ({
 
     const customer = useAppSelector((state) => state.customer);
     const {cartProducts} = useAppSelector((state)=> state.cart)
-    const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
+
+    const [targetCartProducts, setTargetCartProducts] = useState([])
+    // const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
 
 
     const estore = useAppSelector((state) => state.estore);
@@ -83,6 +85,14 @@ const CartDetail = ({
     const [excludeUUIDs, setExcludeUUIDs] = useState({})
     const [finalExcludeUUIDs, setFinalExcludeUUIDs] = useState({})
 
+
+    useEffect(()=>{
+       if(customer?.uuid){
+        setTargetCartProducts(customer?.cart_products)
+       }else{
+        setTargetCartProducts(cartProducts)
+       }
+    }, [customer?.uuid, customer?.cart_products, cartProducts])
     
     useEffect(()=>{
         if(estore?.e_commerce_settings?.base_currency && estore?.e_commerce_settings?.base_currency!=baseCurrency){

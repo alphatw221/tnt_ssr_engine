@@ -40,12 +40,26 @@ width: 30%;
 .center{
   width: 90%;
   max-width: 500px;
+  max-height: 70vh;
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
 }
+
+.center-lg{
+  width: 90%;
+  max-width: 80vw;
+  min-height: 50vh;
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .center-full{
   top: 0;
   bottom: 0;
