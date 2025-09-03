@@ -1,113 +1,113 @@
 
 
 
-// /*------ 24. login register Page  --------*/
+/*------ 24. login register Page  --------*/
 // @import "@/assets/scss/variables";
 
 
-// .我的訂單 {
-//   min-width: 60vw;
-//   // max-width: 1200px;
-//   margin: 20px auto;
-//   background: white;
-//   padding: 20px;
-//   border-radius: 8px;
-//   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-// }
+.我的訂單 {
+  min-width: 60vw;
+  // max-width: 1200px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
 
-// .標題框 {
-//   text-align: center;
-//   margin-bottom: 20px;
-// }
+.標題框 {
+  text-align: center;
+  margin-bottom: 20px;
+}
 
-// .標題 {
-//   font-size: 24px;
-//   color: #333;
-// }
+.標題 {
+  font-size: 24px;
+  color: #333;
+}
 
-// .訂單篩選器框 {
-//   display: flex;
-//   justify-content: center;
-//   gap: 10px;
-//   margin-bottom: 20px;
-// }
+.訂單篩選器框 {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
 
-// .單訂單狀態框 {
-//   display: inline-block;
-// }
+.單訂單狀態框 {
+  display: inline-block;
+}
 
-// .單訂單狀態-按鈕 {
-//   background: #007bff;
-//   color: white;
-//   border: none;
-//   padding: 10px 15px;
-//   border-radius: 5px;
-//   cursor: pointer;
-//   transition: background 0.3s;
-// }
+.單訂單狀態-按鈕 {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
 
-// .單訂單狀態-按鈕:hover {
-//   background: #0056b3;
-// }
+.單訂單狀態-按鈕:hover {
+  background: #0056b3;
+}
 
-// .無訂單框 {
-//   text-align: center;
-//   padding: 40px 0;
-// }
+.無訂單框 {
+  text-align: center;
+  padding: 40px 0;
+}
 
-// .無訂單-圖標 {
-//   font-size: 50px;
-//   color: #ccc;
-// }
+.無訂單-圖標 {
+  font-size: 50px;
+  color: #ccc;
+}
 
-// .無訂單-文字 {
-//   display: block;
-//   font-size: 18px;
-//   color: #777;
-//   margin-top: 10px;
-// }
+.無訂單-文字 {
+  display: block;
+  font-size: 18px;
+  color: #777;
+  margin-top: 10px;
+}
 
-// .訂單-表格 {
-//   width: 100%;
-//   border-collapse: collapse;
-//   background: white;
-// }
+.訂單-表格 {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
 
-// .表格-頭段 {
-//   background: #007bff;
-//   color: white;
-// }
+.表格-頭段 {
+  background: #007bff;
+  color: white;
+}
 
-// .表格-列 {
-//   border-bottom: 1px solid #ddd;
-// }
+.表格-列 {
+  border-bottom: 1px solid #ddd;
+}
 
-// .表格-欄位名稱, .表格-訂單編號框, .表格-訂單金額框, .表格-物流狀態框, .表格-付款狀態框, .表格-訂單日期框, .表格-訂單動作框 {
-//   padding: 12px;
-//   text-align: left;
-// }
+.表格-欄位名稱, .表格-訂單編號框, .表格-訂單金額框, .表格-物流狀態框, .表格-付款狀態框, .表格-訂單日期框, .表格-訂單動作框 {
+  padding: 12px;
+  text-align: left;
+}
 
-// .訂單內容-超連結 {
-//   color: #007bff;
-//   text-decoration: none;
-// }
+.訂單內容-超連結 {
+  color: #007bff;
+  text-decoration: none;
+}
 
-// .訂單內容-超連結:hover {
-//   text-decoration: underline;
-// }
+.訂單內容-超連結:hover {
+  text-decoration: underline;
+}
 
-// .訂單商品-圖片 {
-//   width: 50px;
-//   height: 50px;
-//   border-radius: 5px;
-// }
+.訂單商品-圖片 {
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+}
 
-// .訂單商品-名稱 {
-//   font-size: 16px;
-//   color: #333;
-// }
+.訂單商品-名稱 {
+  font-size: 16px;
+  color: #333;
+}
 
-// .分頁器框 {
-//   margin-top: 20px;
-//   text-align: center;
-// }
+.分頁器框 {
+  margin-top: 20px;
+  text-align: center;
+}

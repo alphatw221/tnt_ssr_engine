@@ -7,8 +7,8 @@ export const customer_search_blog_post = (filter_categories, filter_tags, keywor
 }
 
 
-export const customer_retrieve_blog_post = (blog_post_id) => {
-    return createCustomerAxios().get(`/api/v1/store/blog_post/${blog_post_id}/retrieve/`);
+export const customer_retrieve_blog_post = (blog_post_uuid) => {
+    return createCustomerAxios().get(`/api/v1/store/blog_post/${blog_post_uuid}/retrieve/`);
 }
 
 

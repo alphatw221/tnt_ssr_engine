@@ -17,7 +17,7 @@ export function render(url, context = {}) {
   return { html, context };
 }
 
-export async function getWebpageHtml(webpage_name, object_uuid, context={}){
+export async function getWebpageHtml(webpage_name, object_uuid, now, context={}){
     
   const store = createSSRStore();
 
@@ -25,7 +25,7 @@ export async function getWebpageHtml(webpage_name, object_uuid, context={}){
 
     const websiteUUID = res.data?.uuid;
     const body =  renderToString(<Provider store={store}>
-                          <WebpageBody website={res.data} webpage={res.data.webpage} mode='prod'/>
+                          <WebpageBody website={res.data} webpage={res.data.webpage} object={res.data?.object} now={now} mode='prod'/>
                     </Provider>);
     const head = renderToString(<WebpageHead website={res.data} webpage={res.data.webpage} mode='prod'/>);
     const reduxState = store.getState();

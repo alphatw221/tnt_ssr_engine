@@ -6,24 +6,32 @@ import clsx from "clsx";
 
 import _BlogPostDetail from './_BlogPostDetail'
 
-import {getBlogPostDetail} from '../../../fetch/blog'
-const BlogPostDetailSSR = async({  
-    params, searchParams, template_nodes, node,  mode, actions, children, hierarchy, ...props}) => {
+// import {getBlogPostDetail} from '../../../fetch/blog'
+// import { customer_retrieve_blog_post } from '@/api/blog_post'
+
+const BlogPostDetailSSR = ({  
+
+    
+    
+    element, 
+    elementProps,
+    mode,
+    actions,
+    object,
+    ...props}) => {
 
 
-        const blogPost = await getBlogPostDetail(params?.object_id)
 
         return (
             <Fragment>
+
               <_BlogPostDetail 
-                params={params}
-                searchParams={searchParams}
-                blogPost={blogPost}
+                element={element}
+                elementProps={elementProps}
+                blogPost={object}
                 mode={mode}
-                actions={actions}
                 {...props}
               />
-
 
             </Fragment>
           )

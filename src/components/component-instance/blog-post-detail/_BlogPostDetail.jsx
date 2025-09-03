@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 
 import clsx from "clsx";
 import style from './BlogPostDetail.module.scss'
@@ -37,6 +37,14 @@ const _BlogPostDetail = ({
 //             dangerouslySetInnerHTML={{ __html: blogPost?.content }}
 //         ></div>
 // )
+
+    const [createdAt, setCreatedAt] = useState('')
+    const [updatedAt, setUpdatedAt] = useState('')
+
+    useEffect(()=>{
+        setCreatedAt(new Date(blogPost?.created_at||null).toLocaleDateString())
+        setUpdatedAt(new Date(blogPost?.updated_at||null).toLocaleDateString())
+    },[])
 
     const prePostNextPost = ()=>{
         return (
@@ -89,12 +97,12 @@ const _BlogPostDetail = ({
                 <div className={clsx('文章資訊框',style['文章資訊框'])}>
                     <div className={clsx('發表時間框',style['發表時間框'])}>
                         <label className={clsx('發表時間-標題',style['發表時間-標題'])}>發表於：</label>
-                        <span className={clsx('發表時間',style['發表時間'])}>{new Date(blogPost?.created_at||null).toLocaleDateString()}</span>
+                        <span className={clsx('發表時間',style['發表時間'])}>{createdAt}</span>
                     </div>
 
                     <div className={clsx('更新時間框',style['更新時間框'])}>
                         <label className={clsx('更新時間-標題',style['更新時間-標題'])}>最後更新：</label>
-                        <span className={clsx('更新時間',style['更新時間'])}>{new Date(blogPost?.updated_at||null).toLocaleDateString()}</span>
+                        <span className={clsx('更新時間',style['更新時間'])}>{updatedAt}</span>
                     </div>
                     
                     {

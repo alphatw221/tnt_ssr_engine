@@ -29,239 +29,242 @@
 
 
 
-// .我的帳戶 {
-//     @include generate-rwd-stylesheet($props);
+.我的帳戶 {
+    // @include generate-rwd-stylesheet($props);
 
-//     position: relative;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+
+.超連結框 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.登入連結,
+.註冊連結 {
+    font-size: 14px;
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.登入連結:hover,
+.註冊連結:hover {
+    color: #0056b3;
+}
+.分隔線 {
+    font-size: 14px;
+    color: #999;
+}
+.帳戶按鈕框 {
+    position: relative;
+}
+.帳戶按鈕 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s, box-shadow 0.3s;
+}
+.帳戶-文字 {
+    color: #666;
+    font-weight: normal;
+}
+.帳戶-名稱 {
+    color: #007bff;
+    font-weight: bold;
+}
+.帳戶按鈕:hover {
+    background: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.我的帳戶-下拉 {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 180px;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    z-index: 10;
+    padding: 10px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+.我的帳戶-下拉.顯示 {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+.我的訂單框 a {
+    display: block;
+    font-size: 14px;
+    padding: 10px;
+    text-decoration: none;
+    color: #333;
+    transition: background 0.3s;
+}
+.我的訂單框 a:hover {
+    background: #f8f9fa;
+}
+.登出按鈕框 {
+    margin-top: 8px;
+    text-align: center;
+}
+.登出按鈕 {
+    width: 100%;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.登出按鈕:hover {
+    background-color: #c82333;
+}
+
+
+
+
+// .login-button-block{
 //     display: flex;
-//     align-items: center;
-//     gap: 12px;
-// }
-// .超連結框 {
-//     display: flex;
-//     align-items: center;
-//     gap: 8px;
-// }
-// .登入連結,
-// .註冊連結 {
-//     font-size: 14px;
-//     color: #007bff;
-//     text-decoration: none;
-//     cursor: pointer;
-//     transition: color 0.3s;
-// }
+//     flex-direction: row;
+//     // flex-wrap:;
+//     justify-content: center;
+//     align-content: center;
+//     column-gap: 5px;
 
-// .登入連結:hover,
-// .註冊連結:hover {
-//     color: #0056b3;
-// }
-// .分隔線 {
-//     font-size: 14px;
-//     color: #999;
-// }
-// .帳戶按鈕框 {
-//     position: relative;
-// }
-// .帳戶按鈕 {
-//     display: flex;
-//     align-items: center;
-//     gap: 6px;
-//     font-size: 14px;
-//     font-weight: bold;
-//     color: #333;
-//     background: white;
-//     border: 1px solid #ddd;
-//     padding: 8px 12px;
-//     border-radius: 6px;
-//     cursor: pointer;
-//     transition: background 0.3s, box-shadow 0.3s;
-// }
-// .帳戶-文字 {
-//     color: #666;
-//     font-weight: normal;
-// }
-// .帳戶-名稱 {
-//     color: #007bff;
-//     font-weight: bold;
-// }
-// .帳戶按鈕:hover {
-//     background: #f8f9fa;
-//     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-// }
-// .我的帳戶-下拉 {
-//     display: none;
-//     position: absolute;
-//     top: 100%;
-//     left: 0;
-//     width: 180px;
-//     background: white;
-//     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-//     border-radius: 6px;
-//     z-index: 10;
-//     padding: 10px;
-//     opacity: 0;
-//     transform: translateY(-10px);
-//     transition: opacity 0.3s, transform 0.3s;
-// }
-// .我的帳戶-下拉.顯示 {
-//     display: block;
-//     opacity: 1;
-//     transform: translateY(0);
-// }
-// .我的訂單框 a {
-//     display: block;
-//     font-size: 14px;
-//     padding: 10px;
-//     text-decoration: none;
-//     color: #333;
-//     transition: background 0.3s;
-// }
-// .我的訂單框 a:hover {
-//     background: #f8f9fa;
-// }
-// .登出按鈕框 {
-//     margin-top: 8px;
-//     text-align: center;
-// }
-// .登出按鈕 {
-//     width: 100%;
-//     background-color: #dc3545;
-//     color: white;
-//     border: none;
-//     padding: 8px 12px;
-//     border-radius: 4px;
-//     font-size: 14px;
-//     cursor: pointer;
-//     transition: background 0.3s;
-// }
-// .登出按鈕:hover {
-//     background-color: #c82333;
-// }
-
-
-
-
-// // .login-button-block{
-// //     display: flex;
-// //     flex-direction: row;
-// //     // flex-wrap:;
-// //     justify-content: center;
-// //     align-content: center;
-// //     column-gap: 5px;
-
-// //     a,span,button{
-// //         white-space: nowrap;
-// //         line-height: inherit;
-// //     }
-// //     button{
-// //         // font-size: 16px;
-// //         border: none;
-// //         background: none;
-// //         color: #000;
-// //         padding:0px;
+//     a,span,button{
+//         white-space: nowrap;
+//         line-height: inherit;
+//     }
+//     button{
+//         // font-size: 16px;
+//         border: none;
+//         background: none;
+//         color: #000;
+//         padding:0px;
         
 
-// //         // .identity_block{
-// //         //     display: flex;
-// //         //     flex-direction: row;
-// //         //     align-items: center;
+//         // .identity_block{
+//         //     display: flex;
+//         //     flex-direction: row;
+//         //     align-items: center;
 
 
-// //         //     .customer_name{
-// //         //         // &:hover {
-// //         //         //     // color: $theme-color;
-// //         //         //     color: white;
+//         //     .customer_name{
+//         //         // &:hover {
+//         //         //     // color: $theme-color;
+//         //         //     color: white;
         
-// //         //         // }
-// //         //     }
+//         //         // }
+//         //     }
             
-// //         // }
-// //     }
+//         // }
+//     }
 
-// //     // .dropdown {
-// //     //     position: absolute;
-// //     //     z-index: 220;
-// //     //     top: 105%;
-// //     //     left: 0;
+//     // .dropdown {
+//     //     position: absolute;
+//     //     z-index: 220;
+//     //     top: 105%;
+//     //     left: 0;
 
-// //     //     visibility: hidden;
+//     //     visibility: hidden;
 
-// //     //     width: 125px;
-// //     //     padding: 8px 12px 10px;
+//     //     width: 125px;
+//     //     padding: 8px 12px 10px;
 
-// //     //     transition: all 0.5s ease 0s;
-// //     //     transform: rotateX(90deg);
-// //     //     transform-origin: center top 0;
-// //     //     text-align: left;
+//     //     transition: all 0.5s ease 0s;
+//     //     transform: rotateX(90deg);
+//     //     transform-origin: center top 0;
+//     //     text-align: left;
 
-// //     //     opacity: 0;
-// //     //     background: #fff none repeat scroll 0 0;
-// //     //     box-shadow: 0 1px 7px -2px rgba(0, 0, 0, 0.3);
+//     //     opacity: 0;
+//     //     background: #fff none repeat scroll 0 0;
+//     //     box-shadow: 0 1px 7px -2px rgba(0, 0, 0, 0.3);
 
-// //     //     color: #000;
+//     //     color: #000;
 
-// //     //     &.active {
-// //     //         visibility: visible;
+//     //     &.active {
+//     //         visibility: visible;
 
-// //     //         transform: rotateX(0deg);
+//     //         transform: rotateX(0deg);
 
-// //     //         opacity: 1;
-// //     //     }
-// //     //     @media #{$xs-layout} {
-// //     //         top: 100%;
+//     //         opacity: 1;
+//     //     }
+//     //     @media #{$xs-layout} {
+//     //         top: 100%;
 
-// //     //         // margin-top: 14px;
-// //     //     }
-// //     //     @media #{$md-layout} {
-// //     //         top: 100%;
+//     //         // margin-top: 14px;
+//     //     }
+//     //     @media #{$md-layout} {
+//     //         top: 100%;
 
-// //     //         // margin-top: 14px;
-// //     //     }
-// //     //     @media #{$lg-layout} {
-// //     //         top: 100%;
-// //     //     }
-// //     //     @media #{$xl-layout} {
-// //     //         top: 100%;
-// //     //     }
-// //     //     ul {
-// //     //         li {
-// //     //             a {
-// //     //                 font-size: 13px;
-// //     //                 line-height: 30px;
+//     //         // margin-top: 14px;
+//     //     }
+//     //     @media #{$lg-layout} {
+//     //         top: 100%;
+//     //     }
+//     //     @media #{$xl-layout} {
+//     //         top: 100%;
+//     //     }
+//     //     ul {
+//     //         li {
+//     //             a {
+//     //                 font-size: 13px;
+//     //                 line-height: 30px;
 
-// //     //                 display: block;
+//     //                 display: block;
 
-// //     //                 padding: 0;
+//     //                 padding: 0;
 
-// //     //                 text-transform: capitalize;
+//     //                 text-transform: capitalize;
 
-// //     //                 // color: #000;
-// //     //                 &:hover {
-// //     //                 padding-left: 5px;
+//     //                 // color: #000;
+//     //                 &:hover {
+//     //                 padding-left: 5px;
 
-// //     //                 color: $theme-color;
-// //     //                 }
-// //     //             }
-// //     //             button {
-// //     //                 background-color: transparent;
-// //     //                 border: none;
-// //     //                 font-size: 13px;
-// //     //                 line-height: 30px;
+//     //                 color: $theme-color;
+//     //                 }
+//     //             }
+//     //             button {
+//     //                 background-color: transparent;
+//     //                 border: none;
+//     //                 font-size: 13px;
+//     //                 line-height: 30px;
 
-// //     //                 display: block;
+//     //                 display: block;
 
-// //     //                 padding: 0;
+//     //                 padding: 0;
 
-// //     //                 text-transform: capitalize;
+//     //                 text-transform: capitalize;
 
-// //     //                 // color: #000;
-// //     //                 &:hover {
-// //     //                 padding-left: 5px;
+//     //                 // color: #000;
+//     //                 &:hover {
+//     //                 padding-left: 5px;
 
-// //     //                 color: $theme-color;
-// //     //                 }
-// //     //             }
-// //     //         }
-// //     //     }
-// //     // }
-// // }
+//     //                 color: $theme-color;
+//     //                 }
+//     //             }
+//     //         }
+//     //     }
+//     // }
+// }

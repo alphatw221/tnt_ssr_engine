@@ -24,13 +24,14 @@ const ProductDetailClient = ({
     // params, searchParams,
 
     product,
-
+    now,
 
     routingTable,
     element, 
     elementProps,
     mode,
     actions,
+
     ...props
 }) => {
     
@@ -130,7 +131,7 @@ const ProductDetailClient = ({
             setDefaultImage(product?.images?.[0])
         },[product])
 
-    const now = new Date().toJSON().slice(0, 10);
+    // const now = new Date().toJSON().slice(0, 10);
 
 
     // let { object_id } = useParams();

@@ -175,9 +175,9 @@
           }
 
           button {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            // display: flex;
+            // align-items: center;
+            // gap: 0.5rem;
             border: none;
             background: transparent;
             cursor: pointer;
@@ -200,6 +200,47 @@
       }
     }
   }
+  //list
+  table.list .file-name svg{
+    margin-right: 5px;
+  }
+  // grid
+  table.grid {
+    display: block;
+    // grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  table.grid thead{
+    display: none;
+  }
+  table.grid tbody{
+    display: flex;
+    gap: 5px;
+  }
+  table.grid tr {
+    display: flex; /* 移除 tr/thead/tbody 的額外 box */
+    flex-direction: column;
+    border: 1px solid #666;
+    border-radius: 4px;
+  }
+
+  table.grid th,
+  table.grid td {
+    // border: 1px solid #ccc;
+    padding: 0px 10px;
+    text-align: center;
+  }
+
+  table.grid .file-thumbnail img,
+  table.grid .file-thumbnail svg
+  {
+    width: 200px;
+    height: 200px;
+  }
+
+
+
+
 }
 
 

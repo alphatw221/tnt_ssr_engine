@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Modal } from "react-bootstrap";
+// import { Modal } from "react-bootstrap";
 // import { useDispatch, useSelector } from "react-redux";
 // import Rating from "./sub-components/ProductRating";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";

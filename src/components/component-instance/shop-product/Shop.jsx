@@ -37,7 +37,7 @@ const Shop = ({
 
     // const [products, setProducts] = useState([]);
 
-    const searchParams = new URLSearchParams(window.location.search);
+    const searchParams = new URLSearchParams();
     const customer = useAppSelector((state) => state.customer);
     const {cartProducts} = useAppSelector((state)=> state.cart)
     const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts

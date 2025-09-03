@@ -21,7 +21,7 @@ const WebsiteSearchBar = ({
 
     // node,  mode, actions, update, children, routingTable, ...props
 
-    // routingTable
+    routingTable,
 
     element, 
     elementProps,
@@ -131,12 +131,13 @@ const WebsiteSearchBar = ({
 
 
     }
+
+
+    const { className, ...rest } = elementProps;
     return (
     
-
-        <div  
-            {...elementProps}
-        >
+        
+        <div {...rest} className={clsx(style["站內搜尋框"], "站內搜尋框", className)} >
             <input  
                 className={
                     clsx(style['搜尋-輸入'],'搜尋-輸入',)

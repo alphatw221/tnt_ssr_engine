@@ -38,6 +38,7 @@ const CartButton = ({
     element, 
     elementProps,
     mode,
+    now,
     ...props
 
 }) => {
@@ -51,7 +52,7 @@ const CartButton = ({
     const customer = useAppSelector((state) => state.customer);
     const {cartProducts} = useAppSelector((state)=> state.cart)
     const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
-    const now = new Date().toJSON().slice(0, 10);
+    // const now = new Date().toJSON().slice(0, 10);
 
     useClickOutsideEvent(useEffect, dropDown,()=>{
         setShowDropDown(false)
@@ -88,10 +89,12 @@ const CartButton = ({
 
             <div 
                {...elementProps}
+                className={`${style['購物車框']} ${'購物車框'} ${elementProps?.className||''}`}
+               
             >
             
                 <button className={clsx(style['購物車按鈕'],'購物車按鈕',)} onClick={()=>{setShowDropDown(true)}}>
-                    <i className={clsx(style['購物車按鈕-圖標'],'購物車按鈕-圖標',)}></i>
+                    <i className={clsx(style['購物車按鈕-圖標'],'購物車按鈕-圖標',)}/>
                     <span className={clsx(style['購物車按鈕-文字'],'購物車按鈕-文字',)}>購物車</span>
                     <span className={clsx(style['購物車按鈕-商品數'],'購物車按鈕-商品數',)}>{(targetCartProducts||[])?.length||0}</span>
                 </button>
@@ -102,7 +105,7 @@ const CartButton = ({
                 >
 
                     <button className={clsx(style['關閉按鈕'], '關閉按鈕')} onClick={()=>{setShowDropDown(false)}}>
-                        <i className={clsx(style['關閉圖標'], '關閉圖標', 'fa-solid fa-x')}></i>
+                        <i className={clsx(style['關閉圖標'], '關閉圖標')}/>
                     </button>
                     {
                     (targetCartProducts||[]).length > 0

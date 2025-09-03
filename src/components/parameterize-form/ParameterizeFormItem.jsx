@@ -81,12 +81,31 @@ const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
                     </div>
                 }
                 
-                <div style={{display:'flex', flexDirection:'row', justifyContent:'space-evenly' ,marginTop:'10px', marginBottom:'10px'}}>
+
+                <input
+                    className={style.input}
+                    type='text'
+                    value={_cache}
+                    onBlur={(e)=>{
+                        if((_cache===''||_cache===null) && !item?.allow_blank){
+                            removeDataKey()
+                        }else{
+                            updateData(_cache)
+                        }
+                    }}
+                    onChange={(e)=>{
+                            setCache(e.target.value)
+                    }}
+                    style={{marginTop:'10px'}}
+                />
+
+
+                {/* <div style={{display:'flex', flexDirection:'row', justifyContent:'space-evenly' ,marginTop:'10px', marginBottom:'10px'}}>
                     <Button variant="secondary" onClick={()=>{setShowSelectFileModal(true)}}>選擇圖片</Button>
                     <Button variant="secondary" onClick={()=>{removeDataKey()}}>取消圖片</Button>
                 </div>
 
-                <SelectFileModal show={showSelectFileModal} onHide={()=>{setShowSelectFileModal(false)}} acceptType={[item?.accept||'image/*']} filterType={item?.filter_type||'image'} setSelectFile={(image)=>{updateData(image)}} />
+                <SelectFileModal show={showSelectFileModal} onHide={()=>{setShowSelectFileModal(false)}} acceptType={[item?.accept||'image/*']} filterType={item?.filter_type||'image'} setSelectFile={(image)=>{updateData(image)}} /> */}
 
             </Fragment>)
 
@@ -108,12 +127,29 @@ const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
                     </div>
                 }
                 
-                <div style={{display:'flex', flexDirection:'row', justifyContent:'space-evenly' ,marginTop:'10px', marginBottom:'10px'}}>
+                <input
+                    className={style.input}
+                    type='text'
+                    value={_cache}
+                    onBlur={(e)=>{
+                        if((_cache===''||_cache===null) && !item?.allow_blank){
+                            removeDataKey()
+                        }else{
+                            updateData(_cache)
+                        }
+                    }}
+                    onChange={(e)=>{
+                            setCache(e.target.value)
+                    }}
+                    style={{marginTop:'10px'}}
+                />
+
+                {/* <div style={{display:'flex', flexDirection:'row', justifyContent:'space-evenly' ,marginTop:'10px', marginBottom:'10px'}}>
                     <Button variant="secondary" onClick={()=>{setShowSelectFileModal(true)}}>選擇影片</Button>
                     <Button variant="secondary" onClick={()=>{removeDataKey()}}>取消影片</Button>
                 </div>
 
-                <SelectFileModal show={showSelectFileModal} onHide={()=>{setShowSelectFileModal(false)}} acceptType={item?.accept||'video/*'} filterType={item?.filter_type||'video'} setSelectFile={(file)=>{updateData(file)}} />
+                <SelectFileModal show={showSelectFileModal} onHide={()=>{setShowSelectFileModal(false)}} acceptType={item?.accept||'video/*'} filterType={item?.filter_type||'video'} setSelectFile={(file)=>{updateData(file)}} /> */}
 
             </Fragment>)
 
@@ -127,13 +163,29 @@ const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
                         <p>{data?.[item.key]?.split('/')?.[(data?.[item.key]?.split('/').length-1)]}</p>
                     </div>
                 }
-                
-                <div style={{display:'flex', flexDirection:'row', justifyContent:'space-evenly' ,marginTop:'10px', marginBottom:'10px'}}>
+                <input
+                    className={style.input}
+                    type='text'
+                    value={_cache}
+                    onBlur={(e)=>{
+                        if((_cache===''||_cache===null) && !item?.allow_blank){
+                            removeDataKey()
+                        }else{
+                            updateData(_cache)
+                        }
+                    }}
+                    onChange={(e)=>{
+                            setCache(e.target.value)
+                    }}
+                    style={{marginTop:'10px'}}
+                />
+
+                {/* <div style={{display:'flex', flexDirection:'row', justifyContent:'space-evenly' ,marginTop:'10px', marginBottom:'10px'}}>
                     <Button variant="secondary" onClick={()=>{setShowSelectFileModal(true)}}>選擇檔案</Button>
                     <Button variant="secondary" onClick={()=>{removeDataKey()}}>取消檔案</Button>
                 </div>
 
-                <SelectFileModal show={showSelectFileModal} onHide={()=>{setShowSelectFileModal(false)}} acceptType={item?.accept} filterType={item?.filter_type} setSelectFile={(file)=>{updateData(file)}} />
+                <SelectFileModal show={showSelectFileModal} onHide={()=>{setShowSelectFileModal(false)}} acceptType={item?.accept} filterType={item?.filter_type} setSelectFile={(file)=>{updateData(file)}} /> */}
 
             </Fragment>)
             

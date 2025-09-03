@@ -106,6 +106,7 @@ const MyAccountButton = ({
     return (
             <div 
               {...elementProps}
+              className={`${style['我的帳戶']} ${'我的帳戶'} ${elementProps?.className||''}`}
             >
 
                 {

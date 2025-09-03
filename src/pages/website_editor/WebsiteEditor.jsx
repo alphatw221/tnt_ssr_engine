@@ -652,7 +652,7 @@ const WebsiteEditor = () => {
       {/* 佈告欄 */}
 
 
-      < WebpageCSR website={website} webpage={selectedWebpage} mode='dev' hideElementDict={hideElementDict} actions={actions} routingTable={routingTable}/>
+      < WebpageCSR website={website} webpage={selectedWebpage} mode='dev' hideElementDict={hideElementDict} actions={actions} routingTable={routingTable} now={Date.now()}/>
 
       {/* <Modal show={showBulletinBoard} onHide={()=>{setShowBulletinBoard(false)}}>
         <Modal.Header closeButton>

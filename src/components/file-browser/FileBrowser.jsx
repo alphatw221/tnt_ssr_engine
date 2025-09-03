@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef, Fragment } from "react";
 import styles from "./FileBrowser.module.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
@@ -68,15 +68,15 @@ const mimeTypes = {
 
 function fileIconByType(type) {
 
-    if(type.startsWith('image')){
+    if(type?.startsWith('image')){
         return <FontAwesomeIcon icon={faFileImage} /> 
-    }else if(type.startsWith('audio')){
+    }else if(type?.startsWith('audio')){
         return <FontAwesomeIcon icon={faFileAudio} /> 
-    }else if(type.startsWith('video')){
+    }else if(type?.startsWith('video')){
         return <FontAwesomeIcon icon={faFileVideo} /> 
-    }else if(type.startsWith('text')){
+    }else if(type?.startsWith('text')){
         return <FontAwesomeIcon icon={faFileText} />
-    }else if(type.startsWith('application')){
+    }else if(type?.startsWith('application')){
         return <FontAwesomeIcon icon={faFile} />
     }
 
@@ -129,9 +129,6 @@ export default function FileManager({actions, ...props}) {
 
     const [tableContextMenuPos, setTableContextMenuPos] = useState(null); // {x, y} | null
     const tableContextMenuRef = useRef(null);
-
-
-        order_by:JSON.parse(window?.localStorage?.getItem('product-search-data'))?.order_by||'priority'
 
 
     const savePathToLocalStorage = (path)=>{
@@ -569,7 +566,7 @@ export default function FileManager({actions, ...props}) {
                         </div>
                         
                 }
-                <table className={styles['']}>
+                <table className={styles[layout]}>
                     <thead className={styles['']}>
                         <tr>
                             <th className={styles['']}></th>
@@ -590,35 +587,62 @@ export default function FileManager({actions, ...props}) {
                             onContextMenu={(e)=>{ e.stopPropagation(); if(Array.from(selected).length>0 && !selected.has(it?.uuid)){clearSelection()} setTargetFile(it); handleContextMenu(e);}} 
                             onClick={()=>{setTargetFile(it)}}
                             onDoubleClick={(e)=>{if(it?.is_folder){setPath([...path, targetFile]); savePathToLocalStorage([...path, targetFile])}}}
-                            >
-                                <td className={styles['']}>
-                                    <input
-                                        type="checkbox"
-                                        checked={selected.has(it.uuid)}
-                                        onChange={() => toggleSelect(it.uuid)}
-                                        aria-label={`Select ${it.name}`}
-                                    />
-                                </td>
-                                <td className={styles['']}>
+                            >   
+                                {layout=='list' &&
+                                    <td className={styles['']}>
+                                        <input
+                                            type="checkbox"
+                                            checked={selected.has(it.uuid)}
+                                            onChange={() => toggleSelect(it.uuid)}
+                                            aria-label={`Select ${it.name}`}
+                                        />
+                                    </td>
+                                }
+                                {
+                                    layout=='grid' &&
+                                    <td className={styles['file-thumbnail']}>
+                                        {
+                                            it?.is_public && it?.type?.startsWith('image') ?
+                                            <img src={it?.public_file_s}/>
+                                            :
+                                            it?.is_folder
+                                            ?
+                                            <FontAwesomeIcon icon={faFolder} />
+                                            :
+                                            fileIconByType(it.type)
+                                        }
+                                    </td>
+                                }
+                               
+
+                                <td className={styles['file-name']}>
                                     <button
                                         className={styles['']}
                                         onDoubleClick={() => it.is_folder && onEnterFolder(it.id)}
                                         onClick={() => toggleSelect(it.uuid)}
                                     >
                                         {
-                                            it?.is_folder
-                                            ?
-                                            <span className={styles['']}>
-                                                <FontAwesomeIcon icon={faFolder} /> 
-                                            </span>
-                                            :
-                                            <span className={styles['']}>{fileIconByType(it.type)}</span>
+                                            layout=='list' &&
+                                            <Fragment>
+                                                {
+                                                    it?.is_folder
+                                                    ?
+                                                    <span className={styles['']}>
+                                                        <FontAwesomeIcon icon={faFolder} /> 
+                                                    </span>
+                                                    :
+                                                    <span className={styles['']}>{fileIconByType(it.type)}</span>
+                                                }
+                                             </Fragment>
                                         }
                                         
                                         <span className={styles['']} title={it.name}>{it.name}</span>
                                     </button>
                                 </td>
-                                <td className={styles['']}>{it.description||''}</td>
+                                {
+                                    layout=='list' && <td className={styles['']}>{it.description||''}</td>
+                                }
+                                
                                 <td className={styles['']}>{it.is_public?<FontAwesomeIcon icon={faEye}/>:<FontAwesomeIcon icon={faEyeLowVision}/>}</td>
 
                                 <td className={styles['']}>{it.is_folder ? "資料夾" : (it.type || "未知")}</td>
@@ -627,12 +651,14 @@ export default function FileManager({actions, ...props}) {
                                 <td className={styles['']}>{formatDate(it.created_at)}</td>
                                 <td className={styles['']}>
                                     {
-                                        it?.is_public && !it?.is_folder &&
+                                        it?.is_public && !it?.is_folder ?
                                         <button className={styles['']} onClick={()=>{
                                             navigator.clipboard.writeText(it.public_file)
                                         }}>
                                             <FontAwesomeIcon icon={faCopy}/>
                                         </button>
+                                        :
+                                        '-'
                                     }
                                 </td>
 

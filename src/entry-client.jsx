@@ -31,11 +31,28 @@ const csrBootstrap = async ()=>{
 }
 if (isSSR) {
   console.log('is ssr')
+
+
+  // 攔截 style 插入
+  const originalInsert = document.head.appendChild;
+  document.head.appendChild = function (el) {
+    console.log('head append child')
+    console.log(el)
+    if (el.tagName === 'STYLE') {
+      // 🚀 插到 head 最前面
+      document.head.insertBefore(el, document.head.firstChild);
+      return el;
+    }
+    return originalInsert.call(document.head, el);
+  };
+
+
+
   const store = createSSRStore();
   customer_retrieve_wepage({webpage_name:window.__SSR_PARAMS__?.webpageName||'', object_uuid:window.__SSR_PARAMS__?.objectUUID||''}).then(res=>{
     hydrateRoot(container,  <Provider store={store}>
     {/* <PersistGate loading={null} persistor={persistor}> */}
-      <WebpageBody website={res.data} webpage={res.data.webpage} mode='prod'/>
+      <WebpageBody website={res.data} webpage={res.data.webpage} object={res.data?.object} now={new Date(window.__SSR_PARAMS__?.now)} mode='prod'/>
       {/* </PersistGate> */}
   </Provider>);
   })

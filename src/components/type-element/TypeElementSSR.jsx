@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React, { lazy } from "react";
+import React, { lazy, Suspense } from "react";
 
 
 // import ClientOnly from '@/components/client-only/ClientOnly'
@@ -22,8 +22,8 @@ import ContactUsForm from "../component-instance/ContactUsForm"
 import Shop from "@/components/component-instance/shop-product/Shop"
 import CKEditorSSR from '../component-instance/my-ckeditor/CKEditorSSR'
 // import CKEditor from '../component-instance/my-ckeditor/CKEditor'
-import ProductDetailCSR from "@/components/component-instance/product-detail/ProductDetailCSR"
-import BlogPostDetailCSR from '../component-instance/blog-post-detail/BlogPostDetailCSR'
+import ProductDetailSSR from "@/components/component-instance/product-detail/ProductDetailSSR"
+import BlogPostDetailSSR from '../component-instance/blog-post-detail/BlogPostDetailSSR'
 
 
 
@@ -49,7 +49,7 @@ const TypeElementSSR = ({
             return (<RegisterForm 
                 element={element}  {...props}/>)       
         case 'product_detail':
-            return (<ProductDetailCSR 
+            return (<ProductDetailSSR 
                 element={element}  {...props}/>)  
         case 'cart_detail':
             return (<CartDetail 
@@ -85,8 +85,10 @@ const TypeElementSSR = ({
             return (<ContactUsForm 
                     element={element}  {...props}/>)  
         case 'blog_post_detail': 
-            return (<BlogPostDetailCSR 
-                element={element}  {...props}/>)  
+            return (
+                <BlogPostDetailSSR 
+                    element={element}  {...props}/>
+                )  
        
         default:
             return (<div>{element?.type}</div>)
