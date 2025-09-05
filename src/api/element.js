@@ -14,7 +14,7 @@ export const user_r_create_element = ({
    }) => {
 
     return createUserAxios().post(
-        `/api/v1/website/element/r_create/?target_webpage_uuid=${target_webpage_uuid}&target_webpage_position=${target_webpage_position}&target_element_relation_uuid=${target_element_relation_uuid}&target_relative_position=${target_relative_position}`, data)
+        `/api/v1/website/element/r_create/?target_webpage_uuid=${target_webpage_uuid}&target_webpage_position=${target_webpage_position}&target_element_relation_uuid=${target_element_relation_uuid}&target_relative_position=${target_relative_position}&socket_id=${Cookies.get('editor_socket_id')}`, data)
 }
 
 
