@@ -2,7 +2,6 @@ import Cookies from "js-cookie"
 import { customer_update_cart_product, customer_delete_cart_product, customer_clear_cart_product } from "../../api/cart"
 import cogoToast from 'cogo-toast';
 import { 
-    // setCartProducts, 
     guestUpdateCartProductQuantity, 
     deleteCartProduct,
     deleteCartAddonProduct,

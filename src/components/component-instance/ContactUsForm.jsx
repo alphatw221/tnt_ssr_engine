@@ -6,8 +6,6 @@ import style from './ContactUsForm.module.scss'
 
 // import { useSelector, useDispatch } from "react-redux";            
 import { useAppSelector, useAppDispatch  } from "@/redux/hooks";
-// import { setCustomer } from '../../redux/slices/customer-slice'
-// import { setCartProducts } from "../../redux/slices/cart-slice";
 import {customer_create_inquiry} from "@/api/inquiry"
 // import { customer_register } from "../../api/customer"
 // import Cookies from "js-cookie";

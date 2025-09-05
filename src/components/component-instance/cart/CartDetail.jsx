@@ -22,7 +22,7 @@ import {
   deleteAllCartProductV1, 
 //   getProductPrice ,
   getCartProductName, 
-  deleteCartAddonProductV1,
+
   isInventorySufficient,
   updateCartProduct,
   deleteCartProductV1,

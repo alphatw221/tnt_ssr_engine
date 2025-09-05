@@ -21,7 +21,6 @@ import {deleteCartProductV1, isInventorySufficient, getCartProductName, updateCa
 import { getProductPrice, isStockSufficient } from "@/lib/utils/productHelper";
 
 // import { customer_delete_cart_product } from "../../api/cart";
-// import { deleteCartProduct } from "../../redux/slices/cart-slice";
 import {useClickOutsideEvent} from '@/lib/utils/clickOutside.js'
 import cogoToast from 'cogo-toast';
 // import { rwdHelper, RWDPropHandler} from "../../lib/utils/rwdHelper"

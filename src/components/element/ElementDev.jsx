@@ -170,13 +170,10 @@ const ElementDev = ({ element, actions, ...props}) => {
         
         
         const updateElement = (_element)=>{
-            console.log(_element)
-            const element = JSON.parse(JSON.stringify(_element))
-            console.log(element)
-            actions?.globleUpdateElement(element?.uuid, element)
+            actions?.globleUpdateElement(element?.uuid, _element)
             user_update_element({
-                'element_uuid':element?.uuid, 
-                'data':element
+                'element_uuid':_element?.uuid, 
+                'data':{..._element, children:null}
             }).then(res=>{console.log(res.data)})
         }
         const updateElementProps = (props)=>{

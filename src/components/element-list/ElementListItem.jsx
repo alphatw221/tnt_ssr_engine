@@ -29,6 +29,8 @@ const ElementListItem =({
     actions, 
     level,
     hierarchy,
+    expandElementDict,
+    expandElementDictToggle,
     ...props
 })=> {
 
@@ -44,21 +46,19 @@ const ElementListItem =({
     const nameRef = useRef(null)
     
 
-    const [expandElementDict, setExpandElementDict] = useState(JSON?.parse(localStorage?.getItem("expand_element_dict")||"{}")||{});
-    const expandElementDictToggle = (uuid)=>{
-        const _expandWebpageDict = JSON.parse(JSON.stringify(expandElementDict))
-        if(_expandWebpageDict[uuid]){delete _expandWebpageDict[uuid]}
-        else{_expandWebpageDict[uuid] = true}
-        localStorage.setItem("expand_element_dict", JSON.stringify(_expandWebpageDict))
-        setExpandElementDict(_expandWebpageDict)
-    }
+    // const [expandElementDict, setExpandElementDict] = useState(JSON?.parse(localStorage?.getItem("expand_element_dict")||"{}")||{});
+    // const expandElementDictToggle = (uuid)=>{
+    //     const _expandWebpageDict = JSON.parse(JSON.stringify(expandElementDict))
+    //     if(_expandWebpageDict[uuid]){delete _expandWebpageDict[uuid]}
+    //     else{_expandWebpageDict[uuid] = true}
+    //     localStorage.setItem("expand_element_dict", JSON.stringify(_expandWebpageDict))
+    //     setExpandElementDict(_expandWebpageDict)
+    // }
 
     const updateElement = (_element)=>{
-
-        console.log(_element)
         user_update_element({
             'element_uuid':_element?.uuid, 
-            'data':_element
+            'data':{..._element, children:null}
         }).then(res=>{console.log(res.data)})
         actions?.globleUpdateElement(_element?.uuid, _element)
     }

@@ -9,7 +9,6 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 
 
 // import { setCurrentPageIndex, setWindowWidth } from  '../../redux/slices/website-editor-slice'
-import { setCartProducts } from "../../redux/slices/cart-slice";
 import { setCustomer } from "../../redux/slices/customer-slice";
 
 

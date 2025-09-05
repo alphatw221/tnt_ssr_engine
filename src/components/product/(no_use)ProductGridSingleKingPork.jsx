@@ -12,7 +12,6 @@
 // import style from './ProductGridSingleKingPork.module.scss'
 // import { isStockSufficient  } from "../../lib/utils/cartHelper";
 // import { getPriceRange, isDiscountApplied } from "../../lib/utils/productHelper";
-// // import { setCartProducts } from "../../store/slices/cart-slice";
 // // import { customer_update_cart_product } from "../../api/cart";
 // import cogoToast from 'cogo-toast';
 // import { updateCartProduct } from "../../lib/utils/cartHelper";

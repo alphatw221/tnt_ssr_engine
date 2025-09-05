@@ -30,6 +30,9 @@ import { v4 as uuidv4 } from 'uuid';
 const WebpageMenuItem =({
     webpage, 
     actions, 
+
+    expandWebpageDict,
+    expandWebpageDictToggle,
     ...props
 })=> {
 
@@ -44,20 +47,21 @@ const WebpageMenuItem =({
     const [iCursorHoverHeadBlock, setICursorHoverHeadBlock] = useState(false)
     const [iCursorHoverBodyBlock, setICursorHoverBodyBlock] = useState(false)
 
-    const [expandWebpageDict, setExpandWebpageDict] = useState(JSON?.parse(localStorage?.getItem("expand_webpage_dict")||"{}")||{});
-    const expandWebpageDictToggle = (uuid)=>{
-        const _expandWebpageDict = JSON.parse(JSON.stringify(expandWebpageDict))
-        if(_expandWebpageDict[uuid]){delete _expandWebpageDict[uuid]}
-        else{_expandWebpageDict[uuid] = true}
-        localStorage.setItem("expand_webpage_dict", JSON.stringify(_expandWebpageDict))
-        setExpandWebpageDict(_expandWebpageDict)
-    }
+    // const [expandWebpageDict, setExpandWebpageDict] = useState(JSON?.parse(localStorage?.getItem("expand_webpage_dict")||"{}")||{});
+    // const expandWebpageDictToggle = (uuid)=>{
+    //     const _expandWebpageDict = JSON.parse(JSON.stringify(expandWebpageDict))
+    //     if(_expandWebpageDict[uuid]){delete _expandWebpageDict[uuid]}
+    //     else{_expandWebpageDict[uuid] = true}
+    //     localStorage.setItem("expand_webpage_dict", JSON.stringify(_expandWebpageDict))
+    //     setExpandWebpageDict(_expandWebpageDict)
+    // }
 
     const updateWebpage = (_webpage)=>{
-        actions?.updateWebpage(_webpage)
+        actions?.updateWebpage({..._webpage})
     }
     const updateWebpageProps = (props)=>{
-        updateElement({...webpage, props:props})
+
+        actions?.updateWebpage({...webpage, props:props})
     }
     const updateWebpageData = (data)=>{
         actions?.updateWebpage({...webpage, data:data})

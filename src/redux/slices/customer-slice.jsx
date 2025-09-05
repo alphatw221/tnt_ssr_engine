@@ -21,13 +21,15 @@ const customerSlice = createSlice({
             }
         },
         setCustomerCartProducts(state, action){
-            return {
+            const res = {
                 ...state,
                 cart_products:action.payload,
             }
+            localStorage.setItem("customer", JSON.stringify(res))
+            return res
         },
         setCustomerCartProduct(state, action){
-            return{
+            const res = {
                 ...state,
                 cart_products:
                     state?.cart_products?.map(_cart_product=>_cart_product.uuid)?.includes(action.payload?.uuid)
@@ -43,12 +45,16 @@ const customerSlice = createSlice({
                     :
                         [...state?.cart_products, action.payload]
             }
+            localStorage.setItem("customer", JSON.stringify(res))
+            return res
         },
         customerDeleteCartProduct(state, action){
-            return {
+            const res = {
                 ...state,
                 cart_products: state.cart_products.filter(cart_product=>cart_product?.uuid!=action.payload)
             }
+            localStorage.setItem("customer", JSON.stringify(res))
+            return res
         }
     },
 });

@@ -4,8 +4,6 @@ import clsx from "clsx";
 import style from './RegisterForm.module.scss'
           
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-// import { setCustomer } from '../../redux/slices/customer-slice'
-// import { setCartProducts } from "../../redux/slices/cart-slice";
 
 import { customer_register } from "../../api/customer"
 import Cookies from "js-cookie";
@@ -248,7 +246,7 @@ const RegisterForm = ({
                         }}
                     />
                     <button className={clsx(style['顯示密碼-按鈕'], '顯示密碼-按鈕')} type="button" onClick={()=>{setViewPassword(!viewPassword)}}>
-                        <i className={clsx(style['顯示密碼-圖標'], '顯示密碼-圖標', viewPassword?"fa-solid fa-eye-slash":"fa-solid fa-eye")} />
+                        <i className={clsx(style['顯示密碼-圖標'], '顯示密碼-圖標', viewPassword?"fa fa-solid fa-eye-slash":"fa fa-solid fa-eye")} />
                     </button>
                 </div>
                 
@@ -272,7 +270,7 @@ const RegisterForm = ({
                         }}
                     />
                     <button className={clsx(style['顯示確認密碼-按鈕'], '顯示確認密碼-按鈕')} type="button" onClick={()=>{setViewConfirmPassword(!viewConfirmPassword)}}>
-                        <i className={clsx(style['顯示確認密碼-圖標'], '顯示確認密碼-圖標', viewConfirmPassword?"fa-solid fa-eye-slash":"fa-solid fa-eye")} />
+                        <i className={clsx(style['顯示確認密碼-圖標'], '顯示確認密碼-圖標', viewConfirmPassword?"fa fa-solid fa-eye-slash":"fa fa-solid fa-eye")} />
                     </button>
                 </div>
                

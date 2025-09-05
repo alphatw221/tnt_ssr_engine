@@ -1,7 +1,6 @@
 "use client"
 import {  useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setCustomer } from "@/redux/slices/customer-slice";
-// import { setCartProducts } from "../../redux/slices/cart-slice";
 import { useEffect } from "react";
 import Cookies from 'js-cookie'
 import {customer_get_account} from "@/api/customer.js"

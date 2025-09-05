@@ -1,18 +1,27 @@
-# 使用輕量級的 nginx 映像檔
-FROM --platform=linux/x86-64 nginx:alpine
+# 使用官方 Node.js LTS 版本
+FROM --platform=linux/x86-64 node:18-alpine
 
-# 拷貝靜態文件到 nginx 預設的 web 目錄
-COPY dist/client /usr/share/nginx/html
-# 拷貝自訂的 Nginx 配置文件
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-# 暴露 nginx 預設的 80 埠
-EXPOSE 80
+# 建立工作目錄
+WORKDIR /usr/src/app
 
-# 啟動 nginx
-CMD ["nginx", "-g", "daemon off;"]
+# 先複製 package.json & package-lock.json，並安裝依賴
+COPY package*.json ./
 
+# 安裝依賴 (production 環境只裝 dependencies，不裝 devDependencies)
+RUN npm ci --only=production
 
+# 複製專案程式碼
+COPY . .
 
+# 環境變數 (可選)
+ENV NODE_ENV=production
+ENV PORT=3000
 
-# docker build -t yihsuehlin/kp-vue3-enigma:latest -f Dockerfile .
-# docker run -d -p 8080:80 yihsuehlin/kp-vue3-enigma
+# 開放對外 port
+EXPOSE 3000
+
+# 啟動 Express server
+CMD ["node", "src/server.js"]
+
+# docker build -t yihsuehlin/tnt-ssr-engine-node:latest -f Dockerfile .
+# docker run -d -p 8080:80 yihsuehlin/tnt-ssr-engine-node

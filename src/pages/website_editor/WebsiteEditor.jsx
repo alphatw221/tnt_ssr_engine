@@ -82,7 +82,7 @@ const WebsiteEditor = () => {
   // const [sideMenuActive, setSideMenuActive] = useState(false)
   const [hideElementDict, setHideElementDict] = useState(JSON?.parse(localStorage?.getItem("hide_element_dict")||"{}")||{});
   const hideElementDictToggle = (uuid)=>{
-    const _hideElementDict = JSON.parse(JSON.stringify(hideElementDict))
+    const _hideElementDict = structuredClone(hideElementDict)
     if(_hideElementDict[uuid]){
       delete _hideElementDict[uuid]
     }else{
@@ -93,6 +93,25 @@ const WebsiteEditor = () => {
   }
 
   const [init, setInit] = useState(false)
+
+  const [expandWebpageDict, setExpandWebpageDict] = useState(JSON?.parse(localStorage?.getItem("expand_webpage_dict")||"{}")||{});
+  const expandWebpageDictToggle = (uuid)=>{
+      const _expandWebpageDict = structuredClone(expandWebpageDict)
+      if(_expandWebpageDict[uuid]){delete _expandWebpageDict[uuid]}
+      else{_expandWebpageDict[uuid] = true}
+      localStorage.setItem("expand_webpage_dict", JSON.stringify(_expandWebpageDict))
+      setExpandWebpageDict(_expandWebpageDict)
+  }
+
+  
+  const [expandElementDict, setExpandElementDict] = useState(JSON?.parse(localStorage?.getItem("expand_element_dict")||"{}")||{});
+  const expandElementDictToggle = (uuid)=>{
+      const _expandWebpageDict = structuredClone(expandElementDict)
+      if(_expandWebpageDict[uuid]){delete _expandWebpageDict[uuid]}
+      else{_expandWebpageDict[uuid] = true}
+      localStorage.setItem("expand_element_dict", JSON.stringify(_expandWebpageDict))
+      setExpandElementDict(_expandWebpageDict)
+  }
 
   //fetch store website data
   //get system message
@@ -120,7 +139,7 @@ const WebsiteEditor = () => {
       
       
       if(socket?.id!=sender_socket_id){
-        const _website = JSON.parse(JSON.stringify(website))
+        const _website = structuredClone(website)
         console.log('websiteFindAndReplaceElement')
         const _element = JSON.parse(element)
         console.log(_element)
@@ -131,21 +150,21 @@ const WebsiteEditor = () => {
   
     const collaboratorRemoveElement = (element_uuid, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
-        const _website = JSON.parse(JSON.stringify(website))
+        const _website = structuredClone(website)
         websiteFindAndRemoveElement(_website, element_uuid)
         setWebsite(_website)
       }
     }
     const collaboratorRemoveElementRelation = (parent_relation_uuid, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
-        const _website = JSON.parse(JSON.stringify(website))
+        const _website = structuredClone(website)
         websiteFindAndRemoveElementRelation(_website, parent_relation_uuid)
         setWebsite(_website)
       }
     }
     const collaboratorDoElementAction = (action, source_element_relation_uuid, new_parent_relation_uuid, target_webpage_uuid, target_webpage_position, target_element_relation_uuid, target_relative_position, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
-        const _website = JSON.parse(JSON.stringify(website))
+        const _website = structuredClone(website)
         const sourceElement = websiteFindElement(_website, source_element_relation_uuid)
         const newElement = {...sourceElement, parent_relation_uuid:new_parent_relation_uuid}
 
@@ -172,7 +191,7 @@ const WebsiteEditor = () => {
 
     const collaboratorCreateElement = (element, new_parent_relation_uuid, target_webpage_uuid, target_webpage_position, target_element_relation_uuid, target_relative_position, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
-        const _website = JSON.parse(JSON.stringify(website))
+        const _website = structuredClone(website)
         const newElement = {...element, parent_relation_uuid:new_parent_relation_uuid}
         if(![null, undefined, '', 'null', 'undefined'].includes(target_webpage_uuid)){
           _addWebpageElement(_website, target_webpage_uuid, target_webpage_position, newElement)
@@ -249,43 +268,43 @@ const WebsiteEditor = () => {
 
 
   const globleMoveNextTo = (sourceElement, targetElement, after)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
+    const _website = structuredClone(website)
+    const sourceElementClone = structuredClone(sourceElement)
     websiteFindAndRemoveElementRelation(_website, sourceElement?.parent_relation_uuid)
     websiteFindAndInsertElement(_website, targetElement?.parent_relation_uuid, sourceElementClone, after)
     setWebsite(_website)
   }
   const globleMoveInto = (sourceElement, targetElement, sequence, after)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
+    const _website = structuredClone(website)
+    const sourceElementClone = structuredClone(sourceElement)
     websiteFindAndRemoveElementRelation(_website, sourceElement?.parent_relation_uuid)
     websiteFindAndInsertChildElement(_website, targetElement?.parent_relation_uuid, sequence, after, sourceElementClone)
     setWebsite(_website)
   }
   const globleInsertNextTo = (sourceElement, targetParentRelationUUID, after)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
+    const _website = structuredClone(website)
+    const sourceElementClone = structuredClone(sourceElement)
     websiteFindAndInsertElement(_website, targetParentRelationUUID, sourceElementClone, after)
     setWebsite(_website)
   }
 
   const globleInsertInto = (sourceElement, targetParentRelationUUID, sequence, after)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
+    const _website = structuredClone(website)
+    const sourceElementClone = structuredClone(sourceElement)
     websiteFindAndInsertChildElement(_website, targetParentRelationUUID, sequence, after, sourceElementClone)
     setWebsite(_website)
     return _website
   }
 
   const globleUpdateElement = (element_uuid, element, __website)=>{
-    const _website = __website?__website:JSON.parse(JSON.stringify(website))
+    const _website = __website?__website:structuredClone(website)
     websiteFindAndReplaceElement(_website, element_uuid, element)
     setWebsite(_website)
     return _website
   }
 
   const globleRemoveElement = (target_parent_relation_uuid)=>{
-    const _website = JSON.parse(JSON.stringify(website))
+    const _website = structuredClone(website)
     websiteFindAndRemoveElementRelation(_website, target_parent_relation_uuid)
     setWebsite(_website)
   }
@@ -297,8 +316,8 @@ const WebsiteEditor = () => {
 
 
   const webpageMoveNextTo = (sourceWebpage, targetWebpage, after)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    const sourceWebpageClone = JSON.parse(JSON.stringify(sourceWebpage))
+    const _website = structuredClone(website)
+    const sourceWebpageClone = structuredClone(sourceWebpage)
     for(let i=0;i<(_website?.webpages||[]).length;i++){
       if(_website?.webpages[i]?.uuid===sourceWebpage?.uuid){
         _website.webpages?.splice(i,1);
@@ -314,8 +333,8 @@ const WebsiteEditor = () => {
     setWebsite(_website)
   }
   const webpageInsertNextTo = (sourceWebpage, targetWebpage, after)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    const sourceWebpageClone = JSON.parse(JSON.stringify(sourceWebpage))
+    const _website = structuredClone(website)
+    const sourceWebpageClone = structuredClone(sourceWebpage)
     for(let j=0;j<(_website?.webpages||[]).length;j++){
       if(_website?.webpages[j]?.uuid===targetWebpage?.uuid){
         _website.webpages?.splice(j+after,0, sourceWebpageClone);
@@ -325,8 +344,8 @@ const WebsiteEditor = () => {
     setWebsite(_website)
   }
   const moveIntoWebpageBody = (sourceElement, targetWebpage, sequence)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
+    const _website = structuredClone(website)
+    const sourceElementClone = structuredClone(sourceElement)
     websiteFindAndRemoveElementRelation(_website, sourceElement?.parent_relation_uuid)
     for(let i=0;i<(_website?.webpages||[]).length;i++){
       if(_website?.webpages[i]?.uuid===targetWebpage?.uuid){
@@ -337,8 +356,8 @@ const WebsiteEditor = () => {
     setWebsite(_website)
   }
   const moveIntoWebpageHead = (sourceElement, targetWebpage, sequence)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
+    const _website = structuredClone(website)
+    const sourceElementClone = structuredClone(sourceElement)
     websiteFindAndRemoveElementRelation(_website, sourceElement?.parent_relation_uuid)
     for(let i=0;i<(_website?.webpages||[]).length;i++){
       if(_website?.webpages[i]?.uuid===targetWebpage?.uuid){
@@ -349,8 +368,8 @@ const WebsiteEditor = () => {
     setWebsite(_website)
   }
   const insertIntoWebpageBody = (sourceElement, targetWebpage, sequence)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
+    const _website = structuredClone(website)
+    const sourceElementClone = structuredClone(sourceElement)
     for(let i=0;i<(_website?.webpages||[]).length;i++){
       if(_website?.webpages[i]?.uuid===targetWebpage?.uuid){
         _website.webpages?.[i]?.body_elements?.splice(sequence, 0, sourceElementClone)
@@ -360,8 +379,8 @@ const WebsiteEditor = () => {
     setWebsite(_website)
   }
   const insertIntoWebpageHead = (sourceElement, targetWebpage, sequence)=>{
-    const _website = JSON.parse(JSON.stringify(website))
-    const sourceElementClone = JSON.parse(JSON.stringify(sourceElement))
+    const _website = structuredClone(website)
+    const sourceElementClone = structuredClone(sourceElement)
     for(let i=0;i<(_website?.webpages||[]).length;i++){
       if(_website?.webpages[i]?.uuid===targetWebpage?.uuid){
         _website.webpages?.[i]?.head_elements?.splice(sequence, 0, sourceElementClone)
@@ -373,24 +392,40 @@ const WebsiteEditor = () => {
   const updateWebpage = (_webpage) =>{
     user_update_webpage({
       'webpage_uuid':_webpage?.uuid,
-      'data':_webpage
+      'data':{..._webpage, head_elements:null, body_elements:null}
     }).then(res=>{console.log(res.data)})
-    const _website = JSON.parse(JSON.stringify(website))
-    _website.webpages=(website?.webpages||[]).map((w)=>w.uuid==_webpage?.uuid?_webpage:w)
+
+    for (let i = 0; i < (website?.webpages||[]).length; i++) {
+      if (website?.webpages[i].uuid === _webpage?.uuid) {
+        website.webpages[i] = _webpage;
+        break; 
+      }
+    }
+
+    const _website = structuredClone(website)
     setWebsite(_website)
   }
 
   const _addWebpageElement = (_website, webpage_uuid, position, _element)=>{
-    _website.webpages=(_website.webpages||[]).map((w)=>
-      w.uuid==webpage_uuid
-      ?
-      position==='head'?{...w, head_elements:[_element, ...(w?.head_elements||[])]}:{...w, body_elements:[_element, ...(w?.body_elements||[])]}
-      :
-      w
-    )
+
+
+    
+    for (let i = 0; i < (_website?.webpages||[]).length; i++) {
+      const w = _website.webpages[i];
+      if (w.uuid === webpage_uuid) {
+        if (position === 'head') {
+          (w.head_elements ||= []).unshift(_element);
+        } else {
+          (w.body_elements ||= []).unshift(_element);
+        }
+        break; 
+      }
+    }
+    
+
   }
   const addWebpageElement = (webpage_uuid, position, _element)=>{
-    const _website = JSON.parse(JSON.stringify(website))
+    const _website = structuredClone(website)
     _addWebpageElement(_website, webpage_uuid, position, _element)
     setWebsite(_website)
     return _website
@@ -402,17 +437,15 @@ const WebsiteEditor = () => {
       'data':{
         name:'未命名'
       }
-    }).then(res=>{
-      console.log(res.data)
-    })
+    }).then(res=>{console.log(res.data)})
     const sudo_webpage = {name:'未命名'}
-    const _website = JSON.parse(JSON.stringify(website))
-    _website.webpages=[sudo_webpage, ...(_website.webpages||[])]
+    const _website = structuredClone(website)
+    (_website.webpages ||= []).unshift(sudo_webpage)
     setWebsite(_website)
   }
 
   const removeWebpage = (webpage_uuid) => {
-    const _website = JSON.parse(JSON.stringify(website))
+    const _website = structuredClone(website)
     for(let i=0;i<(_website?.webpages||[]).length;i++){
       if(_website?.webpages[i]?.uuid===webpage_uuid){
         _website?.webpages?.splice(i, 1)
@@ -491,7 +524,7 @@ const WebsiteEditor = () => {
         }else{
           console.log(editorMemory?.cursor)
           if(confirm('複製')){
-            dispatch(setClipBoard(JSON.parse(JSON.stringify(editorMemory?.cursor))))
+            dispatch(setClipBoard(structuredClone(editorMemory?.cursor)))
           }
         }
     }else if ((e?.key||'').toLowerCase() === 'v' && e.ctrlKey|| e.metaKey && editorMemory?.selectedTool=='iCursor'){
@@ -625,7 +658,7 @@ const WebsiteEditor = () => {
       </button>
       } */}
 
-      <EditorSideMenu website={website} actions={actions} hideElementDict={hideElementDict}/>
+      <EditorSideMenu website={website} actions={actions} hideElementDict={hideElementDict} expandWebpageDict={expandWebpageDict} expandWebpageDictToggle={expandWebpageDictToggle} expandElementDict={expandElementDict} expandElementDictToggle={expandElementDictToggle}/>
       {/* <ComponentTemplateMenu />
       <FragmentTemplateMenu actions={actions}/>
       <PageTemplateMenu actions={actions}/> */}

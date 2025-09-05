@@ -14,10 +14,11 @@ const cartSlice = createSlice({
     reducers: {
         setCartProducts(state, action){
             state.cartProducts = action.payload
+            //這邊不要加localStorage
         },
         deleteCartProduct(state, action){
-            // state.cartProducts.splice(action.payload, 1)
-            // state.cartProducts.splice(action.payload, 1)
+
+            localStorage.setItem('cart_products', JSON.stringify(state.cartProducts.filter(cartProduct=>cartProduct?.uuid!=action.payload)))
             return {
                 ...state,
                 cartProducts: state.cartProducts.filter(cartProduct=>cartProduct?.uuid!=action.payload)
@@ -45,6 +46,7 @@ const cartSlice = createSlice({
 
         },
         deleteAllCartProduct(state, action){
+            localStorage.setItem('cart_products', JSON.stringify([]))
             return {...state, cartProducts:[]}
         },
 
@@ -64,7 +66,7 @@ const cartSlice = createSlice({
 
                 ))){
 
-                state.cartProducts = state.cartProducts.map(cartProduct=>{
+                const res =  state.cartProducts.map(cartProduct=>{
                     if( 
                         cartProduct?.product?.uuid==product.uuid
                         &&
@@ -105,18 +107,8 @@ const cartSlice = createSlice({
                         }
                         cartAddonProducts = (cartAddonProducts||[]).map((_cartAddonProduct)=>{ return {..._cartAddonProduct, quantity:Math.min((_cartAddonProduct?.quantity||0), cartProduct.quantity+quantity) } })
 
-                        // console.log({
-                        //     ...cartProduct, 
-                        //     quantity:(update_compose?quantity:cartProduct.quantity+quantity), 
-                        //     compose_base:compose_base, 
-                        //     cart_compose_products:cartComposeProducts, 
-                        //     cart_addon_products:cartAddonProducts,
 
-                        // })
-
-
-
-
+                        
                         return {
                             ...cartProduct, 
                             quantity:(update_compose?quantity:cartProduct.quantity+quantity), 
@@ -131,6 +123,8 @@ const cartSlice = createSlice({
                     }
                 })
                 
+                state.cartProducts = res
+                localStorage.setItem('cart_products', JSON.stringify(res))
     
             }else{
                 const cart_compose_products = []
@@ -144,30 +138,16 @@ const cartSlice = createSlice({
                 })
 
                 const cartProduct = { 'uuid':uuidv4(), 'product':product, 'variant_product': variant_product, 'quantity' : quantity ,'compose_base':compose_base, 'cart_compose_products':cart_compose_products}
-                state.cartProducts = [...(state?.cartProducts||[]),cartProduct]
+                const res = [...(state?.cartProducts||[]),cartProduct]
+                state.cartProducts = res
+                localStorage.setItem('cart_products', JSON.stringify(res))
             }
 
 
 
 
         },
-        // updateCartProduct(state, action){
-        //     console.log(action.payload)
-        //     const {product,variant_product,quantity} = action.payload
 
-
-
-        //     customer_update_cart_product(product?.uuid||null, variant_product||null, quantity||1, null).then(res=>{
-        //         // dispatch(setCartProducts(res.data))
-        //         state.cartProducts = res.data
-        //         cogoToast.success("Added To Cart", {position: "top-right"});
-
-        //     })
-        //     // console.log(a)
-        //     // console.log(b)
-        //     // console.log(c)
-
-        // },
 
 
 
