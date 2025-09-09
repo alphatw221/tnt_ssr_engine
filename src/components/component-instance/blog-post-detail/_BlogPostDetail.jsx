@@ -54,7 +54,7 @@ const _BlogPostDetail = ({
                         <div className={clsx('上一則文章大框',style['上一則文章大框'])}>
                             <label className={clsx('上一則文章-標籤',style['上一則文章-標籤'])}>上一則文章：</label>
                             <div className={clsx('上一則文章框',style['上一則文章框'])}>
-                                <a className={clsx('上一則文章-超連結',style['上一則文章-超連結'])} href={mode=='edit'?'javascript:void(0)':`/${actions?.getRoute('blog_post_route')}/${blogPost?.pre?.uuid}`}>
+                                <a className={clsx('上一則文章-超連結',style['上一則文章-超連結'])} href={`/${routingTable?.['blog_post_route']}/${blogPost?.pre?.uuid}`}>
                                     <img className={clsx('上一則文章-圖片',style['上一則文章-圖片'])} src={blogPost?.pre?.image}></img>
                                     <h5 className={clsx('上一則文章-標題',style['上一則文章-標題'])}>{blogPost?.pre?.title}</h5>
                                 </a>
@@ -67,7 +67,7 @@ const _BlogPostDetail = ({
                         <div className={clsx('下一則文章大框',style['下一則文章大框'])}>
                             <label className={clsx('下一則文章-標籤',style['下一則文章-標籤'])}>下一則文章：</label>
                             <div className={clsx('下一則文章框',style['下一則文章框'])}>
-                                <a className={clsx('下一則文章-超連結',style['下一則文章-超連結'])} href={mode=='edit'?'javascript:void(0)':`/${actions?.getRoute('blog_post_route')}/${blogPost?.next?.uuid}`}>
+                                <a className={clsx('下一則文章-超連結',style['下一則文章-超連結'])} href={`/${routingTable?.['blog_post_route']}/${blogPost?.next?.uuid}`}>
                                     <img className={clsx('下一則文章-圖片',style['下一則文章-圖片'])} src={blogPost?.next?.image}></img>
                                     <h5 className={clsx('下一則文章-標題',style['下一則文章-標題'])}>{blogPost?.next?.title}</h5>
                                 </a>

@@ -54,6 +54,7 @@ const CartDetail = ({
     element, 
     elementProps,
     mode,
+    now,
     ...props
 
 }) => {
@@ -81,9 +82,11 @@ const CartDetail = ({
     const [totalItems, setTotalItems] = useState(0)
     const [baseCurrency, setBaseCurrency] = useState('')
     const [exchangeRates, setExchangeRates] = useState(1)
-    const now = new Date().toJSON().slice(0, 10);
+
     const [excludeUUIDs, setExcludeUUIDs] = useState({})
     const [finalExcludeUUIDs, setFinalExcludeUUIDs] = useState({})
+
+
 
 
     useEffect(()=>{
@@ -208,7 +211,7 @@ const plusOneDisabled = (cartProduct)=>{
                             // const targetProduct = getTargetProduct(cartProduct)
                             // const {sufficientStock, left} = isStockSufficient(cartProduct?.quantity, targetProduct)
                             const {composeValid} = isComposeValid(cartProduct)
-                            // const applyDiscount = isDiscountApplied(cartProduct?.product, now)
+
 
                             const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalTotalPrice, discountTotalPrice} = getProductPrice(now, cartProduct?.product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
                             const {inventoryControl, inventorySufficient, inventory} = isInventorySufficient(cartProduct)

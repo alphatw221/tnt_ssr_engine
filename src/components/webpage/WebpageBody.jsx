@@ -1,10 +1,10 @@
 
 import Element from "@/components/element/Element";
-import React, { Fragment,  } from "react";
+import React, { Fragment, useEffect, useState} from "react";
 import {convertToReactProps} from '@/lib/utils/propsConverter.js'
 
 
-const WebpageBody =  ({ website, webpage, ...props})=>{
+const WebpageBody =  ({ website, webpage, now, ...props})=>{
 
     const routingTable = {
         'customer_login_route':website?.data?.customer_login_route,
@@ -28,12 +28,16 @@ const WebpageBody =  ({ website, webpage, ...props})=>{
     const reactWebpageProps = convertToReactProps(webpageProps)
     
 
+    const [clientNow, setClientNow] = useState(now)
+    useEffect(()=>{
+        setClientNow(Date.now())
+    },[])
 
     // 動態
     return(
       <div {...reactWebpageProps}>
         {
-            (webpage?.body_elements||[]).map((e,i)=><Element key={i} element={e} routingTable={routingTable} {...props}/>)
+            (webpage?.body_elements||[]).map((e,i)=><Element key={i} element={e} routingTable={routingTable} now={clientNow} {...props}/>)
         }
       </div>
     )

@@ -13,6 +13,7 @@ import clsx from "clsx";
 // import ProductsKingPork from '../../wrappers/product/ProductsKingPork';
 // import PropTypes from "prop-types";
 // import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import Paginator from '@/components/paginator/MyPaginator.jsx';
 
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { setCacheKey } from "@/redux/slices/shop-slice"
@@ -197,7 +198,7 @@ const Shop = ({
 
 
                 <div className={clsx(style['分頁器框'], "分頁器框")}>
-                    {/* <Paginator
+                    <Paginator
                         totalRecords={cache?.[element?.uuid]?.count||0}
                         pageLimit={pageSize}
                         pageNeighbours={2}
@@ -206,7 +207,7 @@ const Shop = ({
                         pagePrevText="«"
                         pageNextText="»"
                         setOffset={()=>{}}
-                    /> */}
+                    />
                 </div>
 
             </div>

@@ -387,7 +387,7 @@ const elementBaseSettingsB = getElementBaseSettingsB()
 
             {
                 (element?.children||[]).length>0 && expandElementDict?.[element?.parent_relation_uuid] &&
-                <ElementList elements={element?.children} actions={actions} level={level+1} hierarchy={[...(hierarchy||[]), {'uuid':element?.uuid, 'parent_relation_uuid':element?.parent_relation_uuid}]} {...props}/>
+                <ElementList elements={element?.children} actions={actions} level={level+1} hierarchy={[...(hierarchy||[]), {'uuid':element?.uuid, 'parent_relation_uuid':element?.parent_relation_uuid}]} expandElementDict={expandElementDict} expandElementDictToggle={expandElementDictToggle} {...props}/>
             }
             
             <MyModal isOpen={showSettings} onClose={setShowSettings} title='元素設定' placement='right'>

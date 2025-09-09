@@ -14,7 +14,7 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { customer_search_order } from "@/api/order";
 import Cookies from "js-cookie";
 
-// import Paginator from 'react-hooks-paginator';
+import Paginator from '@/components/paginator/MyPaginator.jsx';
 
 import { setCacheKey } from "@/redux/slices/order-slice"
 import { getToFixedNumber } from "@/lib/utils/toFixedHelper";
@@ -395,7 +395,7 @@ const MyOrders = ({
 
               </table>
               <div className={clsx(style['分頁器框'], "分頁器框")}>
-                    {/* <Paginator
+                    <Paginator
                         totalRecords={(cache?.[element?.uuid]?.count||0)}
                         pageLimit={pageSize}
                         pageNeighbours={2}
@@ -407,7 +407,7 @@ const MyOrders = ({
 
                         pagePrevText="«"
                         pageNextText="»"
-                    /> */}
+                    />
               </div>
               </Fragment>
             }

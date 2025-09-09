@@ -36,6 +36,7 @@ const CheckoutForm = ({
     element, 
     elementProps,
     mode,
+    now,
     ...props
 
 
@@ -64,7 +65,10 @@ const CheckoutForm = ({
 
     // const [excludeUUIDs, setExcludeUUIDs] = useState(Object.fromEntries((searchParams.get('exclude_uuids')||'').split(',').map(key => [key, true])))
     const [finalExcludeUUIDs, setFinalExcludeUUIDs] = useState({})
-    const now = new Date().toJSON().slice(0, 10);
+
+
+
+
     const [baseCurrency, setBaseCurrency] = useState('')
     const [exchangeRates, setExchangeRates] = useState(1)
     const [logisticServices, setLogisticServices] = useState([])
@@ -183,7 +187,6 @@ const CheckoutForm = ({
     useEffect(()=>{
             const excludeUUIDs = Object.fromEntries((searchParams?.exclude_uuids||'').split(',').filter(v=>!['','null', 'undefined'].includes(v)).map(key => [key, true]))
             const {items, final_exclude_uuids, subtotal, tax, free_shipping, shipping_fee, total, contain_product_tags, apply_points_valid, apply_points_discount} = getCartSummarize(
-                // targetCartProducts, exchangeRates, now, excludeUUIDs, checkoutData, logisticServices, customer, estore?.bonus_point_policy
                 {
                     'cartProducts':targetCartProducts,
                     'exchangeRates':exchangeRates,
