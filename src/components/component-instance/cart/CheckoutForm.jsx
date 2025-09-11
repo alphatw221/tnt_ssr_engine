@@ -76,7 +76,7 @@ const CheckoutForm = ({
     const [checkoutData, setCheckoutData] = useState({
         // shipping_first_name:customer?.first_name||'', 
         // shipping_last_name:customer?.last_name||'', 
-        shipping_name:`${customer?.first_name||''}${customer?.last_name||''}`,
+        shipping_name:`${customer?.last_name||''}${customer?.first_name||''}`,
         shipping_cellphone:customer?.phone||'', 
         shipping_email:customer?.email||'', 
         shipping_address_1:'', 
