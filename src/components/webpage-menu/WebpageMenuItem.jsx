@@ -87,8 +87,10 @@ const WebpageMenuItem =({
     }
 
     const removeWebpage = ()=>{
-        actions?.removeWebpage(webpage?.uuid)
-        user_delete_webpage({'webpage_uuid':webpage?.uuid}).then(res=>{console.log(res.data)})
+        if(confirm('刪除網頁')){
+            actions?.removeWebpage(webpage?.uuid)
+            user_delete_webpage({'webpage_uuid':webpage?.uuid}).then(res=>{console.log(res.data)})
+        }
     }
 
 

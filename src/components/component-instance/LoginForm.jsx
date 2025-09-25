@@ -83,7 +83,8 @@ const LoginForm = ({
             console.log(res.data)
             dispatch(setCustomer(res.data.customer))
             localStorage.setItem("customer", JSON.stringify(res?.data?.customer));
-            Cookies.set('customer_access_token', res.data.customer_access_token)
+            var inOneDay = new Date(new Date().getTime() + 1 * 24 * 60 * 60 *1000)
+            Cookies.set('customer_access_token', res.data.customer_access_token, {expires: inOneDay})
             if(rememberMe){
                 Cookies.set('customer_me', loginData.email)
             }else{
