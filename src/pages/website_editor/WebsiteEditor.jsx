@@ -14,7 +14,10 @@ import {
   websiteCollaboratorLeft, 
   websiteCollaboratorJoin,
   websiteCollaboratorStateUpdate,
+
+  appendEditEvents,
 } from '@/redux/slices/editor-memory-slice'
+
 
 
 import { useAppDispatch, useAppSelector} from '@/redux/hooks'
@@ -139,45 +142,54 @@ const WebsiteEditor = () => {
       setSocket(socket)
     }
 
-    const collaboratorUpdateElement = (element, sender_socket_id)=>{
-      
+    const collaboratorUpdateElement = (json_data, sender_socket_id)=>{
       
       
       if(socket?.id!=sender_socket_id){
         // shallow copy 最外層
         const _website = { ...website };
-        // const _website = structuredClone(website)
         console.log('websiteFindAndReplaceElement')
-        const _element = JSON.parse(element)
-        console.log(_element)
-        websiteFindAndReplaceElement(_website, _element?.uuid, _element)
+        const {element, event} = JSON.parse(json_data)
+        websiteFindAndReplaceElement(_website, element?.uuid, element)
         setWebsite(_website)
+        dispatch(appendEditEvents(event))
       }
     }
   
-    const collaboratorRemoveElement = (element_uuid, sender_socket_id)=>{
+    const collaboratorRemoveElement = (json_data, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
         // shallow copy 最外層
         const _website = { ...website };
-        // const _website = structuredClone(website)
+        const {element_uuid, event} = JSON.parse(json_data)
         websiteFindAndRemoveElement(_website, element_uuid)
         setWebsite(_website)
+        dispatch(appendEditEvents(event))
       }
     }
-    const collaboratorRemoveElementRelation = (parent_relation_uuid, sender_socket_id)=>{
+    const collaboratorRemoveElementRelation = (json_data, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
         // shallow copy 最外層
         const _website = { ...website };
-        // const _website = structuredClone(website)
+        const {parent_relation_uuid, event} = JSON.parse(json_data)
         websiteFindAndRemoveElementRelation(_website, parent_relation_uuid)
         setWebsite(_website)
+        dispatch(appendEditEvents(event))
       }
     }
-    const collaboratorDoElementAction = (action, source_element_relation_uuid, new_parent_relation_uuid, target_webpage_uuid, target_webpage_position, target_element_relation_uuid, target_relative_position, sender_socket_id)=>{
+    const collaboratorDoElementAction = ( json_data, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
         // shallow copy 最外層
         const _website = { ...website };
-        // const _website = structuredClone(website)
+        const {
+          action, 
+          source_element_relation_uuid, 
+          new_parent_relation_uuid, 
+          target_webpage_uuid, 
+          target_webpage_position, 
+          target_element_relation_uuid, 
+          target_relative_position,
+          event
+        } = JSON.parse(json_data)
         const sourceElement = websiteFindElement(_website, source_element_relation_uuid)
         const newElement = {...sourceElement, parent_relation_uuid:new_parent_relation_uuid}
 
@@ -198,14 +210,25 @@ const WebsiteEditor = () => {
           }
         }
         setWebsite(_website)
+        dispatch(appendEditEvents(event))
        
       }
     }
 
-    const collaboratorCreateElement = (element, new_parent_relation_uuid, target_webpage_uuid, target_webpage_position, target_element_relation_uuid, target_relative_position, sender_socket_id)=>{
+    const collaboratorCreateElement = (json_data, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
         const _website = { ...website };
-        // const _website = structuredClone(website)
+
+        const {
+          element, 
+          new_parent_relation_uuid, 
+          target_webpage_uuid, 
+          target_webpage_position, 
+          target_element_relation_uuid, 
+          target_relative_position,
+          event
+        } = JSON.parse(json_data)
+
         const newElement = {...element, parent_relation_uuid:new_parent_relation_uuid}
         if(![null, undefined, '', 'null', 'undefined'].includes(target_webpage_uuid)){
           _addWebpageElement(_website, target_webpage_uuid, target_webpage_position, newElement)
@@ -219,13 +242,19 @@ const WebsiteEditor = () => {
           }
         }
         setWebsite(_website)
+        dispatch(appendEditEvents(event))
       } 
     }
 
-    const collaboratorUpdateWebsite = (_website, sender_socket_id)=>{
+    const collaboratorUpdateWebsite = (json_data, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
-        _website = JSON.parse(_website)
+        const {
+          _website, 
+          event
+        } = JSON.parse(json_data)
+
         setWebsite(_website)
+        dispatch(appendEditEvents(event))
       }
     }
 
@@ -759,7 +788,7 @@ const WebsiteEditor = () => {
   // const webpage = params?.page_name ? website.webpages.find(wp=>wp.name==params?.page_name) : website.webpages?.[0]
   // const webpageRef = useRef(params?.page_name ? website.webpages.find(wp=>wp.name==params?.page_name) : website.webpages?.[0])
   const selectedWebpage = useMemo(() => {
-    return params?.page_name ? website.webpages.find(wp=>wp.name==params?.page_name) : website.webpages?.[0]
+    return params?.page_name ? (website?.webpages||[]).find(wp=>wp.name==params?.page_name) : website?.webpages?.[0]
   }, [params?.page_name, website?.webpages]);
 
   return (

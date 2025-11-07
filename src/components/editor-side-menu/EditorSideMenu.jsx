@@ -14,7 +14,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import style from "./EditorSideMenu.module.scss"
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCoffee, faChevronLeft, faChevronRight, faBars, faGear, faFolder } from '@fortawesome/free-solid-svg-icons'
+import { faCoffee, faChevronLeft, faChevronRight, faBars, faGear, faFolder, faBook } from '@fortawesome/free-solid-svg-icons'
 import React, { Fragment, useState, useEffect } from "react";
 
 // import PageMenu from './page-menu/PageMenu'
@@ -43,6 +43,9 @@ import WebpageMenu from "@/components/webpage-menu/WebpageMenu";
 
 import FileBrowser from "@/components/file-browser/FileBrowser.jsx"
 
+import { EditEventList } from '@/components/edit-event-list';
+import { user_list_website_events } from '@/api/website_edit_event';
+
 const EditorSideMenu = ({ website, actions, ...props}) => {
   
 
@@ -57,6 +60,8 @@ const EditorSideMenu = ({ website, actions, ...props}) => {
   
   const [showWebsiteSettings, setShowWebsiteSettings] = useState(false)
   const [showFileBrowser, setShowFileBrowser] = useState(false)
+  const [showWebsiteEditEvents, setShowWebsiteEditEvents] = useState(false)
+
   const [active, setActive] = useState(false)
 
   const [nodeMenuActive, setNodeMenuActive] = useState(false)
@@ -145,6 +150,11 @@ const EditorSideMenu = ({ website, actions, ...props}) => {
             <div className={style['tooltip']} >網站設定</div>
           </div>
           
+          <div className={style['bar-button']} onClick={()=>{setShowWebsiteEditEvents(true)}}>
+            <FontAwesomeIcon icon={faBook}/>
+            <div className={style['tooltip']} >編輯記錄</div>
+          </div>
+
         </div>
         
           
@@ -197,6 +207,13 @@ const EditorSideMenu = ({ website, actions, ...props}) => {
         <FileBrowser actions={actions}/>
       </MyModal>
 
+
+      <MyModal isOpen={showWebsiteEditEvents} onClose={setShowWebsiteEditEvents} title='編輯記錄' placement='right'>
+         <EditEventList
+          fetchEventsApi={user_list_website_events}
+          pageSize={20}
+        />
+      </MyModal>
 
       <MyModal isOpen={showWebsiteSettings} onClose={setShowWebsiteSettings} title='網站設定' placement='right'>
          <ParameterizeForm  

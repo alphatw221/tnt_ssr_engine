@@ -1,0 +1,136 @@
+.event-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+
+  &:hover {
+    background: #f9fafb;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.event-icon-wrapper {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--event-color);
+  opacity: 0.9;
+}
+
+.event-icon {
+  font-size: 16px;
+  color: white;
+}
+
+.event-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.event-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.event-time {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.event-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.event-editor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-avatar,
+.editor-avatar-placeholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.editor-avatar-placeholder {
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.editor-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.event-target {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.target-type {
+  padding: 2px 6px;
+  background: #f3f4f6;
+  border-radius: 3px;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.target-separator {
+  font-size: 10px;
+  color: #d1d5db;
+}
+
+.target-name {
+  font-weight: 500;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-changes {
+  font-size: 12px;
+  color: #9ca3af;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -18,6 +18,12 @@ import clsx from "clsx";
 const { SketchPicker } = react_color
 const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
     const updateData = (value)=>{
+
+        if(value===data?.[item.key]){
+            console.log('data did not change, no update')
+            return
+        }
+        
         const d = {...data}
         d[item.key] = value
 

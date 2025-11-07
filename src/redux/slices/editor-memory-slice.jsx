@@ -5,7 +5,7 @@ import { createSlice} from "@reduxjs/toolkit";
 const EditorMemorySlice = createSlice({
     name: 'editor_memory',
     initialState: {
-        
+
         socket_id:null,
         cursor:null,//{type:'', data:{}, position:''}
         cursorDirection:null,
@@ -20,7 +20,13 @@ const EditorMemorySlice = createSlice({
         showElementOutline:false,
 
         websiteCollaborators:[],
-        
+
+        // Edit Events
+        editEvents: [],
+        editEventsLoading: false,
+        editEventsHasMore: true,
+        editEventsNextCursor: null,
+        editEventsError: null,
 
         selectedTool:null,
         showComponentSettings:false,
@@ -107,6 +113,41 @@ const EditorMemorySlice = createSlice({
             return {...state, sideMenuActive:action.payload}
         },
 
+        // Edit Events Actions
+        addNewEditEvent(state, action) {
+            // 添加新事件到列表頂部，並檢查是否已存在
+            const exists = state.editEvents.some(e => e.id === action.payload.id);
+            if (!exists) {
+                state.editEvents = [action.payload, ...state.editEvents];
+            }
+        },
+        setEditEvents(state, action) {
+            state.editEvents = action.payload;
+        },
+        appendEditEvents(state, action) {
+            // 追加事件並去重
+            const existingUuids = new Set(state.editEvents.map(e => e.uuid));
+            const newEvents = action.payload.filter(e => !existingUuids.has(e.uuid));
+            state.editEvents = [...state.editEvents, ...newEvents];
+        },
+        setEditEventsLoading(state, action) {
+            state.editEventsLoading = action.payload;
+        },
+        setEditEventsHasMore(state, action) {
+            state.editEventsHasMore = action.payload;
+        },
+        setEditEventsNextCursor(state, action) {
+            state.editEventsNextCursor = action.payload;
+        },
+        setEditEventsError(state, action) {
+            state.editEventsError = action.payload;
+        },
+        clearEditEvents(state) {
+            state.editEvents = [];
+            state.editEventsNextCursor = null;
+            state.editEventsHasMore = true;
+            state.editEventsError = null;
+        },
 
         setSelectedTool(state, action) {
             return {...state, selectedTool:action.payload}
@@ -117,7 +158,7 @@ const EditorMemorySlice = createSlice({
     },
 });
 
-export const { 
+export const {
     updateRects,
     setSocketId,
     setCollaboratorCursors,
@@ -132,12 +173,22 @@ export const {
     websiteCollaboratorLeft,
     websiteCollaboratorJoin,
     websiteCollaboratorStateUpdate,
-    
+
     setSideMenuActive,
+
+    // Edit Events exports
+    addNewEditEvent,
+    setEditEvents,
+    appendEditEvents,
+    setEditEventsLoading,
+    setEditEventsHasMore,
+    setEditEventsNextCursor,
+    setEditEventsError,
+    clearEditEvents,
 
     setSelectedTool,
     setShowComponentSettings,
-    
+
 } = EditorMemorySlice.actions;
 
 export default EditorMemorySlice.reducer;

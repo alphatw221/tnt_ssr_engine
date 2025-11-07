@@ -97,10 +97,12 @@ export function createUserAxios(){
 
 
 export function createQueryParams(query){
-
     var queryParams = '?'
     Object.entries(query).forEach(([key, value]) => {
-        queryParams+=`${key}=${value}&`
+        if (value !== null && value !== undefined) {
+            queryParams += `${key}=${value}&`
+        }
     });
-    return queryParams
+    // 移除最後一個 '&'
+    return queryParams.slice(0, -1)
 }
