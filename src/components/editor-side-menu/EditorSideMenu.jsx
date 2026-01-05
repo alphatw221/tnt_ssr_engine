@@ -18,7 +18,6 @@ import { faCoffee, faChevronLeft, faChevronRight, faBars, faGear, faFolder, faBo
 import React, { Fragment, useState, useEffect } from "react";
 
 // import PageMenu from './page-menu/PageMenu'
-// import Button from 'react-bootstrap/Button';
 
 
 // import NodeMenu from '@/components/editor-side-menu/node-menu/NodeMenu'
@@ -35,7 +34,6 @@ import { user_update_website } from '@/api/website.js'
 import {getCompnentSettings} from '@/lib/utils/componentSettings.js'
 
 import MyModal from '@/components/modal/MyModal.jsx'
-// import Offcanvas from 'react-bootstrap/Offcanvas';
 import ParameterizeForm from "@/components/parameterize-form/ParameterizeForm.jsx";
 // import EventsForm from '@/components/listen-events-form/EventsForm'
 // import CustomizeTagForm from '@/components/listen-events-form/listen-event-form/CustomizeTagForm.jsx'

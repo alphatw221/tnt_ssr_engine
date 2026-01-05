@@ -4,9 +4,9 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  base:'/ssr_engine_vite',
+  base:'/website_backend',
   build: {
-    outDir: 'dist/client',
+    outDir: 'dist/website_editor',
     emptyOutDir: true,
     rollupOptions: {
       input: {

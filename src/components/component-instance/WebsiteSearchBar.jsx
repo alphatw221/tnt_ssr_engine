@@ -15,7 +15,6 @@ import {useClickOutsideEvent} from '../../lib/utils/clickOutside.js'
 // import { customer_search_product } from "../../api/product";
 // import { customer_search_blog_post } from "../../api/blog_post";
 import { customer_search_store_results } from "../../api/estore"
-// import Spinner from 'react-bootstrap/Spinner';
 // import Link from "next/link";
 const WebsiteSearchBar = ({  
 

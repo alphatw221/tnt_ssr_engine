@@ -27,19 +27,19 @@ router.get([
 
 
 
-    // await redis.del(fullUrl);
-    // const websiteUUIDCacheKey = getHtmlCacheKey(req.get('host'))
-    // const websiteUUID = await redis.get(websiteUUIDCacheKey);
-    // if(websiteUUID){
-    //   const htmlCacheKey = getWebsiteUUIDCacheKey(websiteUUID, webpageName, objectUUID)
-    //   const cachedHtml = await redis.get(htmlCacheKey);
-    //   if (cachedHtml) {
-    //     console.log(`[Cache] 命中 ${req.get('host')} ${htmlCacheKey}`);
-    //     res.status(200).set({ 'Content-Type': 'text/html' }).end(cachedHtml);
-    //     return 
-    //   }
+    await redis.del(fullUrl);
+    const websiteUUIDCacheKey = getHtmlCacheKey(req.get('host'))
+    const websiteUUID = await redis.get(websiteUUIDCacheKey);
+    if(websiteUUID){
+      const htmlCacheKey = getWebsiteUUIDCacheKey(websiteUUID, webpageName, objectUUID)
+      const cachedHtml = await redis.get(htmlCacheKey);
+      if (cachedHtml) {
+        console.log(`[Cache] 命中 ${req.get('host')} ${htmlCacheKey}`);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(cachedHtml);
+        return 
+      }
 
-    // }
+    }
     
     console.log(`[Cache] 未命中 ${fullUrl}，開始 SSR`);
 
@@ -51,6 +51,8 @@ router.get([
 
     // SSR 模組（透過 Vite 或預編譯載入）
     let render;
+    let client_entry_path;
+
     if (vite) { //開發模式
       console.log('開發模式')
       template = await vite.transformIndexHtml(url, template);
@@ -58,24 +60,35 @@ router.get([
 
       const devPatchCode = `<script type="module" src="/src/entry-dev-patch.js"></script>`
       template = template.replace(`<!--dev-patch-->`, devPatchCode)
-
+      client_entry_path = '/src/entry-client.jsx'
 
     } else {
-      console.log('生產模式')
-      render = (await import('../../dist/server/entry-server.jsx')).getWebpageHtml;
+
+      console.log('生產模式');
+
+      client_entry_path = '/assets/entry-client.js';
+      const mod = await import('../dist/express/assets/entry-server.js');
+      console.log(mod)
+      render = mod.getWebpageHtml;
+      // render = (await import('../dist/express/assets/entry-server.js')).getWebpageHtml;
     }
 
 
     const {head, body, websiteUUID:uncachedWebsiteUUID} = await render(webpageName, objectUUID);
 
     const safeParams = JSON.stringify({ webpageName, objectUUID, now }).replace(/</g, '\\u003c');
-    const finalHTML = template.replace(`<!--app-head-->`, head).replace(`<!--app-body-->`, body).replace(`'__SSR_PARAMS_PLACEHOLDER__'`, safeParams);
+    const finalHTML = template.replace(`<!--app-head-->`, head)
+    .replace(`<!--app-body-->`, body)
+    .replace(`'__SSR_PARAMS_PLACEHOLDER__'`, safeParams)
+    .replace('<!--entry-client-->',`<script type="module" src="${client_entry_path}"></script>`);
+
+
     const htmlCacheKey = getWebsiteUUIDCacheKey(uncachedWebsiteUUID, webpageName, objectUUID)
 
     
 
-    // await redis.set(htmlCacheKey, finalHTML)
-    // await redis.set(websiteUUIDCacheKey, uncachedWebsiteUUID)
+    await redis.set(htmlCacheKey, finalHTML)
+    await redis.set(websiteUUIDCacheKey, uncachedWebsiteUUID)
 
     res.status(200).set({ 'Content-Type': 'text/html' }).end(finalHTML);
   } catch (err) {

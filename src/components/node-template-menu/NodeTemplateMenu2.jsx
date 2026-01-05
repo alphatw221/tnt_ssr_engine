@@ -11,7 +11,7 @@ import { get_categorized_node_templates } from '@/api/node_template'
 
 import NodeTemplate from "@/components/node/NodeTemplate.jsx"
 import { markdownToHtml } from "@/lib/utils/markdown.js"
-import Modal from 'react-bootstrap/Modal';
+import {Modal} from 'react-bootstrap';
 
 import "prismjs/themes/prism-tomorrow.css"; //TODO
 

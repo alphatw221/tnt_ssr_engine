@@ -2,9 +2,9 @@ import { Fragment, useState, useEffect, createRef, useRef } from "react";
 import PropTypes from "prop-types";
 
 import { Modal } from "react-bootstrap";
-import Tab from "react-bootstrap/Tab";
-import Nav from "react-bootstrap/Nav";
-import Button from 'react-bootstrap/Button';
+import {Tab} from "react-bootstrap";
+import {Nav} from "react-bootstrap";
+import {Button} from 'react-bootstrap';
 
 import { useDispatch, useSelector } from "react-redux";
 import style from './SelectFileModal.module.scss'

@@ -4,7 +4,7 @@ import clsx from "clsx";
 // import style from './TimeoutEventsForm.module.scss'
 
 
-import Button from 'react-bootstrap/Button';
+import {Button} from 'react-bootstrap';
 
 import ParameterizeForm from "../../parameterize-form/ParameterizeForm";
 // import { useAppDispatch } from "@/redux/hooks";
@@ -17,11 +17,9 @@ import ParameterizeForm from "../../parameterize-form/ParameterizeForm";
 //     setStoreCategorizedPages
 
 // } from "@/redux/slices/website-editor-slice";
-// import cogoToast from 'cogo-toast';
 
 // import html2canvas from 'html2canvas';
 // import {setWebsiteEditorSlice} from '../../redux/slices/website-editor-slice'
-// import Spinner from 'react-bootstrap/Spinner';
 
 
 const PresentEventForm=({event, setEvent, removeEvent})=>{

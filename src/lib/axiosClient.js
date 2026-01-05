@@ -11,6 +11,19 @@ const _baseURL = import.meta.env.MODE=='production'
     :
     `${import.meta.env.VITE_APP_API_PROTOCAL}://${import.meta.env.VITE_APP_API_HOSTNAME}${import.meta.env.VITE_APP_API_PORT?':'+import.meta.env.VITE_APP_API_PORT:''}`
 // const _baseURL = undefined
+
+
+const internalURL = `${import.meta.env.VITE_APP_INTERNAL_API_PROTOCAL}://${import.meta.env.VITE_APP_INTERNAL_API_HOSTNAME}${import.meta.env.VITE_APP_INTERNAL_API_PORT?':'+import.meta.env.VITE_APP_INTERNAL_API_PORT:''}`
+
+export function createInternalAxios(){
+
+    // const headers = {}
+
+    return axios.create({
+        baseURL:internalURL,
+    })
+}
+
 export function createCustomerAxiosWithoutInterceptor(){
 
     const headers = {}

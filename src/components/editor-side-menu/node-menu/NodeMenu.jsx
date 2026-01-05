@@ -3,7 +3,7 @@ import React, { Fragment, useState, useEffect, useCallback } from "react";
 import NodeMenuItem from "./NodeMenuItem";
 import style from './NodeMenu.module.scss'
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";        
-import Button from 'react-bootstrap/Button';
+import {Button} from 'react-bootstrap';
 
 
 // import { setNodeMenuActive, setNodeMenuQuery, setTargetWebsiteNode} from "@/redux/slices/website-editor-slice"

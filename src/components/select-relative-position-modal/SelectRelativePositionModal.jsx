@@ -7,7 +7,7 @@ import nodeStyle from '@/components/node/Node.module.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {  faX, faTrash, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
 
-import Button from 'react-bootstrap/Button';
+import {Button} from 'react-bootstrap';
 import { nodeDropAcceptTable, validContainerNodes } from '@/lib/utils/nodeHelper'
 import { user_r_create_node, user_r_move_node } from "@/api/node";
 import { checkDropValidHelper } from "@/lib/utils/dragDropHelper";

@@ -9,7 +9,6 @@ import style from './SideBar.module.scss'
 // import { useAppSelector } from "@/redux/hooks";   
 // import CSRComponentGrid3D from "../component-matrix/CSRComponentGrid3D";
 // import {useClickOutsideEvent} from '../../lib/utils/clickOutside.js'
-// import Offcanvas from 'react-bootstrap/Offcanvas';
 
 import { rgba2hex } from '@/lib/utils/rgba2hex'
 import { getRWDStyles } from "@/lib/utils/rwdHelper"

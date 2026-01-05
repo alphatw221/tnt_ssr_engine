@@ -42,8 +42,6 @@ import {
   websiteFindAndInsertChildElement,
 } from '@/lib/utils/elementHelper.js';
 
-// import Button from 'react-bootstrap/Button';
-// import Modal from 'react-bootstrap/Modal';
 
 // import {get_website_editor_system_message} from '@/api/system_message'
 
@@ -616,7 +614,7 @@ const WebsiteEditor = () => {
   }
 
   const switchWebpage = (webpageName)=>{
-      navigate(`/website_backend_v2/website_editor/${webpageName}`, { replace: false });
+      navigate(`/website_backend/website_editor/${webpageName}`, { replace: false });
   }
   const actions = {
       addWebpage,

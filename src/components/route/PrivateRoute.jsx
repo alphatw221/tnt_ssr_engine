@@ -37,7 +37,7 @@ const PrivateRoute = ({ children }) => {
 
   if(!user) {
     const redirect = encodeURIComponent(location.pathname);
-    return <Navigate to={`/website_backend_v2/user_login?redirect=${redirect}`} />;
+    return <Navigate to={`/website_backend/user_login?redirect=${redirect}`} />;
   }
 
   return children;

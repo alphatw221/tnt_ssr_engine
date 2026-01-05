@@ -5,8 +5,8 @@ import WebpageHead from '@/components/webpage/WebpageHead'
 import WebpageBody from '@/components/webpage/WebpageBody'
 
 
-import {customer_retrieve_wepage} from '@/api/webpage.js'
-
+// import {customer_retrieve_wepage} from '@/api/webpage.js'
+import {node_server_retrieve_wepage} from '@/api_internal/webpage.js'
 
 import { Provider } from 'react-redux';
 // import { PersistGate } from 'redux-persist/integration/react';
@@ -21,7 +21,7 @@ export async function getWebpageHtml(webpage_name, object_uuid, now, context={})
     
   const store = createSSRStore();
 
-    const res = await customer_retrieve_wepage({webpage_name, object_uuid})
+    const res = await node_server_retrieve_wepage({webpage_name, object_uuid})
 
     const websiteUUID = res.data?.uuid;
     const body =  renderToString(<Provider store={store}>

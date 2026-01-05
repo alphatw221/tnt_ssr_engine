@@ -34,7 +34,7 @@ const createServer = async ()=>{
       next();
     });
   }else{
-      app.use('/assets', express.static(resolve(root, 'dist/client/assets')));
+      app.use('/assets', express.static(resolve(root, 'dist/express/assets')));
   }
 
   app.get('/favicon.ico', (req, res) => {
@@ -42,7 +42,7 @@ const createServer = async ()=>{
   });
   //   // CSR & SSR 路由
   if (!isProd) {
-    app.use('/website_backend_v2', csrRoutes);
+    app.use('/website_backend', csrRoutes);
   }
   app.use('/', ssrRoutes);
   

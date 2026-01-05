@@ -11,7 +11,6 @@ import clsx from "clsx";
 
 import ElementTemplate from "@/components/element/element_template/ElementTemplate.jsx"
 // import { markdownToHtml } from "@/lib/utils/markdown.js"
-// import Modal from 'react-bootstrap/Modal';
 
 // import "prismjs/themes/prism-tomorrow.css"; //TODO
 

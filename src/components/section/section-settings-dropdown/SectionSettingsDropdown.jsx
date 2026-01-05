@@ -11,7 +11,7 @@ import ParameterizeForm from "../../parameterize-form/ParameterizeForm";
 import { getCompnentSettings } from "../../../lib/utils/componentSettings";
 import { useClickOutsideEvent } from "../../../lib/utils/clickOutside";
 
-import Offcanvas from 'react-bootstrap/Offcanvas';
+import {Offcanvas} from 'react-bootstrap';
 
 
 const FragmentSettingsDropdown = ({ 

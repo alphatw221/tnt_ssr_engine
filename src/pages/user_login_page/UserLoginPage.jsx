@@ -73,7 +73,7 @@ export default function LoginPage() {
 
 
       dispatch(setUser(res.data.user_data))
-      navigate(redirect||'/website_backend_v2/website_editor', {replace:true})
+      navigate(redirect||'/website_backend/website_editor', {replace:true})
       // TODO
 
 

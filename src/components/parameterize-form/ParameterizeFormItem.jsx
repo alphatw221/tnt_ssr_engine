@@ -6,12 +6,12 @@ import SelectFileModal from "../select-file-modal/SelectFileModal";
 import SelectIconModal from "../select-icon-modal/SelectIconModal"
 import Select from "react-select";
 import SearchSelect from '../search-select/SearchSelect'
-import Accordion from 'react-bootstrap/Accordion';
-import Button from 'react-bootstrap/Button';
+import {Accordion} from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 
 import DateTimePicker from 'react-datetime-picker';
 import Editor from "@monaco-editor/react";
-import { useAccordionButton } from 'react-bootstrap/AccordionButton';
+import { AccordionButton, useAccordionButton } from 'react-bootstrap';
 import clsx from "clsx";
 
 

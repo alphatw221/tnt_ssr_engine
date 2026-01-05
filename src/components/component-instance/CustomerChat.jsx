@@ -28,7 +28,7 @@ import style from "./CustomerChat.module.scss"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faComment } from '@fortawesome/free-solid-svg-icons'
 import Link from 'next/link'
-import Button from 'react-bootstrap/Button';
+import {Button} from 'react-bootstrap';
 import ChatMessage from '../component(no_use)/chat-message/ChatMessage.js'
 import DateSegment from '../component(no_use)/chat-message/DateSegment.js'
 

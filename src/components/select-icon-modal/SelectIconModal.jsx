@@ -1,8 +1,8 @@
 import { Fragment, useState, useEffect, createRef } from "react";
 import PropTypes from "prop-types";
 import { Modal } from "react-bootstrap";
-import Tab from "react-bootstrap/Tab";
-import Nav from "react-bootstrap/Nav";
+import {Tab} from "react-bootstrap";
+import {Nav} from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import style from './SelectIconModal.module.scss'
 import {user_upload_image, user_list_image} from '../../api/image'

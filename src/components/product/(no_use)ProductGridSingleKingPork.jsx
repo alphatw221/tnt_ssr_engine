@@ -13,7 +13,6 @@
 // import { isStockSufficient  } from "../../lib/utils/cartHelper";
 // import { getPriceRange, isDiscountApplied } from "../../lib/utils/productHelper";
 // // import { customer_update_cart_product } from "../../api/cart";
-// import cogoToast from 'cogo-toast';
 // import { updateCartProduct } from "../../lib/utils/cartHelper";
 // import ProductModal from "./ProductModal"
 // import { rgba2hex } from "@/lib/utils/rgba2hex";

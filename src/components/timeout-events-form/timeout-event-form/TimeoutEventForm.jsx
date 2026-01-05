@@ -4,7 +4,7 @@ import clsx from "clsx";
 // import style from './TimeoutEventsForm.module.scss'
 
 
-import Button from 'react-bootstrap/Button';
+import {Button} from 'react-bootstrap';
 // import { useAppDispatch } from "@/redux/hooks";
 // import { create_customized_component } from '../../api/component'
 // import { create_customized_fragment } from '../../api/fragment'
@@ -15,11 +15,9 @@ import Button from 'react-bootstrap/Button';
 //     setStoreCategorizedPages
 
 // } from "@/redux/slices/website-editor-slice";
-// import cogoToast from 'cogo-toast';
 
 // import html2canvas from 'html2canvas';
 // import {setWebsiteEditorSlice} from '../../redux/slices/website-editor-slice'
-// import Spinner from 'react-bootstrap/Spinner';
 
 
 const TimeoutEventForm=({timeoutEvent, setTimeoutEvent, removeTimeoutEvent})=>{

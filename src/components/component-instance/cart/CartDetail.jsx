@@ -13,7 +13,6 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 // import { cartItemStock } from "../../helpers/product";
 import { setCartProducts } from "@/redux/slices/cart-slice";
 // import { customer_delete_cart_product, customer_update_cart_product, customer_clear_cart_product } from "../../api/cart";
-// import cogoToast from 'cogo-toast';
 
 import { get_exchange_rates } from "@/api/exchange_rates";
 import { 

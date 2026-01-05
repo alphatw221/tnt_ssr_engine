@@ -7,7 +7,7 @@ import style from './SideBar.module.scss'
 
    
 // import { useAppSelector } from "@/redux/hooks";   
-import Offcanvas from 'react-bootstrap/Offcanvas';
+import {Offcanvas} from 'react-bootstrap';
 
 
 import CSRChildren from "@/components/node-matrix/CSRChildren";

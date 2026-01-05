@@ -4,7 +4,7 @@ import clsx from "clsx";
 import style from './ListenEventsForm.module.scss'
 
 
-import Button from 'react-bootstrap/Button';
+import {Button} from 'react-bootstrap';
 
 import ListenEventForm from './listen-event-form/ListenEventForm';
 

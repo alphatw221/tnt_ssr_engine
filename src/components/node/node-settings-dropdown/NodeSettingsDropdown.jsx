@@ -10,7 +10,7 @@ import clsx from "clsx";
 import ParameterizeForm from "../../parameterize-form/ParameterizeForm";
 // import { useClickOutsideEvent } from '../../../lib/utils/clickOutside.js'
 
-import Offcanvas from 'react-bootstrap/Offcanvas';
+import {Offcanvas} from 'react-bootstrap';
 import {globalSettings} from '@/lib/utils/componentSettings'
 const NodeSettingsDropdown = ({ 
 

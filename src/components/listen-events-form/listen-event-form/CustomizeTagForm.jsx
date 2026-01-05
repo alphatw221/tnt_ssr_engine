@@ -4,7 +4,7 @@ import clsx from "clsx";
 // import style from './TimeoutEventsForm.module.scss'
 
 
-import Button from 'react-bootstrap/Button';
+import {Button} from 'react-bootstrap';
 
 import ParameterizeForm from "../../parameterize-form/ParameterizeForm";
 

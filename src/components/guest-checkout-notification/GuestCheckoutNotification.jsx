@@ -15,7 +15,6 @@ import {
 
 import style from './GuestCheckoutNotification.module.scss'
 
-// import cogoToast from 'cogo-toast';
 
 
 

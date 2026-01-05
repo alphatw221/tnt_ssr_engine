@@ -1,11 +1,7 @@
 import PropTypes from "prop-types";
-// import Accordion from 'react-bootstrap/Accordion';
-// import { useAccordionButton } from 'react-bootstrap/AccordionButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse, faGear, faBars, faCaretUp, faCaretDown, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 
-// import Dropdown from 'react-bootstrap/Dropdown';
-// import SplitButton from 'react-bootstrap/SplitButton';
 
 import { useRef, Fragment, useState, useEffect } from 'react'
 import { useDrag, useDrop } from 'react-dnd'
@@ -22,7 +18,7 @@ import NodeMenu from './NodeMenu.jsx'
 // import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import Offcanvas from 'react-bootstrap/Offcanvas';
+import {Offcanvas} from 'react-bootstrap';
 import ParameterizeForm from "../../parameterize-form/ParameterizeForm.jsx";
 
 import { getCompnentSettings } from "../../../lib/utils/componentSettings.js";
@@ -33,7 +29,7 @@ import {  user_update_node, user_delete_node, user_create_node, user_r_move_node
 
 
 
-import Button from 'react-bootstrap/Button';
+import {Button} from 'react-bootstrap';
 // import { setNodeMenuActive, setNodeMenuQuery, setTargetWebsiteNode} from "@/redux/slices/website-editor-slice"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";        
 
@@ -446,7 +442,7 @@ const NodeMenuItem =({position, hierarchy, node,
                     node?.type=='webpage'?{type:'button',action:()=>{
                       //disconnect socket
                       actions?.socket?.disconnect();
-                      router.push(`/website_backend_v2/website_editor/${node?.name}`);},name:'前往'}:{},
+                      router.push(`/website_backend/website_editor/${node?.name}`);},name:'前往'}:{},
 
                     {type:'button',action:removeCurrentNode,name:'刪除', style:{marginTop:'20px'}, variant:'danger'},
                   ]} 

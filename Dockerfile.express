@@ -1,0 +1,25 @@
+# 使用官方 Node.js LTS 版本
+FROM --platform=linux/x86-64 node:20
+
+WORKDIR /app
+
+COPY package.json yarn.lock ./
+
+RUN corepack enable
+RUN yarn install --frozen-lockfile
+
+COPY . .
+COPY ./ckeditor5-build-customize ./node_modules/@ckeditor/ckeditor5-build-customize
+
+#目前這樣設置
+ENV NODE_ENV=production
+ENV PORT=3000          
+
+# 開放對外 port
+EXPOSE 3000
+
+# 啟動 Express server
+CMD ["node", "server/server.js"]
+
+# docker build -t yihsuehlin/tnt-ssr-engine-node:latest -f Dockerfile .
+# docker run -d -p 8080:80 yihsuehlin/tnt-ssr-engine-node
