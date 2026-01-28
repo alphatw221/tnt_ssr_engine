@@ -105,6 +105,55 @@
   background-color: #0056b3;
 }
 
+.送出-按鈕:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.送出-按鈕.送出中 {
+  background-color: #6c757d;
+  cursor: wait;
+}
+
+// Toast 訊息樣式
+.送出狀態訊息框 {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  z-index: 9999;
+  padding: 20px 40px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.送出狀態訊息框.顯示 {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.送出狀態訊息框.成功 {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.送出狀態訊息框.失敗 {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.送出狀態訊息 {
+  font-weight: 500;
+}
+
 
 
 

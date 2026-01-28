@@ -32,6 +32,13 @@ export const customer_get_account = () => {
 
 
 
+export const customer_forgot_password = ({email}) => {
+    return createCustomerAxios().post(`/api/v1/auth/customer/forgot_password/`, {'email':email});
+}
+
+export const customer_reset_password = ({token, password}) => {
+    return createCustomerAxios().post(`/api/v1/auth/customer/reset_password/`, {'token':token, 'password':password});
+}
 
 
 export const guest_request_cellphone_verification = ({country, cellphone}) => {

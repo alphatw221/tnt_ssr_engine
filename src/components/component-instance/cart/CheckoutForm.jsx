@@ -224,8 +224,8 @@ const CheckoutForm = ({
             }
         ).then(res=>{
             // console.log(res.data)
-            setAwaitSubmitButton(false)
-            setShowProceedAsGuestNotification(false)
+            // setAwaitSubmitButton(false)
+            // setShowProceedAsGuestNotification(false)
             if(!customer?.uuid){
                 dispatch(deleteAllCartProduct())
             }else{

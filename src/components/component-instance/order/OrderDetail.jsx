@@ -130,7 +130,7 @@ const OrderDetail = ({
                 <label className={clsx(style['訂單狀態-標籤'], '訂單狀態-標籤')}>訂單狀態 </label>
                 <span className={clsx(style['訂單狀態'], '訂單狀態', `${order_status?.[order?.status]}`)}>{order_status?.[order?.status]}</span>
 
-                {(order?.status=='awaiting_payment') && 
+                {(order?.status=='awaiting_payment') && !order?.payment_service_provider &&
                 <a className={clsx(style['付款-超連結'], '付款-超連結')} href={`/${routingTable?.['order_payment_route']}/${order?.uuid}?guest_uuid=${guestUUID}`}> 去付款</a>}
 
             </div>

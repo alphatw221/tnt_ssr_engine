@@ -14,7 +14,6 @@ import { createValidator } from "@/lib/validator"
 
 // import 'intl-tel-input/build/css/intlTelInput.css';
 // import './RegisterForm.css'
-import cogoToast from 'cogo-toast';
 // import { getRWDStyles} from "@/lib/utils/rwdHelper"
 
 
@@ -34,24 +33,44 @@ const ContactUsForm = ({
     const customer = useAppSelector((state) => state.customer);
     
     const [submitData, setSubmitData] = useState({
-        first_name:customer?.first_name||'', 
+        first_name:customer?.first_name||'',
         last_name:customer?.last_name||'',
-        phone:customer?.phone||'', 
+        phone:customer?.phone||'',
         email:customer?.email||'',
         title:'', context:''
     })
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [showMessage, setShowMessage] = useState(false)
+    const [toastMessage, setToastMessage] = useState('')
+    const [toastMessageClass, setToastMessageClass] = useState('')
 
     const [, forceUpdate] = useState();
     const contactUsFormValidator = useRef(createValidator())
 
-
+    const handleToastMessage = ({message, className})=>{
+        setToastMessage(message)
+        setToastMessageClass(className)
+        setShowMessage(true)
+        setTimeout(()=>{setShowMessage(false)},5000)
+    }
 
     const handleSubmit = (event)=>{
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         customer_create_inquiry(submitData).then(res=>{
-            cogoToast.success("訊息已送出, 專員將盡快跟您聯繫", {position: "top-right"});
+            handleToastMessage({'message':'送出成功', 'className':'成功'})
 
-        })
+            setSubmitData({
+                ...submitData,
+                title: '',
+                context: ''
+            });
 
+        }).catch(e=>{
+            handleToastMessage({'message':'錯誤.請重試', 'className':'失敗'})
+        }).finally(() => {
+            setIsSubmitting(false);
+        });
     }
 
 
@@ -144,6 +163,7 @@ const ContactUsForm = ({
                         type="text"
                         name="title"
                         placeholder="主旨"
+                        value={submitData.title}
                         onChange={(e)=>{
                         setSubmitData({...submitData, title:e.target.value})
                         }}
@@ -158,9 +178,10 @@ const ContactUsForm = ({
                 <div className={clsx(style['訊息框'], '訊息框')}>
                 
                     <label className={clsx(style['訊息-標籤'], '訊息-標籤')} >訊息：</label>
-                    <textarea   
+                    <textarea
                         className={clsx(style['訊息-輸入'], '訊息-輸入')}
                         placeholder="訊息"
+                        value={submitData.context}
                         onChange={(e)=>{
                             setSubmitData({...submitData, context:e.target.value})
                         }}
@@ -174,12 +195,19 @@ const ContactUsForm = ({
                
       
 
+                <div className={clsx(style['送出狀態訊息框'], '送出狀態訊息框', showMessage && style['顯示'], showMessage && '顯示', style[toastMessageClass], toastMessageClass)}>
+                    <span  className={clsx(style['送出狀態訊息'], '送出狀態訊息')}>
+                        {toastMessage}
+                    </span>
+                </div>
+
                 <div className={clsx(style['送出框'], '送出框')}>
-                    <button  
-                        className={clsx(style['送出-按鈕'], '送出-按鈕')}
-                        type="button"  
+                    <button
+                        className={clsx(style['送出-按鈕'], '送出-按鈕', isSubmitting && '送出中')}
+                        type="button"
+                        disabled={isSubmitting}
                         onClick={handleSubmit}>
-                        送出 Submit
+                        {isSubmitting ? '送出中...' : '送出 Submit'}
                     </button>
                 </div>
         </form>

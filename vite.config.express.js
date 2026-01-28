@@ -19,10 +19,10 @@ export default defineConfig({
   build: {
     outDir: 'dist/express/assets',
     emptyOutDir: true,
-    manifest: false,
-    define: {//redux 裡面有server code?
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
-    },
+    manifest: true,
+    // define: {//redux 裡面有server code?
+    //   'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+    // },
     lib: {
       entry: {
         'entry-client': path.resolve(__dirname, 'src/entry-client.jsx'),
@@ -46,7 +46,7 @@ export default defineConfig({
         chunkFileNames: 'chunks/[name].[hash].js',
 
         // ✅ assets (css, images) 有 hash
-        assetFileNames: '[name].[hash][extname]',
+        assetFileNames: '[name][extname]',  //hash拿掉 重新build過後網站cache不用清除
       },
     },
   },

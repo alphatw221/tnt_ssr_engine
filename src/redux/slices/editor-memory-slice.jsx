@@ -127,7 +127,7 @@ const EditorMemorySlice = createSlice({
         appendEditEvents(state, action) {
             // 追加事件並去重
             const existingUuids = new Set(state.editEvents.map(e => e.uuid));
-            const newEvents = action.payload.filter(e => !existingUuids.has(e.uuid));
+            const newEvents = (action.payload||[])?.filter(e => !existingUuids.has(e.uuid));
             state.editEvents = [...state.editEvents, ...newEvents];
         },
         setEditEventsLoading(state, action) {

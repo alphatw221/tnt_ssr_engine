@@ -47,6 +47,7 @@ export function getElementBaseSettingsB(){
                 {"name": "文字編輯器", "value": "ck_editor"}, 
                 {"name": "顧客登入表單", "value": "customer_login_form"}, 
                 {"name": "顧客註冊表單", "value": "customer_register_form"}, 
+                {"name": "顧客重設密碼表單", "value": "customer_reset_password_form"}, 
                 {"name": "商品內容", "value": "product_detail"}, 
                 {"name": "購物車內容", "value": "cart_detail"}, 
                 {"name": "結帳表單", "value": "checkout_form"}, 

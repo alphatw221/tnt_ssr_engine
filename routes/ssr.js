@@ -52,7 +52,7 @@ router.get([
     // SSR 模組（透過 Vite 或預編譯載入）
     let render;
     let client_entry_path;
-
+    let css_bundle_path = null;
     if (vite) { //開發模式
       console.log('開發模式')
       template = await vite.transformIndexHtml(url, template);
@@ -65,10 +65,15 @@ router.get([
     } else {
 
       console.log('生產模式');
-
+      const manifest = JSON.parse(
+        fs.readFileSync(
+          path.resolve('dist/express/assets/.vite/manifest.json'),
+          'utf-8'
+        )
+      )
       client_entry_path = '/assets/entry-client.js';
+      css_bundle_path = `/assets/${manifest?.['style.css']?.['file']}`
       const mod = await import('../dist/express/assets/entry-server.js');
-      console.log(mod)
       render = mod.getWebpageHtml;
       // render = (await import('../dist/express/assets/entry-server.js')).getWebpageHtml;
     }
@@ -77,11 +82,17 @@ router.get([
     const {head, body, websiteUUID:uncachedWebsiteUUID} = await render(webpageName, objectUUID);
 
     const safeParams = JSON.stringify({ webpageName, objectUUID, now }).replace(/</g, '\\u003c');
-    const finalHTML = template.replace(`<!--app-head-->`, head)
+    let finalHTML = template.replace(`<!--app-head-->`, head)
     .replace(`<!--app-body-->`, body)
     .replace(`'__SSR_PARAMS_PLACEHOLDER__'`, safeParams)
-    .replace('<!--entry-client-->',`<script type="module" src="${client_entry_path}"></script>`);
 
+
+    if(client_entry_path){
+      finalHTML = finalHTML.replace('/src/entry-client.jsx', client_entry_path)
+    }
+    if(css_bundle_path){
+      finalHTML = finalHTML.replace(`<!--css-bundle-->`, `<link rel="stylesheet" href="${css_bundle_path}">`)
+    }
 
     const htmlCacheKey = getWebsiteUUIDCacheKey(uncachedWebsiteUUID, webpageName, objectUUID)
 

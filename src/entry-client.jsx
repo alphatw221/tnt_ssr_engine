@@ -32,7 +32,6 @@ const csrBootstrap = async ()=>{
 if (isSSR) {
   console.log('is ssr')
 
-
   // 攔截 style 插入
   const originalInsert = document.head.appendChild;
   document.head.appendChild = function (el) {
@@ -46,8 +45,6 @@ if (isSSR) {
     return originalInsert.call(document.head, el);
   };
 
-
-
   const store = createSSRStore();
   customer_retrieve_wepage({webpage_name:window.__SSR_PARAMS__?.webpageName||'', object_uuid:window.__SSR_PARAMS__?.objectUUID||''}).then(res=>{
     hydrateRoot(container,  <Provider store={store}>
@@ -56,19 +53,8 @@ if (isSSR) {
       {/* </PersistGate> */}
   </Provider>);
   })
-  //TODO 取得pageName objectUUID
-  // const res = await customer_retrieve_wepage({webpage_name:window.__SSR_PARAMS__?.webpageName||'', object_uuid:window.__SSR_PARAMS__?.objectUUID||''})
-  // const store = createSSRStore();
-  // hydrateRoot(container,  <Provider store={store}>
-  //   {/* <PersistGate loading={null} persistor={persistor}> */}
-  //     <WebpageBody website={res.data} webpage={res.data.webpage} mode='prod'/>
-  //     {/* </PersistGate> */}
-  // </Provider>);
-  
+
 } else {  //csr
-
-
-
 
   console.log('csr')
   csrBootstrap();

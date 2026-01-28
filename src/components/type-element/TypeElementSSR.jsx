@@ -25,7 +25,7 @@ import CKEditorSSR from '../component-instance/my-ckeditor/CKEditorSSR'
 import ProductDetailSSR from "@/components/component-instance/product-detail/ProductDetailSSR"
 import BlogPostDetailSSR from '../component-instance/blog-post-detail/BlogPostDetailSSR'
 
-
+import ResetPasswordForm from "../component-instance/ResetPasswordForm";
 
 
 const TypeElementSSR = ({ 
@@ -89,7 +89,9 @@ const TypeElementSSR = ({
                 <BlogPostDetailSSR 
                     element={element}  {...props}/>
                 )  
-       
+        case 'customer_reset_password_form':
+                    return (<ResetPasswordForm 
+                         element={element}  {...props}/>) 
         default:
             return (<div>{element?.type}</div>)
 

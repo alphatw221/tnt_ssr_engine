@@ -150,7 +150,7 @@ const WebsiteEditor = () => {
         const {element, event} = JSON.parse(json_data)
         websiteFindAndReplaceElement(_website, element?.uuid, element)
         setWebsite(_website)
-        dispatch(appendEditEvents(event))
+        dispatch(appendEditEvents([event]))
       }
     }
   
@@ -161,7 +161,7 @@ const WebsiteEditor = () => {
         const {element_uuid, event} = JSON.parse(json_data)
         websiteFindAndRemoveElement(_website, element_uuid)
         setWebsite(_website)
-        dispatch(appendEditEvents(event))
+        dispatch(appendEditEvents([event]))
       }
     }
     const collaboratorRemoveElementRelation = (json_data, sender_socket_id)=>{
@@ -171,7 +171,7 @@ const WebsiteEditor = () => {
         const {parent_relation_uuid, event} = JSON.parse(json_data)
         websiteFindAndRemoveElementRelation(_website, parent_relation_uuid)
         setWebsite(_website)
-        dispatch(appendEditEvents(event))
+        dispatch(appendEditEvents([event]))
       }
     }
     const collaboratorDoElementAction = ( json_data, sender_socket_id)=>{
@@ -208,7 +208,7 @@ const WebsiteEditor = () => {
           }
         }
         setWebsite(_website)
-        dispatch(appendEditEvents(event))
+        dispatch(appendEditEvents([event]))
        
       }
     }
@@ -240,7 +240,7 @@ const WebsiteEditor = () => {
           }
         }
         setWebsite(_website)
-        dispatch(appendEditEvents(event))
+        dispatch(appendEditEvents([event]))
       } 
     }
 
@@ -252,7 +252,7 @@ const WebsiteEditor = () => {
         } = JSON.parse(json_data)
 
         setWebsite(_website)
-        dispatch(appendEditEvents(event))
+        dispatch(appendEditEvents([event]))
       }
     }
 
