@@ -204,7 +204,7 @@ const WebsiteEditor = () => {
           }else if(target_relative_position=='after'){
             websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 1)
           }else if(target_relative_position=='in'){
-            websiteFindAndInsertChildElement(_website, target_element_relation_uuid, 0, 0, newElement)
+            websiteFindAndInsertChildElement(_website, target_element_relation_uuid, -1, 0, newElement)
           }
         }
         setWebsite(_website)
@@ -236,7 +236,7 @@ const WebsiteEditor = () => {
           }else if(target_relative_position=='after'){
             websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 1)
           }else if(target_relative_position=='in'){
-            websiteFindAndInsertChildElement(_website, target_element_relation_uuid, 0, 0, newElement)
+            websiteFindAndInsertChildElement(_website, target_element_relation_uuid, -1, 0, newElement)
           }
         }
         setWebsite(_website)
@@ -246,6 +246,7 @@ const WebsiteEditor = () => {
 
     const collaboratorUpdateWebsite = (json_data, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
+
         const {
           _website, 
           event
@@ -550,9 +551,9 @@ const WebsiteEditor = () => {
       const w = _website.webpages[i];
       if (w.uuid === webpage_uuid) {
         if (position === 'head') {
-          (w.head_elements ||= []).unshift(_element);
+          (w.head_elements ||= []).push(_element);
         } else {
-          (w.body_elements ||= []).unshift(_element);
+          (w.body_elements ||= []).push(_element);
         }
         break; 
       }
@@ -578,7 +579,7 @@ const WebsiteEditor = () => {
     const sudo_webpage = {name:'未命名'}
     const _website = {...website};
     // const _website = structuredClone(website)
-    (_website.webpages ||= []).unshift(sudo_webpage)
+    (_website.webpages ||= []).push(sudo_webpage)
     setWebsite(_website)
   }
 
@@ -713,7 +714,7 @@ const WebsiteEditor = () => {
           elementCheckDropValidHelper(editorMemory?.clipBoard?.data, editorMemory?.cursor?.data,
             ()=>{
               if(editorMemory?.cursor?.position=='in'){
-                globleInsertInto(structuredClone(editorMemory?.clipBoard?.data), editorMemory?.cursor?.data?.parent_relation_uuid, 0, 0)
+                globleInsertInto(structuredClone(editorMemory?.clipBoard?.data), editorMemory?.cursor?.data?.parent_relation_uuid, -1, 0)
                 user_r_action_to_element({
                   'parent_relation_uuid':editorMemory?.clipBoard?.data?.parent_relation_uuid, 
                   'action':e?.shiftKey?'mirror':'clone',

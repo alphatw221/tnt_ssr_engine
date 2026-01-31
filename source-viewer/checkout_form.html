@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>checkout_form</title>
+</head>
+<body>
+<h1>checkout_form</h1>
+<h2>src/components/component-instance/cart/CheckoutForm.jsx</h2>
+<pre>
+import PropTypes from &quot;prop-types&quot;;
+import React, { Fragment, useState, useEffect, useRef } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+
+import { useAppSelector, useAppDispatch  } from &quot;@/redux/hooks&quot;;
+
+
+import { get_exchange_rates } from &quot;@/api/exchange_rates&quot;;
+import { customer_get_store_checkout_services } from &quot;@/api/estore&quot;
+import { 
+    getCartSummarize, 
+    getCartProductName, 
+    isApplyPointsValid,
+  } from &quot;@/lib/utils/cartHelper&quot;;
+import {getProductPrice} from &quot;@/lib/utils/productHelper&quot;
+
+import { createValidator } from &quot;@/lib/validator&quot;
+import style from './CheckoutForm.module.scss'
+
+import {getLogisticServiceInfo} from '@/lib/utils/logisticHelper.js'
+import {getClientIPCountryCode} from '@/fetch/ipapi'
+
+
+import { getToFixedNumber } from &quot;@/lib/utils/toFixedHelper&quot;;
+import { customer_checkout_cart } from &quot;@/api/cart&quot;;
+import GuestCheckoutNotification from '@/components/guest-checkout-notification/GuestCheckoutNotification'
+import Cookies from &quot;js-cookie&quot;;
+import { deleteAllCartProduct, setCartProducts } from &quot;@/redux/slices/cart-slice&quot;;
+import { setCustomer} from &quot;@/redux/slices/customer-slice&quot;;
+
+const CheckoutForm = ({  
+    // node,  mode, actions, update, routingTable, ...props
+
+    routingTable,
+    element, 
+    elementProps,
+    mode,
+    now,
+    ...props
+
+
+}) =&gt; {
+    
+
+    const [searchParams, setSearchParams] = useState({ redirect: null, });
+    
+    const dispatch = useAppDispatch()
+    const customer = useAppSelector((state) =&gt; state.customer);
+    const {cartProducts} = useAppSelector((state)=&gt; state.cart)
+    const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
+
+    const estore = useAppSelector((state) =&gt; state.estore);
+    const [containProductTags, setContainProductTags] = useState([])
+    const [totalItems, setTotalItems] = useState(0)
+    const [subtotal, setSubtotal] = useState(0)
+    const [tax, setTax] = useState(0)
+    const [freeShipping, setFreeShipping] = useState(0)
+    const [shippingFee, setShippingFee] = useState(0)
+    const [applyPointsValid, setApplyPointsValid] = useState(true)
+    const [applyPointsDiscount, setApplyPointsDiscount] = useState(0)
+    const [total, setTotal] = useState(0)
+    
+    const [showProceedAsGuestNotification, setShowProceedAsGuestNotification] = useState(false)
+
+    // const [excludeUUIDs, setExcludeUUIDs] = useState(Object.fromEntries((searchParams.get('exclude_uuids')||'').split(',').map(key =&gt; [key, true])))
+    const [finalExcludeUUIDs, setFinalExcludeUUIDs] = useState({})
+
+
+
+
+    const [baseCurrency, setBaseCurrency] = useState('')
+    const [exchangeRates, setExchangeRates] = useState(1)
+    const [logisticServices, setLogisticServices] = useState([])
+    // const [invoiceServices, setInvoiceServices] = useState([])
+    const [checkoutData, setCheckoutData] = useState({
+        // shipping_first_name:customer?.first_name||'', 
+        // shipping_last_name:customer?.last_name||'', 
+        shipping_name:`${customer?.last_name||''}${customer?.first_name||''}`,
+        shipping_cellphone:customer?.phone||'', 
+        shipping_email:customer?.email||'', 
+        shipping_address_1:'', 
+        shipping_address_2:'',
+        shipping_principle:'anytime',
+        customer_remark:'',
+        apply_points:0,
+
+
+
+        // logistic_service_uuid:null, 
+        // logistic_service_provider:null,
+
+        // invoice_service_uuid:null, 
+        // invoice_service_provider:null,
+
+        
+    })
+    const [awaitSubmitButton, setAwaitSubmitButton] = useState(false)
+    
+    const receiverInfoValidator = useRef(createValidator())
+    const addressInfoValidator = useRef(createValidator())
+    const invoiceInfoValidator = useRef(createValidator())
+
+    const [, forceUpdate] = useState();
+    
+    const [country, setCountry] = useState(null)
+    
+
+    //cart products preloader ?
+    useEffect(()=&gt;{
+        if(localStorage.getItem(&quot;cart_products&quot;)){
+            const _cartProducts = JSON.parse(localStorage.getItem(&quot;cart_products&quot;));
+            dispatch(setCartProducts(_cartProducts));
+        }
+    },[])
+    //customer preloader ?
+    useEffect(()=&gt;{
+            if(Cookies.get('customer_access_token')){
+                if(localStorage.getItem(&quot;customer&quot;)){
+                    const _customer = JSON.parse(localStorage.getItem(&quot;customer&quot;));
+                    dispatch(setCustomer(_customer));
+                }else{
+                    // customer_get_account().then(res=&gt;{
+                    //     console.log(res.data)
+                    //     localStorage.setItem(&quot;customer&quot;, JSON.stringify(res.data));
+                    //     dispatch(setCustomer(res.data))
+                    // }).catch(err=&gt;{
+                    //     Cookies.remove('customer_access_token')
+                    // })
+                }
+            }else{
+                localStorage.removeItem(&quot;customer&quot;);
+                dispatch(setCustomer({uuid:null}))
+            }
+        },[])
+    useEffect(()=&gt;{   
+        getClientIPCountryCode().then(_country=&gt;{
+            setCountry(_country)
+        })
+    }, [])
+    useEffect(()=&gt;{
+        if(customer?.uuid){
+            setCheckoutData({...checkoutData, 
+                shipping_name:`${customer?.first_name||''}${customer?.last_name||''}`,
+                shipping_cellphone:customer?.phone||'', 
+                shipping_email:customer?.email||'', 
+            })
+        }
+    }, [customer])
+    useEffect(()=&gt;{   
+        if(country){
+            customer_get_store_checkout_services({
+                country,
+                'logistic_service_order_by':'priority',
+            }).then(res=&gt;{
+                // console.log(res.data)
+                setLogisticServices(res?.data?.logistic_services||[])
+                // setInvoiceServices(res?.data?.invoice_services||[])
+                // if((res?.data?.invoice_services||[])?.length==1){
+                //     setCheckoutData({
+                //         ...checkoutData,
+                //         invoice_service_uuid:res?.data?.invoice_services?.[0]?.uuid,
+                //         invoice_service_provider:res?.data?.invoice_services?.[0]?.provider,
+                //     })
+                // }
+            })
+        }
+    }, [country])
+
+    useEffect(()=&gt;{   
+
+        // console.log(estore)
+        if(estore?.e_commerce_settings?.base_currency &amp;&amp; estore?.e_commerce_settings?.base_currency!=baseCurrency){
+            setBaseCurrency(estore?.e_commerce_settings?.base_currency||'TWD')
+            get_exchange_rates(estore?.e_commerce_settings?.base_currency).then(res=&gt;{
+                setExchangeRates(res?.data?.rates||{})
+            })
+        }
+    }, [estore, baseCurrency])
+
+    useEffect(() =&gt; {
+            const urlSearchParams = new URLSearchParams(window.location.search);
+            const exclude_uuids = urlSearchParams.get('exclude_uuids') || '';
+            setSearchParams({ exclude_uuids });
+    }, []);
+    
+    useEffect(()=&gt;{
+            const excludeUUIDs = Object.fromEntries((searchParams?.exclude_uuids||'').split(',').filter(v=&gt;!['','null', 'undefined'].includes(v)).map(key =&gt; [key, true]))
+            const {items, final_exclude_uuids, subtotal, tax, free_shipping, shipping_fee, total, contain_product_tags, apply_points_valid, apply_points_discount} = getCartSummarize(
+                {
+                    'cartProducts':targetCartProducts,
+                    'exchangeRates':exchangeRates,
+                    'now':now,
+                    'excludeUUIDs':excludeUUIDs,
+
+                    'checkoutData':checkoutData, 
+                    'logisticServices':logisticServices, 
+                    'customer':customer, 
+                    'bonusPointPolicy':estore?.bonus_point_policy,
+                    'baseCurrency':baseCurrency,
+                }
+            )
+            setSubtotal(subtotal)
+            setTotalItems(items)
+            setFinalExcludeUUIDs(final_exclude_uuids)
+            setTax(tax)
+            setFreeShipping(free_shipping)
+            setShippingFee(shipping_fee)
+            setApplyPointsValid(apply_points_valid)
+            setApplyPointsDiscount(apply_points_discount)
+            setTotal(total)
+            setContainProductTags(contain_product_tags)
+    }, [now, targetCartProducts, exchangeRates, searchParams, checkoutData, logisticServices])
+    
+    const nextAction = ()=&gt;{
+        setAwaitSubmitButton(true)
+        customer_checkout_cart(
+            {
+                'checkout_data':checkoutData,
+                'exclude_uuids':finalExcludeUUIDs,
+                'cart_products_data':targetCartProducts,
+                'guest_access_token':Cookies.get('guest_access_token'),
+                'country':country,
+            }
+        ).then(res=&gt;{
+            // console.log(res.data)
+            // setAwaitSubmitButton(false)
+            // setShowProceedAsGuestNotification(false)
+            if(!customer?.uuid){
+                dispatch(deleteAllCartProduct())
+            }else{
+                dispatch(setCustomer({
+                    ...customer,
+                    cart_products:(customer.cart_products||[]).filter(_cart_product=&gt;finalExcludeUUIDs?.[_cart_product?.uuid]),
+                    points:(customer?.points||0)-(checkoutData?.apply_points||0)
+                }))
+            }
+            // router.push(`/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}`)
+            window.location.href = `/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}`
+        }).catch(err=&gt;{
+            setAwaitSubmitButton(false)
+            setShowProceedAsGuestNotification(false)
+        })
+        
+    }
+    const checkout = ()=&gt;{
+
+        var allValid = true;
+        if(!receiverInfoValidator.current.allValid()){
+            receiverInfoValidator.current.showMessages()
+            forceUpdate(new Date())
+            allValid=false
+        }
+        if(checkoutData?.logistic_service_provider=='customize_deliver' &amp;&amp; !addressInfoValidator.current.allValid()){
+            addressInfoValidator.current.showMessages()
+            forceUpdate(new Date())
+            allValid=false
+        }
+        if(checkoutData?.enable_full_invoice &amp;&amp; !invoiceInfoValidator.current.allValid()){
+            invoiceInfoValidator.current.showMessages()
+            forceUpdate(new Date())
+            allValid=false
+        }
+        if(!applyPointsValid){
+            allValid=false
+        }
+        if(!allValid)return
+
+        if(!customer?.uuid ){
+            if(estore?.e_commerce_settings?.allow_guest_checkout){
+                if(Cookies.get('guest_access_token')){
+                    nextAction()
+                }else{
+                    setShowProceedAsGuestNotification(true)
+                }
+            }else{
+                setShowProceedAsGuestNotification(true)
+            }
+
+        }else{
+            nextAction()
+        }
+
+    }
+
+    return (
+        
+        &lt;div 
+           {...elementProps}
+          &gt;
+            
+            &lt;div className={clsx(style['標題框'], '標題框')}&gt;
+                &lt;h3 className={clsx(style['標題'], '標題')}&gt;結帳&lt;/h3&gt;
+            &lt;/div&gt;
+                
+            {
+                (targetCartProducts||[]).filter(_cartProduct=&gt;!finalExcludeUUIDs?.[_cartProduct?.uuid]).length &lt;= 0 &amp;&amp;
+                &lt;div className={clsx(style['無商品框'], '無商品框')}&gt;
+                    &lt;div className={clsx(style['無商品-圖標框'], '無商品-圖標框')}&gt;
+                        &lt;i className={clsx(style['無商品-圖標'], '無商品-圖標', 'pe-7s-cart')}&gt;&lt;/i&gt;
+                    &lt;/div&gt;
+                    &lt;div className={clsx(style['無商品-文字框'], '無商品-文字框')}&gt;
+                        &lt;span className={clsx(style['無商品-文字'], '無商品-文字')}&gt;
+                            無結帳商品
+                        &lt;/span&gt;
+                        {   
+                            routingTable?.['shop_route'] &amp;&amp;
+                            &lt;a href={`/${routingTable?.['shop_route']}`} className={clsx(style['購物去-超連結'], '購物去-超連結')}&gt;
+                                購物去 Shop Now
+                            &lt;/a&gt;
+                        }
+                        
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            }
+       
+
+
+
+            {
+                (targetCartProducts||[]).filter(_cartProduct=&gt;!finalExcludeUUIDs?.[_cartProduct?.uuid]).length &gt; 0 &amp;&amp; 
+                &lt;Fragment&gt;
+                    &lt;div className={clsx(style['購物車-表格框'], '購物車-表格框')}&gt;
+                        &lt;table className={clsx(style['購物車-表格'], '購物車-表格')}&gt;
+                            &lt;thead className={clsx(style['表格-頭段'], '表格-頭段')}&gt;
+                            &lt;tr className={clsx(style['表格-列'], '表格-列')}&gt;
+                                &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;圖片Image&lt;/th&gt;
+                                &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;產品名稱Product Name&lt;/th&gt;
+                                &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;單價Unit Price&lt;/th&gt;
+                                &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;數量Qty&lt;/th&gt;
+                                &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;小計Subtotal&lt;/th&gt;
+                            &lt;/tr&gt;
+                            &lt;/thead&gt;
+                            &lt;tbody className={clsx(style['表格-身體'], '表格-身體')}&gt;
+                                {
+                                (targetCartProducts||[]).filter(_cartProduct=&gt;!finalExcludeUUIDs?.[_cartProduct?.uuid])?.map((cartProduct, key) =&gt; {
+
+                                
+                                const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalTotalPrice, discountTotalPrice} = getProductPrice(now, cartProduct?.product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
+                                const [productName, variantName, composeName] = getCartProductName(cartProduct)
+                                
+                                return (
+                                    &lt;tr className={clsx(style['表格-列'], '表格-列', )} key={key}&gt;
+
+                                        &lt;td className={clsx(style['表格-圖片框'], &quot;表格-圖片框&quot;)}&gt;
+                                            &lt;a href={`/${routingTable?.['product_route']}/${cartProduct?.product?.uuid}`}&gt;
+                                            &lt;img
+                                                className={clsx(style['購物車商品-圖片'], &quot;購物車商品-圖片&quot;)}
+                                                src={cartProduct?.variant_product?.image||cartProduct.product.images?.[0]?.image}
+                                                alt=&quot;&quot;
+                                            /&gt;
+                                            &lt;/a&gt;
+                                        &lt;/td&gt;
+
+                                        &lt;td className={clsx(style['表格-名稱框'], &quot;表格-名稱框&quot;)}&gt;
+                                            &lt;a href={`/${routingTable?.['product_route']}/${cartProduct?.product?.uuid}`}&gt;
+                                                {/* &lt;h4 className={clsx(style['購物車商品-名稱'], &quot;購物車商品-名稱&quot;)}&gt;
+                                                    {getCartProductName(cartProduct)}
+                                                &lt;/h4&gt; */}
+                                                &lt;h4 className={clsx(style['購物車商品-名稱'], &quot;購物車商品-名稱&quot;)}&gt;{productName}&lt;/h4&gt;
+                                                &lt;h5 className={clsx(style['購物車商品-變體名稱'], &quot;購物車商品-變體名稱&quot;)}&gt;{variantName}&lt;/h5&gt;
+                                                &lt;h5 className={clsx(style['購物車商品-任搭名稱'], &quot;購物車商品-任搭名稱&quot;)}&gt;{composeName}&lt;/h5&gt;
+                                            &lt;/a&gt;
+                                        &lt;/td&gt;
+
+
+                                        &lt;td className={clsx(style['表格-價錢框'], &quot;表格-價錢框&quot;)}&gt;
+                                            {
+                                                isDiscountApplied ? 
+                                                &lt;Fragment&gt;
+                                                    &lt;span className={clsx('折扣後價格',style['折扣後價格'])}&gt;
+                                                        {`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(discountSinglePrice, baseCurrency)}`}
+                                                    &lt;/span&gt;
+                                                    &lt;span className={clsx('折扣前價格',style['折扣前價格'])}&gt;
+                                                        {`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(originalSinglePrice, baseCurrency)}`}
+                                                    &lt;/span&gt;
+                                                &lt;/Fragment&gt;
+                                                :
+                                                &lt;span className={clsx('商品價格',style['商品價格'])}&gt;
+                                                    {`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(originalSinglePrice, baseCurrency) }`}
+                                                &lt;/span&gt;
+                                            }
+                                        &lt;/td&gt;
+
+
+                                        &lt;td className={clsx('表格-商品數量選擇框',style['表格-商品數量選擇框'])}&gt;
+                                            &lt;span className={clsx('商品數量',style['商品數量'])}&gt;{cartProduct?.quantity}&lt;/span&gt;
+                                        &lt;/td&gt;
+                                    
+
+                                        &lt;td className={clsx('表格-小計框',style['表格-小計框'])}&gt;
+                                            &lt;span className={clsx('小計',style['小計'])}&gt;
+                                                {`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(isDiscountApplied?discountTotalPrice:originalTotalPrice, baseCurrency)}`}
+                                            &lt;/span&gt;
+                                        &lt;/td&gt;
+
+                                    
+                                    &lt;/tr&gt;
+                                )
+
+                                })}
+
+                            &lt;/tbody&gt;
+                        &lt;/table&gt;
+                    &lt;/div&gt;
+
+
+
+                    &lt;div className={clsx('運送方式框',style['運送方式框'])}&gt;
+                        &lt;div className={clsx('運送方式標題框',style['運送方式標題框'])}&gt;
+                            &lt;h5 className={clsx('運送方式標題',style['運送方式標題'])}&gt;
+                                運送方式
+                            &lt;/h5&gt;
+                        &lt;/div&gt;
+
+                        {
+                            (logisticServices||[]).length&lt;=0 &amp;&amp;
+                            &lt;div className={clsx('無可用運送方式框',style['無可用運送方式框'])}&gt;
+                                &lt;h5 className={clsx('無可用運送方式-文字',style['無可用運送方式-文字'])}&gt;無可用運送方式&lt;/h5&gt;
+                            &lt;/div&gt;
+                        }
+                        
+
+                        {/* &lt;label className={clsx('單運送方式',style['單運送方式'], )} &gt;
+                                    &lt;form action={`http://localhost:8000/api/v1/store/ecpay/logistic_html?logistic_service_uuid=${'eff07994-5124-49ba-9ef9-f3174965de79'}`} method=&quot;POST&quot;&gt;
+                                    &lt;button type=&quot;submit&quot;&gt;TEST&lt;/button&gt;&lt;/form&gt;  
+                        &lt;/label&gt; */}
+
+
+                        {
+                            (logisticServices||[]).length&gt;0 &amp;&amp;
+                            (logisticServices||[]).map((logisticService, key)=&gt;{
+
+                                const {optionFee, optionName, optionAddress, shippingFeeAfterConvertCurrency} =getLogisticServiceInfo(logisticService, exchangeRates, subtotal)
+                                return (
+                                    &lt;label key={key} className={clsx('單運送方式',style['單運送方式'], logisticService?.uuid === checkoutData?.logistic_service_uuid?`${style['選取']} 選取`:'')} &gt;
+                                        &lt;input
+                                            className={clsx('單運送方式-勾選',style['單運送方式-勾選'])}
+                                            type=&quot;radio&quot;
+                                            value={logisticService.uuid}
+                                            checked={logisticService?.uuid === checkoutData?.logistic_service_uuid? &quot;checked&quot;: &quot;&quot;}
+                                            onChange={(e) =&gt; {
+                                                setCheckoutData({...checkoutData, logistic_service_uuid:logisticService?.uuid, logistic_service_provider:logisticService?.provider})
+                                            }}
+                                        /&gt;
+                                        &lt;span className={clsx('單運送方式-文字',style['單運送方式-文字'])}&gt;{optionName}&lt;/span&gt;  
+                                        {
+                                            optionFee &amp;&amp;
+                                            &lt;span className={clsx('單運送方式-費用',style['單運送方式-費用'])}&gt;{optionFee}&lt;/span&gt;  
+
+                                        }
+                                        {
+                                            optionAddress &amp;&amp;
+                                            &lt;span className={clsx('單運送方式-地址',style['單運送方式-地址'])}&gt;{optionAddress}&lt;/span&gt;  
+
+                                        }
+                                    &lt;/label&gt;
+                                );
+                            })
+                        }
+
+                        {receiverInfoValidator.current.message(&quot;logistic_service_provider&quot;, checkoutData?.logistic_service_provider, &quot;required&quot;, {className:'不合規提示'})}
+                    &lt;/div&gt;
+                      
+
+                    &lt;div className={clsx('運送資料框',style['運送資料框'])}&gt;
+                        &lt;div className={clsx('運送資料標題框',style['運送資料標題框'])}&gt;
+                            &lt;h5 className={clsx('運送資料標題',style['運送資料標題'])}&gt;
+                                運送資料
+                            &lt;/h5&gt;
+                        &lt;/div&gt;
+
+
+                        &lt;div className={clsx(style['收件人姓名框'], '收件人姓名框')}&gt;
+                            &lt;label className={clsx(style['收件人姓名-標籤'], '收件人姓名-標籤')}&gt;收件人姓名：&lt;/label&gt;
+                            &lt;input
+                                className={clsx(style['收件人姓名-輸入'], '收件人姓名-輸入')}
+                                type=&quot;text&quot;
+                                name=&quot;shipping_name&quot;
+                                placeholder=&quot;收件人姓名&quot;
+                                value={checkoutData?.shipping_name}
+                                onChange={(e)=&gt;{
+                                    setCheckoutData({...checkoutData, shipping_name:e.target.value})
+                                }}
+                                onBlur={() =&gt; {
+                                    receiverInfoValidator.current.showMessageFor(&quot;shipping_name&quot;)
+                                    forceUpdate(new Date())
+                                }}
+                            /&gt;
+                            {receiverInfoValidator.current.message(&quot;shipping_name&quot;, checkoutData?.shipping_name, &quot;required&quot;, {className:'不合規提示'})}
+                        &lt;/div&gt;
+
+                        {
+                        // &lt;div className={clsx(style['收件人名字框'], '收件人名字框')}&gt;
+                        //     &lt;label className={clsx(style['收件人名字-標籤'], '收件人名字-標籤')}&gt;收件人名字：&lt;/label&gt;
+                        //     &lt;input
+                        //         className={clsx(style['收件人名字-輸入'], '收件人名字-輸入')}
+                        //         type=&quot;text&quot;
+                        //         name=&quot;shipping_first_name&quot;
+                        //         placeholder=&quot;收件人名字&quot;
+                        //         value={checkoutData?.shipping_first_name}
+                        //         onChange={(e)=&gt;{
+                        //             setCheckoutData({...checkoutData, shipping_first_name:e.target.value})
+                        //         }}
+                        //         onBlur={() =&gt; {
+                        //             receiverInfoValidator.current.showMessageFor(&quot;shipping_first_name&quot;)
+                        //             forceUpdate(new Date())
+                        //         }}
+                        //     /&gt;
+                        //     {receiverInfoValidator.current.message(&quot;shipping_first_name&quot;, checkoutData?.shipping_first_name, &quot;required&quot;, {className:'不合規提示'})}
+                        // &lt;/div&gt;
+                            
+                        // &lt;div className={clsx(style['收件人姓氏框'], '收件人姓氏框')}&gt;
+                        //     &lt;label className={clsx(style['收件人姓氏-標籤'], '收件人姓氏-標籤')}&gt;收件人姓氏：&lt;/label&gt;
+                        //     &lt;input
+                        //         className={clsx(style['收件人姓氏-輸入'], '收件人姓氏-輸入')}
+                        //         type=&quot;text&quot;
+                        //         name=&quot;customer-last-name&quot;
+                        //         placeholder=&quot;收件人姓氏&quot;
+                        //         value={checkoutData?.shipping_last_name}
+                        //         onChange={(e)=&gt;{
+                        //             setCheckoutData({...checkoutData, shipping_last_name:e.target.value})
+                        //         }}
+                        //         onBlur={() =&gt; {
+                        //             receiverInfoValidator.current.showMessageFor(&quot;shipping_last_name&quot;)
+                        //             forceUpdate(new Date())
+                        //         }}
+                        //     /&gt;
+                        //     {receiverInfoValidator.current.message(&quot;shipping_last_name&quot;, checkoutData?.shipping_last_name, &quot;required&quot;, {className:'不合規提示'})}
+                        // &lt;/div&gt;
+                        }
+                        &lt;div className={clsx(style['收件人電話框'], '收件人電話框')}&gt;
+                            &lt;label className={clsx(style['收件人電話-標籤'], '收件人電話-標籤')}&gt;收件人電話：&lt;/label&gt;
+                            &lt;input
+                                className={clsx(style['收件人電話-輸入'], '收件人電話-輸入')}
+                                type=&quot;tel&quot;
+                                value={checkoutData?.shipping_cellphone}
+                                placeholder=&quot;收件人電話&quot;
+                                onChange={(e)=&gt;{
+                                    setCheckoutData({...checkoutData, shipping_cellphone:e.target.value})
+                                }}
+                                onBlur={() =&gt; {
+                                    receiverInfoValidator.current.showMessageFor(&quot;shipping_cellphone&quot;)
+                                    forceUpdate(new Date())
+                                }}
+                            /&gt;
+                            {receiverInfoValidator.current.message(&quot;shipping_cellphone&quot;, checkoutData?.shipping_cellphone, &quot;required&quot;, {className:'不合規提示'})}
+                        &lt;/div&gt;
+
+
+                        &lt;div className={clsx(style['收件人信箱：框'], '收件人信箱：框')}&gt;
+                            &lt;label className={clsx(style['收件人信箱-標籤'], '收件人信箱-標籤')}&gt;收件人信箱：&lt;/label&gt;
+                            &lt;input
+                                className={clsx(style['收件人信箱-輸入'], '收件人信箱-輸入')}
+                                type=&quot;email&quot;
+                                name=&quot;shipping_email&quot;
+                                placeholder=&quot;收件人信箱&quot;
+                                value={checkoutData?.shipping_email}
+                                onChange={(e)=&gt;{
+                                    setCheckoutData({...checkoutData, shipping_email:e.target.value})
+                                }}
+                                onBlur={() =&gt; {
+                                    receiverInfoValidator.current.showMessageFor(&quot;shipping_email&quot;)
+                                    forceUpdate(new Date())
+                                }}
+                            /&gt;
+                            {receiverInfoValidator.current.message(&quot;shipping_email&quot;, checkoutData?.shipping_email, &quot;required|email&quot;, {className:'不合規提示'})}
+                        &lt;/div&gt;
+                        {
+                            checkoutData?.logistic_service_provider=='customize_deliver' &amp;&amp;
+                            &lt;Fragment&gt;
+                                &lt;div className={clsx(style['收件人地址框1'], '收件人地址框1')}&gt;
+                                    &lt;label className={clsx(style['收件人地址1-標籤'], '收件人地址1-標籤')}&gt;收件人地址1：&lt;/label&gt;
+                                    &lt;input
+                                        className={clsx(style['收件人地址1-輸入'], '收件人地址1-輸入')}
+                                        type=&quot;text&quot;
+                                        name=&quot;shipping_address_1&quot;
+                                        placeholder=&quot;收件人地址1&quot;
+                                        value={checkoutData?.shipping_address_1}
+                                        onChange={(e)=&gt;{
+                                            setCheckoutData({...checkoutData, shipping_address_1:e.target.value})
+                                        }}
+                                        onBlur={() =&gt; {
+                                            addressInfoValidator.current.showMessageFor(&quot;shipping_address_1&quot;)
+                                            forceUpdate(new Date());
+                                        }}
+                                    /&gt;
+                                    {addressInfoValidator.current.message(&quot;shipping_address_1&quot;, checkoutData?.shipping_address_1, &quot;required&quot;, {className:'不合規提示'})}
+                                &lt;/div&gt;
+                                
+                                &lt;div className={clsx(style['收件人地址框2'], '收件人地址框2')}&gt;
+                                    &lt;label className={clsx(style['收件人地址2-標籤'], '收件人地址2-標籤')}&gt;收件人地址2：&lt;/label&gt;
+                                    &lt;input
+                                        className={clsx(style['收件人地址2-輸入'], '收件人地址2-輸入')}
+                                        type=&quot;text&quot;
+                                        name=&quot;shipping_address_2&quot;
+                                        placeholder=&quot;收件人地址2&quot;
+                                        value={checkoutData?.shipping_address_2}
+                                        onChange={(e)=&gt;{
+                                            setCheckoutData({...checkoutData, shipping_address_2:e.target.value})
+                                        }}
+                                    /&gt;
+                                &lt;/div&gt;
+
+
+                                &lt;div className={clsx(style['出貨時間框'], '出貨時間框')}&gt;
+                                    &lt;label className={clsx(style['出貨時間-標籤'], '出貨時間-標籤')}&gt;出貨時間：&lt;/label&gt;
+                                    
+                                    &lt;div className={clsx(style['出貨時間選項框'], '出貨時間選項框')}&gt;
+
+                                        &lt;label className={clsx('單出貨時間選項',style['單出貨時間選項'], checkoutData?.shipping_principle==='anytime'?`${style['選取']} 選取`:'')} &gt;
+                                            &lt;input
+                                                className={clsx('出貨時間-勾選',style['出貨時間-勾選'])}
+                                                type=&quot;radio&quot;
+                                                value={'anytime'}
+                                                checked={ checkoutData?.shipping_principle=='anytime'? &quot;checked&quot;: &quot;&quot;}
+                                                onChange={(e) =&gt; {
+                                                    setCheckoutData({...checkoutData, shipping_principle:'anytime'})
+                                                }}
+                                            /&gt;
+                                            &lt;span className={clsx('出貨時間-文字',style['出貨時間-文字'])}&gt;隨時可出貨&lt;/span&gt;  
+                                        &lt;/label&gt;
+                                        &lt;label className={clsx('單出貨時間選項',style['單出貨時間選項'], checkoutData?.shipping_principle==='notify_before_shipping'?`${style['選取']} 選取`:'')} &gt;
+                                            &lt;input
+                                                className={clsx('出貨時間-勾選',style['單出貨時間-勾選'])}
+                                                type=&quot;radio&quot;
+                                                value={'notify_before_shipping'}
+                                                checked={ checkoutData?.shipping_principle=='notify_before_shipping'? &quot;checked&quot;: &quot;&quot;}
+                                                onChange={(e) =&gt; {
+                                                    setCheckoutData({...checkoutData, shipping_principle:'notify_before_shipping'})
+                                                }}
+                                            /&gt;
+                                            &lt;span className={clsx('出貨時間-文字',style['出貨時間-文字'])}&gt;出貨前電話通知我&lt;/span&gt;  
+                                        &lt;/label&gt;
+                                        &lt;label className={clsx('單出貨時間選項',style['單出貨時間選項'], checkoutData?.shipping_principle==='wait_for_notification'?`${style['選取']} 選取`:'')} &gt;
+                                            &lt;input
+                                                className={clsx('出貨時間-勾選',style['出貨時間-勾選'])}
+                                                type=&quot;radio&quot;
+                                                value={'wait_for_notification'}
+                                                checked={ checkoutData?.shipping_principle=='wait_for_notification'? &quot;checked&quot;: &quot;&quot;}
+                                                onChange={(e) =&gt; {
+                                                    setCheckoutData({...checkoutData, shipping_principle:'wait_for_notification'})
+                                                }}
+                                            /&gt;
+                                            &lt;span className={clsx('出貨時間-文字',style['出貨時間-文字'])}&gt;等候我通知日期再出貨&lt;/span&gt;  
+                                        &lt;/label&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+
+
+                            &lt;/Fragment&gt;
+                        }
+                        &lt;div className={clsx(style['備註框'], '備註框')}&gt;
+                            &lt;label className={clsx(style['備註-標籤'], '備註-標籤')}&gt;備註：&lt;/label&gt;
+                            &lt;input
+                                className={clsx(style['備註-輸入'], '備註-輸入')}
+                                type=&quot;text&quot;
+                                name=&quot;customer_remark&quot;
+                                placeholder=&quot;備註&quot;
+                                value={checkoutData?.customer_remark}
+                                onChange={(e)=&gt;{
+                                    setCheckoutData({...checkoutData, customer_remark:e.target.value})
+                                }}
+                            /&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                    
+                    
+
+
+                    {
+                        // (invoiceServices||[]).length&gt;1 &amp;&amp;
+                        // &lt;div className={clsx('發票選項框',style['發票選項框'])}&gt;
+                        //     &lt;div className={clsx('發票選項標題框',style['發票選項標題框'])}&gt;
+                        //         &lt;h5 className={clsx('發票選項標題',style['發票選項標題'])}&gt;
+                        //             發票選項
+                        //         &lt;/h5&gt;
+                        //     &lt;/div&gt;
+                        //     {
+                        //         (invoiceServices||[]).map((invoiceService, key)=&gt;{
+
+                        //             return (
+                        //                 &lt;label key={key} className={clsx('單發票開立方式',style['單發票開立方式'], invoiceService?.uuid === checkoutData?.invoice_service_uuid?`${style['選取']} 選取`:'')} &gt;
+                        //                     &lt;input
+                        //                         className={clsx('單發票開立方式-勾選',style['單發票開立方式-勾選'])}
+                        //                         type=&quot;radio&quot;
+                        //                         value={invoiceService.uuid}
+                        //                         checked={invoiceService?.uuid === checkoutData?.invoice_service_uuid? &quot;checked&quot;: &quot;&quot;}
+                        //                         onChange={(e) =&gt; {
+                        //                             setCheckoutData({...checkoutData, invoice_service_uuid:invoiceService?.uuid, invoice_service_provider:invoiceService?.provider})
+                        //                         }}
+                        //                     /&gt;
+                        //                     &lt;span className={clsx('單發票開立方式-文字',style['單發票開立方式-文字'])}&gt;{invoiceService?.provider}&lt;/span&gt;  
+                        //                 &lt;/label&gt;
+                        //             );
+                        //         })
+                        //     }
+
+                        //     {receiverInfoValidator.current.message(&quot;invoice_service_provider&quot;, checkoutData?.invoice_service_provider, &quot;required&quot;, {className:'不合規提示'})}
+                        // &lt;/div&gt;
+                    }
+
+
+
+
+
+                    &lt;div className={clsx('發票開立資訊框',style['發票開立資訊框'])}&gt;
+                        &lt;div className={clsx('發票開立資訊標題框',style['發票開立資訊標題框'])}&gt;
+                            &lt;h5 className={clsx('發票開立資訊標題',style['發票開立資訊標題'])}&gt;
+                                發票開立資訊
+                            &lt;/h5&gt;
+                        &lt;/div&gt;
+
+                        &lt;div className={clsx(style['發票類型框'], '發票類型框')}&gt;
+                            &lt;label className={clsx('發票類型',style['發票類型'], !checkoutData?.enable_full_invoice?`${style['選取']} 選取`:'')} &gt;
+                                &lt;input
+                                    className={clsx('發票類型-勾選',style['發票類型-勾選'])}
+                                    type=&quot;radio&quot;
+                                    value={''}
+                                    checked={ !checkoutData?.enable_full_invoice? &quot;checked&quot;: &quot;&quot;}
+                                    onChange={(e) =&gt; {
+                                        setCheckoutData({...checkoutData, enable_full_invoice:false})
+                                    }}
+                                /&gt;
+                                &lt;span className={clsx('發票類型-文字',style['發票類型-文字'])}&gt;二聯式&lt;/span&gt;  
+                            &lt;/label&gt;
+                            &lt;label className={clsx('發票類型',style['發票類型'], checkoutData?.enable_full_invoice?`${style['選取']} 選取`:'')} &gt;
+                                &lt;input
+                                    className={clsx('發票類型-勾選',style['發票類型-勾選'])}
+                                    type=&quot;radio&quot;
+                                    value={''}
+                                    checked={checkoutData?.enable_full_invoice? &quot;checked&quot;: &quot;&quot;}
+                                    onChange={(e) =&gt; {
+                                        setCheckoutData({...checkoutData, enable_full_invoice:true})
+                                    }}
+                                /&gt;
+                                &lt;span className={clsx('發票類型-文字',style['發票類型-文字'])}&gt;三聯式&lt;/span&gt;  
+                            &lt;/label&gt;
+                        &lt;/div&gt;
+
+                        {
+                            checkoutData?.enable_full_invoice &amp;&amp;
+                            &lt;Fragment&gt;
+                                &lt;div className={clsx(style['統一編號框'], '統一編號框')}&gt;
+                                    &lt;label className={clsx(style['統一編號-標籤'], '統一編號-標籤')}&gt;統一編號：&lt;/label&gt;
+                                    &lt;input
+                                        className={clsx(style['統一編號-輸入'], '統一編號-輸入')}
+                                        type=&quot;text&quot;
+                                        name=&quot;business_registration_number&quot;
+                                        placeholder=&quot;統一編號&quot;
+                                        value={checkoutData?.business_registration_number}
+                                        onChange={(e)=&gt;{
+                                            setCheckoutData({...checkoutData, business_registration_number:e.target.value})
+                                        }}
+                                        onBlur={() =&gt; {
+                                            invoiceInfoValidator.current.showMessageFor(&quot;business_registration_number&quot;)
+                                            forceUpdate(new Date());
+                                        }}
+                                    /&gt;
+                                    {invoiceInfoValidator.current.message(&quot;business_registration_number&quot;, checkoutData?.business_registration_number, &quot;required&quot;, {className:'不合規提示'})}
+                                &lt;/div&gt;
+                                &lt;div className={clsx(style['公司抬頭框'], '公司抬頭框')}&gt;
+                                    &lt;label className={clsx(style['公司抬頭-標籤'], '公司抬頭-標籤')}&gt;公司抬頭：&lt;/label&gt;
+                                    &lt;input
+                                        className={clsx(style['公司抬頭-輸入'], '公司抬頭-輸入')}
+                                        type=&quot;text&quot;
+                                        name=&quot;company_name&quot;
+                                        placeholder=&quot;公司抬頭&quot;
+                                        value={checkoutData?.company_name}
+                                        onChange={(e)=&gt;{
+                                            setCheckoutData({...checkoutData, company_name:e.target.value})
+                                        }}
+                                    /&gt;
+                                &lt;/div&gt;
+                            &lt;/Fragment&gt;
+                        }
+                    &lt;/div&gt;
+
+
+                    &lt;div className={clsx('結帳表單-總計框',style['結帳表單-總計框'])}&gt;
+                        &lt;div className={clsx('總計標題框',style['總計標題框'])}&gt;
+                            &lt;h5 className={clsx('總計標題',style['總計標題'])}&gt;
+                                總計
+                            &lt;/h5&gt;
+                        &lt;/div&gt;
+
+                        &lt;div className={clsx('商品件數框',style['商品件數框'])}&gt;
+                            &lt;h5 className={clsx('商品件數-文字',style['商品件數-文字'])}&gt;
+                                商品件數:
+                            &lt;/h5&gt;
+                            &lt;span className={clsx('商品件數',style['商品件數'])}&gt;
+                                {totalItems}
+                            &lt;/span&gt;
+                        &lt;/div&gt;
+                        
+                        &lt;div className={clsx('小計框',style['小計框'])}&gt;
+                            &lt;h5 className={clsx('小計-文字',style['小計-文字'])}&gt;
+                                小計:
+                            &lt;/h5&gt;
+                            &lt;span className={clsx('小計',style['小計'])}&gt;
+                                {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(subtotal, baseCurrency)}`}
+                            &lt;/span&gt;
+                        &lt;/div&gt;
+                        
+                        &lt;div className={clsx('稅金框',style['稅金框'])}&gt;
+                            &lt;h5 className={clsx('稅金-文字',style['稅金-文字'])}&gt;
+                                稅金:
+                            &lt;/h5&gt;
+                            &lt;span className={clsx('稅金',style['稅金'])}&gt;
+                                {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(tax, baseCurrency)}`}
+                            &lt;/span&gt;
+                        &lt;/div&gt;
+
+                        {
+                            freeShipping?
+                            &lt;div className={clsx('免運費框',style['免運費框'])}&gt;
+                                &lt;h5 className={clsx('免運費-文字',style['免運費-文字'])}&gt;
+                                    免運費
+                                &lt;/h5&gt;
+                            &lt;/div&gt;
+                            :
+                            &lt;div className={clsx('運費框',style['運費框'])}&gt;
+                                &lt;h5 className={clsx('運費框-文字',style['運費框-文字'])}&gt;
+                                    運費:
+                                &lt;/h5&gt;
+                                &lt;span className={clsx('運費',style['運費'])}&gt;
+                                    {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(shippingFee, baseCurrency)}`}
+                                &lt;/span&gt;
+                            &lt;/div&gt;
+                        }
+
+                        &lt;div className={clsx('使用紅利框',style['使用紅利框'])}&gt;
+                            &lt;h5 className={clsx('使用紅利-文字',style['使用紅利-文字'])}&gt;
+                                使用紅利:
+                            &lt;/h5&gt;
+                            &lt;input
+                                    className={clsx(style['使用紅利-輸入'], '使用紅利-輸入', applyPointsValid?'':`${style['使用紅利不合規']} 使用紅利不合規`)}
+                                    type=&quot;number&quot;
+                                    min={0}
+                                    max={customer?.points||0}
+                                    name=&quot;apply_points&quot;
+                                    placeholder=&quot;使用紅利&quot;
+                                    value={checkoutData?.apply_points}
+                                    onChange={(e)=&gt;{
+                                        setCheckoutData({...checkoutData, apply_points:e.target.value})
+                                    }}
+                                /&gt;
+
+                            {
+                                !applyPointsValid&amp;&amp;
+                                &lt;div className={clsx('使用紅利不合規-文字框',style['使用紅利不合規-文字框'])}&gt;
+                                    &lt;span className={clsx('使用紅利不合規-文字',style['使用紅利不合規-文字'])}&gt;
+                                        {`使用紅利不合規`}
+                                    &lt;/span&gt;
+                                &lt;/div&gt;
+                            }
+
+                            &lt;div className={clsx('可用紅利-文字框',style['可用紅利-文字框'])}&gt; 
+                                &lt;span className={clsx('可用紅利-文字',style['可用紅利-文字'])}&gt;
+                                    {`(可用紅利點數:${(customer?.points||0).toLocaleString()})`}
+                                &lt;/span&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        
+
+
+
+                        &lt;div className={clsx('紅利折抵框',style['紅利折抵框'])}&gt;
+                            &lt;h5 className={clsx('紅利折抵-文字',style['紅利折抵-文字'])}&gt;
+                                紅利折抵:
+                            &lt;/h5&gt;
+                            &lt;span className={clsx('紅利折抵',style['紅利折抵'])}&gt;
+                            {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(applyPointsDiscount, baseCurrency) }`}
+                            &lt;/span&gt;
+                        &lt;/div&gt;
+
+
+
+
+                        &lt;div className={clsx('總金額框',style['總金額框'])}&gt;
+                            &lt;h5 className={clsx('總金額-文字',style['總金額-文字'])}&gt;
+                                總金額:
+                            &lt;/h5&gt;
+                            &lt;span className={clsx('總金額',style['總金額'])}&gt;
+                                {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(total, baseCurrency)}`}
+                            &lt;/span&gt;
+                        &lt;/div&gt;
+
+                        &lt;div className={clsx('下單按鈕框',style['下單按鈕框'])}&gt;
+                            &lt;button className={clsx('下單按鈕',style['下單按鈕'],awaitSubmitButton?`${style['等待']} 等待`:'')} disabled={awaitSubmitButton} onClick={checkout}&gt;
+                                下單
+                            &lt;/button&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+
+
+                &lt;/Fragment&gt;
+            }
+
+
+            &lt;GuestCheckoutNotification 
+                show={showProceedAsGuestNotification}
+                setShow={setShowProceedAsGuestNotification}
+                allowGuestCheckout={estore?.e_commerce_settings?.allow_guest_checkout}
+                country={country} 
+                email={checkoutData?.shipping_email} 
+                cellphone={checkoutData?.shipping_cellphone} 
+                routingTable={routingTable} 
+                nextAction={nextAction}/&gt;
+        &lt;/div&gt;)
+};
+
+CheckoutForm.propTypes = {
+};
+
+export default CheckoutForm;
+
+
+
+
+</pre>
+<h2>src/components/component-instance/cart/CheckoutForm.module.scss</h2>
+<pre>.結帳表單 {
+    max-width: 900px;
+    width:60vw;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.標題框 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.標題 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.無商品框 {
+    text-align: center;
+    padding: 20px;
+    background: #f1f1f1;
+    border-radius: 8px;
+}
+
+.無商品-圖標框 {
+    font-size: 40px;
+    color: #888;
+}
+
+.購物去-超連結 {
+    display: block;
+    margin-top: 10px;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.購物車-表格 {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.表格-頭段 th, .表格-列 td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.購物車商品-圖片 {
+    max-width: 80px;
+    height: auto;
+}
+
+.運送方式框, .運送資料框, .結帳表單-總計框 {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.運送方式標題, .運送資料標題, .總計標題 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.單運送方式 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 5px 0;
+}
+
+.收件人名字框, .收件人姓氏框, .收件人電話框, .收件人信箱：框, .收件人地址框1, .收件人地址框2, .備註框 {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+.收件人名字-輸入,
+.收件人姓氏-輸入,
+.收件人電話-輸入,
+.收件人信箱-輸入,
+.收件人地址1-輸入,
+.收件人地址2-輸入,
+.備註-輸入{
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+
+.使用紅利-輸入{
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-width: 100px;
+}
+.下單按鈕 {
+    width: 100%;
+    padding: 10px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.下單按鈕:hover {
+    background: #218838;
+}
+</pre>
+</body>
+</html>

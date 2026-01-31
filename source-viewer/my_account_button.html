@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>my_account_button</title>
+</head>
+<body>
+<h1>my_account_button</h1>
+<h2>src/components/component-instance/MyAccountButton.jsx</h2>
+<pre>
+import PropTypes from &quot;prop-types&quot;;
+import React, { Fragment, useState, useEffect, useRef } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './MyAccountButton.module.scss'
+
+// import {dragItems, dragItemTypes} from '../../lib/dragItems'
+
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+// import { faHouse, faGear, faBars } from '@fortawesome/free-solid-svg-icons'
+
+// import { useSelector, useDispatch } from &quot;react-redux&quot;;            
+import { useAppSelector, useAppDispatch} from &quot;@/redux/hooks&quot;;
+
+
+
+// import route_names from &quot;../../route_names&quot;;
+import Cookies from &quot;js-cookie&quot;;
+import {useClickOutsideEvent} from '@/lib/utils/clickOutside.js'
+// import { rwdHelper, RWDPropHandler} from &quot;../../lib/utils/rwdHelper&quot;
+// import { getRWDStyles} from &quot;@/lib/utils/rwdHelper&quot;
+
+// import  Link  from 'next/link';
+import { setCustomer } from '@/redux/slices/customer-slice'
+// import {  useRouter } from 'next/navigation';
+import {customer_get_account} from &quot;@/api/customer.js&quot;
+
+const MyAccountButton = ({  
+    // node,  mode, actions, update, routingTable, children, ...props
+    routingTable,
+    element, 
+    elementProps,
+    mode,
+    ...props
+}) =&gt; {
+    
+
+    const dispatch = useAppDispatch();
+    const customer  = useAppSelector((state) =&gt; state.customer);
+
+    //customer preloader
+    useEffect(()=&gt;{
+        if(Cookies.get('customer_access_token')){
+            if(localStorage.getItem(&quot;customer&quot;)){
+                const _customer = JSON.parse(localStorage.getItem(&quot;customer&quot;));
+                dispatch(setCustomer(_customer));
+            }else{
+                customer_get_account().then(res=&gt;{
+                    console.log(res.data)
+                    localStorage.setItem(&quot;customer&quot;, JSON.stringify(res.data));
+                    dispatch(setCustomer(res.data))
+                }).catch(err=&gt;{
+                    Cookies.remove('customer_access_token')
+                })
+            }
+        }else{
+            localStorage.removeItem(&quot;customer&quot;);
+            dispatch(setCustomer({uuid:null}))
+        }
+    },[])
+
+
+    const logout = e =&gt;{
+        Cookies.remove('customer_access_token')
+        dispatch(setCustomer({uuid:null}))
+        localStorage.removeItem(&quot;customer&quot;);
+        window.location.reload();
+    }
+    const dropDown = useRef(null);
+    const [showDropDown, setShowDropDown] = useState(false)
+
+    useClickOutsideEvent(useEffect, dropDown,()=&gt;{
+        setShowDropDown(false)
+    },showDropDown)
+
+    
+    // const [hoverIdentityBlock, setHoverIdentityBlock] = useState(false)
+    // const [hoverMyOrders, setHoverMyOrders] = useState(false)
+    // const [hoverLogout, setHoverLogout] = useState(false)
+
+    // const [hoverLoginButton, setHoverLoginButton] = useState(false)
+    // const [hoverRegisterButton, setHoverRegisterButton] = useState(false)
+
+
+
+    // const [buttonFontSize, setButtonFontSize] = useState('')
+    // const [width, setWidth] = useState('')
+    // const [lineHeight, setLineHeight] = useState('')
+
+    // useEffect(()=&gt;{
+        
+
+    //     rwdHelper(
+    //         websiteEditorState.windowWidth, 
+    //         websiteEditorState.sideMenuActive, 
+    //         [
+    //             new RWDPropHandler(node?.data, 'rwd_width', 'width_unit', setWidth),
+    //             new RWDPropHandler(node?.data, 'button_rwd_font_size', 'px', setButtonFontSize),
+    //             new RWDPropHandler(node?.data, 'rwd_line_height', 'px', setLineHeight),
+
+    //         ]
+    //     )
+
+    // },[ websiteEditorState.windowWidth, websiteEditorState.sideMenuActive, setButtonFontSize, setWidth, setLineHeight, node?.data])
+
+    return (
+            &lt;div 
+              {...elementProps}
+              className={`${style['我的帳戶']} ${'我的帳戶'} ${elementProps?.className||''}`}
+            &gt;
+
+                {
+                    [null, undefined, ''].includes(customer?.uuid)
+                    ?
+                    &lt;div className={clsx(style['超連結框'], '超連結框')}&gt;
+                            &lt;a className={clsx(style['登入連結'], '登入連結')} href={`/${routingTable?.['customer_login_route']}`} &gt;登入&lt;/a&gt;
+                            &lt;span className={clsx(style['分隔線'], '分隔線')}&gt;|&lt;/span&gt;
+                            &lt;a className={clsx(style['註冊連結'], '註冊連結')} href={`/${routingTable?.['customer_register_route']}`} &gt;註冊&lt;/a&gt;
+                    &lt;/div&gt;
+                    :
+                    &lt;Fragment&gt;
+                        &lt;div className={clsx(style['帳戶按鈕框'], '帳戶按鈕框')}&gt;
+                            &lt;button className={clsx(style['帳戶按鈕'], '帳戶按鈕')} onClick={()=&gt;{setShowDropDown(true)}}&gt;
+                                &lt;label className={clsx(style['帳戶-標籤'], '帳戶-標籤')}&gt;帳戶：&lt;/label&gt;
+                                &lt;span className={clsx(style['帳戶-名稱'], '帳戶-名稱')}&gt;{customer?.first_name||''}{' '}{customer?.last_name||''}&lt;/span&gt;
+                            &lt;/button&gt;
+                        &lt;/div&gt;
+                        &lt;div className={clsx(style['我的帳戶-下拉'], '我的帳戶-下拉', showDropDown?style['顯示']:'', showDropDown?'顯示':'')}
+                            ref={dropDown}
+                        &gt;
+
+                            &lt;div className={clsx(style['紅利點數框'], '紅利點數框')}&gt;
+                                &lt;label className={clsx(style['紅利點數-標籤'], '紅利點數-標籤')} &gt;紅利點數：&lt;/label&gt;
+                                &lt;span className={clsx(style['紅利點數'], '紅利點數')} &gt;{customer?.points||0}&lt;/span&gt;
+                            &lt;/div&gt;
+
+                            &lt;div className={clsx(style['我的訂單框'], '我的訂單框')}&gt;
+                                &lt;a href={`/${routingTable?.['my_orders_route']}`} &gt;我的訂單&lt;/a&gt;
+                            &lt;/div&gt;
+
+                            &lt;div className={clsx(style['登出按鈕框'], '登出按鈕框')}&gt;
+                                &lt;button className={clsx(style['登出按鈕'], '登出按鈕')} onClick={e =&gt; logout(e)}&gt;登出&lt;/button&gt;
+                            &lt;/div&gt;
+
+                        &lt;/div&gt;
+                    &lt;/Fragment&gt;
+
+                }
+            &lt;/div&gt;
+        )
+};
+
+MyAccountButton.propTypes = {
+};
+
+export default MyAccountButton;
+
+
+
+
+</pre>
+<h2>src/components/component-instance/MyAccountButton.module.scss</h2>
+<pre>
+// @import &quot;@/assets/scss/my-variables&quot;;
+
+
+
+
+// $props: (
+//   width: (
+//     name: &quot;width&quot;,
+//   ),
+//   max-width:(
+//     name: &quot;max-width&quot;,
+//   ),
+//   min-width:(
+//     name: &quot;min-width&quot;,
+//   ),
+//   height:(
+//     name: &quot;height&quot;,
+//   ),
+//   max-height:(
+//     name: &quot;max-height&quot;,
+//   ),
+//   min-height:(
+//     name: &quot;min-height&quot;,
+    
+//   ),
+
+// );
+
+
+
+.我的帳戶 {
+    // @include generate-rwd-stylesheet($props);
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+
+.超連結框 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.登入連結,
+.註冊連結 {
+    font-size: 14px;
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.登入連結:hover,
+.註冊連結:hover {
+    color: #0056b3;
+}
+.分隔線 {
+    font-size: 14px;
+    color: #999;
+}
+.帳戶按鈕框 {
+    position: relative;
+}
+.帳戶按鈕 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s, box-shadow 0.3s;
+}
+.帳戶-文字 {
+    color: #666;
+    font-weight: normal;
+}
+.帳戶-名稱 {
+    color: #007bff;
+    font-weight: bold;
+}
+.帳戶按鈕:hover {
+    background: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.我的帳戶-下拉 {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 180px;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    z-index: 10;
+    padding: 10px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+.我的帳戶-下拉.顯示 {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+.我的訂單框 a {
+    display: block;
+    font-size: 14px;
+    padding: 10px;
+    text-decoration: none;
+    color: #333;
+    transition: background 0.3s;
+}
+.我的訂單框 a:hover {
+    background: #f8f9fa;
+}
+.登出按鈕框 {
+    margin-top: 8px;
+    text-align: center;
+}
+.登出按鈕 {
+    width: 100%;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.登出按鈕:hover {
+    background-color: #c82333;
+}
+
+
+
+
+// .login-button-block{
+//     display: flex;
+//     flex-direction: row;
+//     // flex-wrap:;
+//     justify-content: center;
+//     align-content: center;
+//     column-gap: 5px;
+
+//     a,span,button{
+//         white-space: nowrap;
+//         line-height: inherit;
+//     }
+//     button{
+//         // font-size: 16px;
+//         border: none;
+//         background: none;
+//         color: #000;
+//         padding:0px;
+        
+
+//         // .identity_block{
+//         //     display: flex;
+//         //     flex-direction: row;
+//         //     align-items: center;
+
+
+//         //     .customer_name{
+//         //         // &amp;:hover {
+//         //         //     // color: $theme-color;
+//         //         //     color: white;
+        
+//         //         // }
+//         //     }
+            
+//         // }
+//     }
+
+//     // .dropdown {
+//     //     position: absolute;
+//     //     z-index: 220;
+//     //     top: 105%;
+//     //     left: 0;
+
+//     //     visibility: hidden;
+
+//     //     width: 125px;
+//     //     padding: 8px 12px 10px;
+
+//     //     transition: all 0.5s ease 0s;
+//     //     transform: rotateX(90deg);
+//     //     transform-origin: center top 0;
+//     //     text-align: left;
+
+//     //     opacity: 0;
+//     //     background: #fff none repeat scroll 0 0;
+//     //     box-shadow: 0 1px 7px -2px rgba(0, 0, 0, 0.3);
+
+//     //     color: #000;
+
+//     //     &amp;.active {
+//     //         visibility: visible;
+
+//     //         transform: rotateX(0deg);
+
+//     //         opacity: 1;
+//     //     }
+//     //     @media #{$xs-layout} {
+//     //         top: 100%;
+
+//     //         // margin-top: 14px;
+//     //     }
+//     //     @media #{$md-layout} {
+//     //         top: 100%;
+
+//     //         // margin-top: 14px;
+//     //     }
+//     //     @media #{$lg-layout} {
+//     //         top: 100%;
+//     //     }
+//     //     @media #{$xl-layout} {
+//     //         top: 100%;
+//     //     }
+//     //     ul {
+//     //         li {
+//     //             a {
+//     //                 font-size: 13px;
+//     //                 line-height: 30px;
+
+//     //                 display: block;
+
+//     //                 padding: 0;
+
+//     //                 text-transform: capitalize;
+
+//     //                 // color: #000;
+//     //                 &amp;:hover {
+//     //                 padding-left: 5px;
+
+//     //                 color: $theme-color;
+//     //                 }
+//     //             }
+//     //             button {
+//     //                 background-color: transparent;
+//     //                 border: none;
+//     //                 font-size: 13px;
+//     //                 line-height: 30px;
+
+//     //                 display: block;
+
+//     //                 padding: 0;
+
+//     //                 text-transform: capitalize;
+
+//     //                 // color: #000;
+//     //                 &amp;:hover {
+//     //                 padding-left: 5px;
+
+//     //                 color: $theme-color;
+//     //                 }
+//     //             }
+//     //         }
+//     //     }
+//     // }
+// }</pre>
+</body>
+</html>

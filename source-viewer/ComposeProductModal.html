@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ComposeProductModal</title>
+</head>
+<body>
+<h1>ComposeProductModal</h1>
+<h2>src/components/product/ComposeProductModal.jsx</h2>
+<pre>import { Fragment, useState, useEffect } from &quot;react&quot;;
+import PropTypes from &quot;prop-types&quot;;
+// import { Modal } from &quot;react-bootstrap&quot;;
+// import { useDispatch, useSelector } from &quot;react-redux&quot;;
+// import Rating from &quot;./sub-components/ProductRating&quot;;
+import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;
+
+import style from &quot;./ComposeProductModal.module.scss&quot;
+import clsx from &quot;clsx&quot;;
+import { updateCartProduct } from &quot;@/lib/utils/cartHelper&quot;;
+import { isStockSufficient } from &quot;@/lib/utils/productHelper&quot;;
+
+
+const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, quantityCount, updateCompose, nextAction, props}) =&gt;{
+
+  const onCloseModal = () =&gt; {
+    onHide()
+  }
+
+  const [composeValid, setComposeValid] = useState(false)
+  const [composeLeft, setComposeLeft] = useState(0)
+  const [composeProductData, setComposeProductData] = useState({})
+
+  const dispatch = useAppDispatch();
+  
+  useEffect(()=&gt;{
+    const data = {};
+    (cartProduct?.cart_compose_products||[]).forEach(cartComposeProduct=&gt;{
+      const composeProduct = (product?.compose_products||[]).find(composeProduct=&gt;composeProduct?.source_product?.uuid==cartComposeProduct?.source_product?.uuid)
+      data[composeProduct?.uuid] = cartComposeProduct?.quantity||0
+    })
+    setComposeProductData(data)
+  },[cartProduct?.cart_compose_products, product?.compose_products])
+  
+  useEffect(()=&gt;{
+    const totalCount = (composeBase?.base||1) * (quantityCount||1)
+    var composeCount = 0
+    Object.values(composeProductData).forEach(_quantity=&gt;composeCount+=_quantity)
+    setComposeLeft(totalCount - composeCount)
+    setComposeValid(totalCount==composeCount)
+
+  },[composeBase?.base, quantityCount, composeProductData])
+
+
+  return (
+
+      &lt;Fragment&gt;
+        {
+          show &amp;&amp; composeBase &amp;&amp;
+            &lt;div className={clsx(style['任搭彈出框'], '任搭彈出框')} style={{'--任搭組數':`&quot;${composeBase?.base}&quot;`}} &gt;
+              &lt;div className={clsx(style['彈出框-頭段'], '彈出框-頭段',)}&gt;
+                &lt;h3 className={clsx(style['彈出框-標題'], &quot;彈出框-標題&quot;)}&gt;任搭商品&lt;/h3&gt;
+                &lt;button className={clsx(style['關閉彈窗-按鈕'], &quot;關閉彈窗-按鈕&quot;)} onClick={()=&gt;{onHide()}}&gt;
+                  &lt;i className={clsx(style['關閉彈窗-圖標'], &quot;關閉彈窗-圖標&quot;)}&gt;x&lt;/i&gt;
+                &lt;/button&gt;
+              &lt;/div&gt;
+              &lt;div className={clsx(style['彈出框-中段'], '彈出框-中段')}&gt;
+                    &lt;table className={clsx(style['任搭表格'], '任搭表格')}&gt;
+                        &lt;thead className={clsx(style['表格-頭段'], '表格-頭段')}&gt;
+                          &lt;tr className={clsx(style['表格-列'], '表格-列')}&gt;
+                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;圖片&lt;/th&gt;
+                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;產品名稱&lt;/th&gt;
+                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;數量&lt;/th&gt;
+                          &lt;/tr&gt;
+                        &lt;/thead&gt;
+                        &lt;tbody className={clsx(style['表格-身體'], '表格-身體')}&gt;
+                          {
+                            (product?.compose_products||[]).map((composeProduct,composeProductIndex)=&gt;{
+                              const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( composeProduct.source_product, (composeBase?.base||1) * (quantityCount||1), cartProduct?.quantity||0)
+
+                              return (&lt;Fragment key={composeProductIndex}&gt;
+                                  &lt;tr className={clsx(style['表格-列'], '表格-列', !requireQtySufficient?'存貨不足':'')}&gt; 
+                                    &lt;td className={clsx(style['表格-圖片框'], &quot;表格-圖片框&quot;)}&gt;
+                                      &lt;img
+                                        className={clsx(style['表格-圖片'], &quot;表格-圖片&quot;)}
+                                        src={composeProduct?.source_product.images?.[0]?.image}
+                                      /&gt;
+                                    &lt;/td&gt;
+                                    &lt;td className={clsx(style['表格-名稱框'], &quot;表格-名稱框&quot;)}&gt;
+                                      &lt;h4 className={clsx(style['表格-名稱'], &quot;表格-名稱&quot;)}                     &gt;
+                                        {composeProduct?.source_product?.name||''}
+                                      &lt;/h4&gt;
+                                    &lt;/td&gt;
+                                    &lt;td className={clsx(style['表格-數量框'], &quot;表格-數量框&quot;)}&gt;
+                                          &lt;button
+                                            className={clsx(style['數量減-按鈕'], &quot;數量減-按鈕&quot;)}
+                                            onClick={() =&gt;{
+
+                                              const newData = {...composeProductData}    
+                                              newData[composeProduct?.uuid]=(composeProductData?.[composeProduct?.uuid]||1)-1
+                                              setComposeProductData(newData)
+
+                                            }}
+                                            disabled={(composeProductData?.[composeProduct?.uuid]||0)&lt;=0}
+                                          &gt;
+                                            -
+                                          &lt;/button&gt;
+                                          &lt;input
+                                            className={clsx(style['數量'], &quot;數量&quot;)}
+                                            type=&quot;text&quot;
+                                            value={composeProductData?.[composeProduct?.uuid?.toString()]||0}
+                                            readOnly
+                                          /&gt;
+                                          &lt;button
+                                            className={clsx(style['數量加-按鈕'], &quot;數量加-按鈕&quot;)}
+                                            onClick={() =&gt;{
+                                              const newData = {...composeProductData}
+                                              newData[composeProduct?.uuid]=(composeProductData?.[composeProduct?.uuid]||0)+1
+                                              setComposeProductData(newData)
+
+                                            }}
+                                            disabled={ !requireQtySufficient || composeLeft&lt;=0
+                                            }
+                                          &gt;
+                                            +
+                                          &lt;/button&gt;
+                                    &lt;/td&gt;
+                                  &lt;/tr&gt;
+                              &lt;/Fragment&gt;)
+                              
+                            })
+                          }
+                        &lt;/tbody&gt;
+                    &lt;/table&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['動作框'], &quot;動作框&quot;)}&gt;
+
+                  
+
+
+                  { 
+                    !composeValid &amp;&amp; 
+                    &lt;Fragment&gt;
+                      {
+                        composeLeft &gt; 0
+                        ?
+                        &lt;h4 className={clsx(style['動作-文字'], &quot;動作-文字&quot;)}&gt;
+                          {`尚可選擇${composeLeft}件`}
+                        &lt;/h4&gt;
+                        :
+                        &lt;h4 className={clsx(style['動作-文字'], &quot;動作-文字&quot;)}&gt;
+                          {`超過可選件數`}
+                        &lt;/h4&gt;
+                      }
+                    &lt;/Fragment&gt;
+                  }
+
+
+                  &lt;button className={clsx(style['動作-按鈕'], &quot;動作-按鈕&quot;)}
+                        onClick={() =&gt;{
+                          // console.log(composeProductData)
+                          updateCartProduct(product, null, quantityCount, dispatch, composeBase, composeProductData, updateCompose).then(()=&gt;{
+                            onHide()                
+                          }).then(()=&gt;{
+                            nextAction?.()
+                          })
+                        }}
+                        disabled={!composeValid}
+                      &gt;
+                        {&quot; &quot;}確認{&quot; &quot;}
+                  &lt;/button&gt;
+
+                &lt;/div&gt;
+            &lt;/div&gt;
+        }
+      &lt;/Fragment&gt;
+
+  );
+}
+
+ComposeProductModal.propTypes = {
+};
+
+export default ComposeProductModal;
+</pre>
+<h2>src/components/product/ComposeProductModal.module.scss</h2>
+<pre>@import &quot;../../assets/scss/variables&quot;;
+
+
+
+
+/* 任搭彈出框 */
+.任搭彈出框 {
+  // width: 600px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 頭段 */
+.彈出框-頭段 {
+  height: 50px;
+  background: #f8f8f8;
+  border-bottom: 1px solid #ddd;
+}
+
+
+.彈出框-頭段 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #ddd;
+}
+
+.彈出框-標題 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.關閉彈窗-按鈕 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+}
+
+.關閉彈窗-圖標 {
+  width: 16px;
+  height: 16px;
+  // background: url('close-icon.svg') no-repeat center;
+  background-size: contain;
+}
+
+
+
+
+/* 中段表格 */
+.彈出框-中段 {
+  padding: 16px;
+}
+
+.任搭表格 {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.表格-頭段 {
+  background: #f0f0f0;
+  font-weight: bold;
+}
+
+.表格-列 {
+  border-bottom: 1px solid #ddd;
+}
+
+.表格-欄位名稱 {
+  padding: 10px;
+  text-align: left;
+}
+
+.表格-圖片框 {
+  width: 80px;
+  text-align: center;
+}
+
+.表格-圖片 {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.表格-名稱框 {
+  padding: 10px;
+}
+
+.表格-名稱 {
+  font-size: 14px;
+  color: #333;
+}
+
+/* 數量調整 */
+.表格-數量框 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.數量減-按鈕,
+.數量加-按鈕 {
+  width: 32px;
+  height: 32px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.數量減-按鈕:hover,
+.數量加-按鈕:hover {
+  background: #ddd;
+}
+
+.數量 {
+  width: 40px;
+  height: 32px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+/* 存貨不足狀態 */
+.存貨不足 {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+/* 動作框 */
+.動作框 {
+  padding: 16px;
+  text-align: center;
+  background: #f8f8f8;
+  border-top: 1px solid #ddd;
+}
+
+.動作-按鈕 {
+  padding: 10px 20px;
+  font-size: 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.動作-按鈕:hover {
+  background: #0056b3;
+}
+
+.動作-文字 {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+
+
+
+// .table-responsive{
+//   @media #{$xs-layout} {
+//     overflow-x: ;
+//   }
+// }
+
+
+.cart-table {
+  // border-collapse: collapse;
+  // border: 1px solid #cdcdcd;
+  // font: normal 12px arial;
+  width: 100%;
+
+  // td,
+  // th {
+  //   border: 1px solid #cdcdcd;
+  //   padding: 8px;
+  // }
+  
+  .cart-td{
+
+    font-size: 15px;
+    padding: 10px;
+    text-align: center;
+    color: #333;
+
+    display: table-cell;
+    vertical-align: middle;
+    
+    @media #{$xx-layout} {
+      display:table-cell;
+      vertical-align: middle;
+
+    }
+    @media #{$xl-layout} {
+      display:table-cell;
+      vertical-align: middle;
+
+    }
+    @media #{$lg-layout} {
+      display:table-cell;
+      vertical-align: middle;
+
+    }
+    @media #{$md-layout} {
+      display:table-cell;
+      vertical-align: middle;
+    }
+
+  //   display:block;
+
+  //   @media #{$xs-layout} {
+
+  //     display:block;
+
+
+  //     border: none;
+  //     border-bottom: 1px solid #eee;
+  //     position: relative;
+  //     padding-left: 50% !important;
+  //     text-align: left !important;
+  //     width: auto !important;
+  //     a {
+  //       display: block !important; 
+  //       width: 30vw !important;
+  //     }
+
+  //   }
+
+  // }
+  
+
+  
+
+
+
+  
+  // @media #{$xs-layout} {
+  
+  //   table,
+  //   thead,
+  //   tbody,
+  //   th,
+  //   td,
+  //   tr {
+  //     display: block !important; 
+  //   }
+
+  //   thead tr {
+  //     position: absolute;
+  //     top: -9999px;
+  //     left: -9999px;
+  //   }
+
+
+
+
+
+
+  //   .cart-td:before {
+  //     position: absolute;
+  //     top: 35%;
+  //     left: 10px;
+  //     width: 45%;
+  //     padding-right: 10px;
+  //     // white-space: nowrap;
+  //     font-weight: bold;
+  //   }
+  
+  //   .cart-td:nth-of-type(1):before {
+  //     content: &quot;選取&quot;;
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(2):before {
+  //     content: &quot;圖片 IMAGE&quot;;
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(3):before {
+  //     content: &quot;產品名稱 PRODUCT NAME&quot;;
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(4):before {
+  //     content: &quot;單價 UNIT PRICE&quot;;
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(5):before {
+  //     content: &quot;數量 QTY&quot;;
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(6):before {
+  //     content: &quot;小記 SUBTOTAL&quot;;
+  //     // color: #0e9893;
+  //   }
+  //   .cart-td:nth-of-type(7):before {
+  //     content: &quot;動作 ACTION&quot;;
+  //     // color: #0e9893;
+  //   }    
+  
+
+  // }
+
+
+
+
+
+
+}
+
+
+
+}
+
+.confirm-button{
+  font-weight: bold;
+  line-height: 1;
+  z-index: 99;
+  display: inline-block;
+  padding: 23px 38px 23px;
+  text-transform: uppercase;
+  color: #fff;
+  border: none;
+  background: none;
+  background-color: #343538;
+
+  transition: all 0.5s ease-in-out 0s;
+}</pre>
+</body>
+</html>

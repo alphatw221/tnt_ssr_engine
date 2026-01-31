@@ -215,7 +215,11 @@ export function websiteFindAndInsertElement(website, target_parent_relation_uuid
 function findAndInsertChildElement(currentElement, target_parent_relation_uuid, sequence, after, childElement){
 
         if(currentElement?.parent_relation_uuid===target_parent_relation_uuid){
-            currentElement.children?.splice(sequence+after, 0, childElement)
+            if(sequence === -1){
+                currentElement.children?.push(childElement)
+            }else{
+                currentElement.children?.splice(sequence+after, 0, childElement)
+            }
         }else{
             for(let i=0;i<(currentElement?.children||[]).length;i++){
                 findAndInsertChildElement(currentElement?.children[i], target_parent_relation_uuid, sequence, after, childElement)

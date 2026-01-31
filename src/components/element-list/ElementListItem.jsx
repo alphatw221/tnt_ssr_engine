@@ -207,7 +207,7 @@ const ElementListItem =({
               }).then(res=>{console.log(res.data)})
             },
             ()=>{
-              actions.globleMoveInto(item.element, element, 0, 0)
+              actions.globleMoveInto(item.element, element, -1, 0)
                user_r_action_to_element({
                 'parent_relation_uuid':item?.element?.parent_relation_uuid, 
                 'action':'move',   //move/share/clone
@@ -259,7 +259,7 @@ const createChildElement = ()=>{
     const tempUUID = uuidv4()
     const sudoElement = {uuid:tempUUID, name:'未命名'}
 
-    let _website = actions?.globleInsertInto(sudoElement, element?.parent_relation_uuid, 0, 0)
+    let _website = actions?.globleInsertInto(sudoElement, element?.parent_relation_uuid, -1, 0)
     _website = JSON.parse(JSON.stringify(_website))
     user_r_create_element({
                 'target_webpage_uuid':null, 
@@ -354,7 +354,7 @@ const elementBaseSettingsB = getElementBaseSettingsB()
                 
                 <h3 ref={nameRef} className={`${style['name']}`}>
                     
-                    {element?.name||'未命名'}
+                    
                     {
                         (element?.parent_relation_count||1)>1 &&
                         <FontAwesomeIcon 
@@ -362,7 +362,7 @@ const elementBaseSettingsB = getElementBaseSettingsB()
                             icon={faStar} 
                         />
                     }
-                
+                    {element?.name||'未命名'}
                 </h3>
                 
                 <FontAwesomeIcon 

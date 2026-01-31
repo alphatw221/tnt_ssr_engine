@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>order_detail</title>
+</head>
+<body>
+<h1>order_detail</h1>
+<h2>src/components/component-instance/order/OrderDetailSSR.jsx</h2>
+<pre>
+import React, { Fragment, useState, useEffect } from &quot;react&quot;;
+import OrderDetail from &quot;./OrderDetail&quot;;
+const OrderDetailSSR = ({  
+    ...props
+}) =&gt; {
+
+
+    
+    const [guestUUID, setGuestUUID] = useState()
+    const [objectUUID, setObjectUUID] = useState()
+    useEffect(()=&gt;{
+        setGuestUUID(new URLSearchParams(window.location.search).get('guest_uuid'))
+        setObjectUUID(window?.__SSR_PARAMS__?.objectUUID)
+    },[])
+    return &lt;OrderDetail objectUUID={objectUUID} guestUUID={guestUUID} {...props}/&gt;
+};
+
+
+
+export default OrderDetailSSR;
+
+
+
+
+</pre>
+<h2>src/components/component-instance/order/OrderDetail.module.scss</h2>
+<pre>/* 訂單內容外框 */
+.訂單內容 {
+    // max-width: 800px;
+    min-width: 60vw;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    font-family: Arial, sans-serif;
+}
+
+/* 標題樣式 */
+.標題框, .運送資訊標題框, .訂單商品標題框 {
+    margin-bottom: 10px;
+}
+
+.標題, .運送資訊標題, .訂單商品標題 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 訂單資訊區塊 */
+.訂單編號框, .訂單狀態框, .運送資訊框, .訂單總結框 {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.訂單編號-標籤, .訂單狀態-標籤, .小計-標籤, .使用紅利-標籤, 
+.紅利折抵-標籤, .運費-標籤, .稅金-標籤, .合計-標籤 {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.付款-超連結 {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* 運送資訊樣式 */
+.運送資訊框 div {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+}
+
+/* 訂單商品表格 */
+.訂單商品-表格 {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.表格-頭段 {
+    background-color: #eaeaea;
+}
+
+.表格-欄位名稱, .訂單商品-圖片框, .訂單商品-名稱框, 
+.訂單商品-價錢框, .訂單商品-數量框, .訂單商品-小計框 {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.訂單商品-圖片 {
+    max-width: 50px;
+    height: auto;
+}
+
+/* 訂單總結區塊 */
+.訂單總結框 div {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+}
+
+.合計框 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #d9534f;
+}</pre>
+</body>
+</html>

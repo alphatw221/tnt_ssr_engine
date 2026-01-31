@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>cart_detail</title>
+</head>
+<body>
+<h1>cart_detail</h1>
+<h2>src/components/component-instance/cart/CartDetail.jsx</h2>
+<pre>
+import { Fragment, useState, useEffect } from &quot;react&quot;;
+// import { useDispatch, useSelector } from &quot;react-redux&quot;;
+import { useAppDispatch, useAppSelector } from &quot;@/redux/hooks&quot;;
+
+
+// import SEO from &quot;../../components/seo&quot;;
+// import { getDiscountPrice } from &quot;../../helpers/product&quot;;
+// import LayoutOne from &quot;../../layouts/LayoutOne&quot;;
+// import Breadcrumb from &quot;../../wrappers/breadcrumb/Breadcrumb&quot;;
+// import { addToCart, decreaseQuantity, deleteFromCart, deleteAllFromCart } from &quot;../../store/slices/cart-slice&quot;;
+// import { setBaseCurrency, setExchangeRates } from &quot;@/redux/slices/estore-slice&quot;;
+// import { cartItemStock } from &quot;../../helpers/product&quot;;
+import { setCartProducts } from &quot;@/redux/slices/cart-slice&quot;;
+// import { customer_delete_cart_product, customer_update_cart_product, customer_clear_cart_product } from &quot;../../api/cart&quot;;
+
+import { get_exchange_rates } from &quot;@/api/exchange_rates&quot;;
+import { 
+  isComposeValid, 
+  getCartSummarize, 
+  deleteAllCartProductV1, 
+//   getProductPrice ,
+  getCartProductName, 
+
+  isInventorySufficient,
+  updateCartProduct,
+  deleteCartProductV1,
+} from &quot;@/lib/utils/cartHelper&quot;;
+
+import {getProductPrice, isStockSufficient} from &quot;@/lib/utils/productHelper&quot;
+
+import style from &quot;./CartDetail.module.scss&quot;
+import clsx from &quot;clsx&quot;;
+import ComposeProductModal from &quot;@/components/product/ComposeProductModal&quot;
+// import AddonProductGridKingPork from &quot;@/wrappers/product/AddonProductGridKingPork&quot;;
+
+// import {deleteCartProductV1, isInventorySufficient} from &quot;@/lib/utils/cartHelper.js&quot;
+// import { getProductPrice } from &quot;@/lib/utils/productHelper&quot;;
+
+// import { getRWDStyles} from &quot;@/lib/utils/rwdHelper&quot;
+
+import {getToFixedNumber} from &quot;@/lib/utils/toFixedHelper&quot;
+
+const CartDetail = ({ 
+    // node,  
+    // mode, 
+    // actions, 
+    // routingTable, 
+    // ...props,
+
+    routingTable,
+
+    element, 
+    elementProps,
+    mode,
+    now,
+    ...props
+
+}) =&gt; {
+
+    const dispatch = useAppDispatch();
+  
+//   const { cartProducts } = useAppSelector((state) =&gt; state.cart);
+
+
+    const customer = useAppSelector((state) =&gt; state.customer);
+    const {cartProducts} = useAppSelector((state)=&gt; state.cart)
+
+    const [targetCartProducts, setTargetCartProducts] = useState([])
+    // const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
+
+
+    const estore = useAppSelector((state) =&gt; state.estore);
+
+    // const [disableIndex, setDisableIndex] = useState(null)
+    // const [addonDisableIndex, setAddonDisableIndex] = useState(null)
+    const [showComposeModalIndex, setShowComposeModalIndex] = useState(null)
+
+    //   const [addonProductData, setAddonProductData] = useState([])
+    const [subtotal, setSubtotal] = useState(0)
+    const [totalItems, setTotalItems] = useState(0)
+    const [baseCurrency, setBaseCurrency] = useState('')
+    const [exchangeRates, setExchangeRates] = useState(1)
+
+    const [excludeUUIDs, setExcludeUUIDs] = useState({})
+    const [finalExcludeUUIDs, setFinalExcludeUUIDs] = useState({})
+
+
+
+
+    useEffect(()=&gt;{
+       if(customer?.uuid){
+        setTargetCartProducts(customer?.cart_products)
+       }else{
+        setTargetCartProducts(cartProducts)
+       }
+    }, [customer?.uuid, customer?.cart_products, cartProducts])
+    
+    useEffect(()=&gt;{
+        if(estore?.e_commerce_settings?.base_currency &amp;&amp; estore?.e_commerce_settings?.base_currency!=baseCurrency){
+            setBaseCurrency(estore?.e_commerce_settings?.base_currency||'TWD')
+            get_exchange_rates(estore?.e_commerce_settings?.base_currency).then(res=&gt;{
+                setExchangeRates(res?.data?.rates||{})
+            })
+        }
+    }, [estore, baseCurrency])
+
+
+    //cart products preloader
+    useEffect(()=&gt;{
+        if(localStorage.getItem(&quot;cart_products&quot;)){
+            const _cartProducts = JSON.parse(localStorage.getItem(&quot;cart_products&quot;));
+            dispatch(setCartProducts(_cartProducts));
+        }
+    },[])
+
+    useEffect(()=&gt;{
+        const {subtotal, items, final_exclude_uuids} = getCartSummarize(
+            {
+                'cartProducts':targetCartProducts,
+                'exchangeRates':exchangeRates,
+                'now':now,
+                'excludeUUIDs':excludeUUIDs,
+                'baseCurrency':baseCurrency,
+            }
+        )
+        setSubtotal(subtotal)
+        setTotalItems(items)
+        setFinalExcludeUUIDs(final_exclude_uuids)
+    }, [now, targetCartProducts, exchangeRates, excludeUUIDs])
+
+
+//   useEffect(()=&gt;{
+//     const _addonProductData = [];
+//     (cartProducts||[]).forEach(cartProduct=&gt;{
+//       (cartProduct?.product?.addon_products||[]).forEach((addonProduct)=&gt;{
+//         if(_addonProductData.some((data)=&gt;data?.addonProduct.id==addonProduct.id)){
+//           //pass
+//         }else{
+//           _addonProductData.push({'product':cartProduct?.product, 'addonProduct':addonProduct})
+//         }
+//       })
+//     })
+//     setAddonProductData(_addonProductData)
+    
+//   }, [cartProducts])
+
+
+
+
+  // console.log(cartProducts)
+
+const plusOneDisabled = (cartProduct)=&gt;{
+    const {requireQtySufficient, } = isStockSufficient( cartProduct?.product, 1, cartProduct?.quantity||0)
+    console.log(requireQtySufficient)
+    return !requireQtySufficient
+}
+  return (
+        &lt;div  {...elementProps} &gt;
+          
+            &lt;div className={clsx(style['標題框'], '標題框')}&gt;
+                &lt;h3 className={clsx(style['標題'], '標題')}&gt;購物車&lt;/h3&gt;
+            &lt;/div&gt;
+                
+            {
+                (targetCartProducts||[]).length &lt;= 0 &amp;&amp;
+                &lt;div className={clsx(style['無商品框'], '無商品框')}&gt;
+                    &lt;div className={clsx(style['無商品-圖標框'], '無商品-圖標框')}&gt;
+                        &lt;i className={clsx(style['無商品-圖標框'], '無商品-圖標框', 'pe-7s-cart')}&gt;&lt;/i&gt;
+                    &lt;/div&gt;
+                    &lt;div className={clsx(style['無商品-文字框'], '無商品-文字框')}&gt;
+                        &lt;span className={clsx(style['無商品-文字'], '無商品-文字')}&gt;
+                            購物車內沒有商品 
+                        &lt;/span&gt;
+                        {   
+                            routingTable?.['shop_route'] &amp;&amp;
+                            &lt;a href={`/${routingTable?.['shop_route']}`} className={clsx(style['購物去-超連結'], '購物去-超連結')}&gt;
+                                購物去 Shop Now
+                            &lt;/a&gt;
+                        }
+                        
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            }
+       
+
+
+
+            {
+            (targetCartProducts||[]).length &gt; 0 &amp;&amp; (
+                    &lt;div className={clsx(style['購物車-表格框'], '購物車-表格框')}&gt;
+                      &lt;table className={clsx(style['購物車-表格'], '購物車-表格')}&gt;
+                        &lt;thead className={clsx(style['表格-頭段'], '表格-頭段')}&gt;
+                          &lt;tr className={clsx(style['表格-列'], '表格-列')}&gt;
+                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;選取&lt;/th&gt;
+                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;圖片Image&lt;/th&gt;
+                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;產品名稱Product Name&lt;/th&gt;
+                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;單價Unit Price&lt;/th&gt;
+                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;數量Qty&lt;/th&gt;
+                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;小計Subtotal&lt;/th&gt;
+                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;動作action&lt;/th&gt;
+                          &lt;/tr&gt;
+                        &lt;/thead&gt;
+                        &lt;tbody className={clsx(style['表格-身體'], '表格-身體')}&gt;
+
+
+                        {
+                          (targetCartProducts||[]).map((cartProduct, key) =&gt; {
+
+                            // const targetProduct = getTargetProduct(cartProduct)
+                            // const {sufficientStock, left} = isStockSufficient(cartProduct?.quantity, targetProduct)
+                            const {composeValid} = isComposeValid(cartProduct)
+
+
+                            const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalTotalPrice, discountTotalPrice} = getProductPrice(now, cartProduct?.product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
+                            const {inventoryControl, inventorySufficient, inventory} = isInventorySufficient(cartProduct)
+                            const [productName, variantName, composeName] = getCartProductName(cartProduct)
+                            
+                            return (
+                                &lt;tr className={clsx(style['表格-列'], '表格-列', !inventorySufficient?`${style['缺貨']} 缺貨`:'',excludeUUIDs?.[cartProduct?.uuid]?`${style['未選取']} 未選取`:'',!composeValid?`${style['組合不合規']} 組合不合規`:'')} key={key}&gt;
+
+
+                                    &lt;td className={clsx(style['表格-勾選框'], &quot;表格-勾選框&quot;)}&gt;
+                                        {
+                                        inventorySufficient &amp;&amp; composeValid &amp;&amp;
+                                        &lt;input className={clsx(style['購物車商品-勾選'], &quot;購物車商品-勾選&quot;)} type=&quot;checkbox&quot; checked={excludeUUIDs?.[cartProduct?.uuid]?false:true} onChange={
+                                            (event)=&gt;{
+                                                const _excludeUUIDS = JSON.parse(JSON.stringify(excludeUUIDs))
+                                                if(event?.target?.checked){
+                                                    delete _excludeUUIDS?.[cartProduct?.uuid]
+                                                }else{
+                                                    _excludeUUIDS[cartProduct?.uuid] = true
+                                                }
+                                                setExcludeUUIDs(_excludeUUIDS)
+
+                                        }}/&gt;
+                                        }
+                                        
+                                        {
+                                            !composeValid &amp;&amp;
+                                            &lt;span className={clsx(style['重新搭配-文字'], &quot;重新搭配-文字&quot;)}&gt;
+                                                請重新搭選商品
+                                            &lt;/span&gt;
+                                        
+                                        }
+                                    &lt;/td&gt;
+
+                                    &lt;td className={clsx(style['表格-圖片框'], &quot;表格-圖片框&quot;)}&gt;
+                                        &lt;a href={`/${routingTable?.['product_route']}/${cartProduct?.product?.uuid}`}&gt;
+                                        &lt;img
+                                            className={clsx(style['購物車商品-圖片'], &quot;購物車商品-圖片&quot;)}
+                                            src={cartProduct?.variant_product?.image||cartProduct?.product?.images?.[0]?.image}
+                                            alt=&quot;&quot;
+                                        /&gt;
+                                        &lt;/a&gt;
+                                    &lt;/td&gt;
+
+                                    &lt;td className={clsx(style['表格-名稱框'], &quot;表格-名稱框&quot;)}&gt;
+                                        &lt;a href={`/${routingTable?.['product_route']}/${cartProduct?.product?.uuid}`}&gt;
+                                            &lt;h4 className={clsx(style['購物車商品-名稱'], &quot;購物車商品-名稱&quot;)}&gt;{productName}&lt;/h4&gt;
+                                            &lt;h5 className={clsx(style['購物車商品-變體名稱'], &quot;購物車商品-變體名稱&quot;)}&gt;{variantName}&lt;/h5&gt;
+                                            &lt;h5 className={clsx(style['購物車商品-任搭名稱'], &quot;購物車商品-任搭名稱&quot;)}&gt;{composeName}&lt;/h5&gt;
+                                        &lt;/a&gt;
+                                    &lt;/td&gt;
+
+
+                                    &lt;td className={clsx(style['表格-價錢框'], &quot;表格-價錢框&quot;)}&gt;
+                                        {
+                                            isDiscountApplied ? 
+                                            &lt;Fragment&gt;
+                                                &lt;span className={clsx('折扣後價格',style['折扣後價格'])}&gt;
+                                                    {`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(discountSinglePrice, baseCurrency)}`}
+                                                &lt;/span&gt;
+                                                &lt;span className={clsx('折扣前價格',style['折扣前價格'])}&gt;
+                                                    {`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(originalSinglePrice, baseCurrency)}`}
+                                                &lt;/span&gt;
+                                            &lt;/Fragment&gt;
+                                            :
+                                            &lt;span className={clsx('商品價格',style['商品價格'])}&gt;
+                                                {`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(originalSinglePrice, baseCurrency)}`}
+                                            &lt;/span&gt;
+                                        }
+                                    &lt;/td&gt;
+
+
+                                    &lt;td className={clsx('表格-商品數量選擇框',style['表格-商品數量選擇框'])}&gt;
+                                        &lt;div className={clsx('商品數量選擇框',style['商品數量選擇框'])}&gt;
+                                            &lt;button
+                                                className={clsx('商品數量減去按鈕',style['商品數量減去按鈕'])}
+                                                onClick={() =&gt;{
+                                                    
+                                                    if(cartProduct?.quantity&gt;1){
+                                                        updateCartProduct(
+                                                            cartProduct?.product, 
+                                                            cartProduct?.variant_product, 
+                                                            -1, 
+                                                            dispatch, 
+                                                            cartProduct?.compose_base, 
+                                                            null, 
+                                                            false,
+                                                            null,
+                                                            null,
+                                                        )
+                                                    }
+                                                    
+                                                }}
+                                            &gt;-&lt;/button&gt;
+                                            &lt;input
+                                                className={clsx('商品數量',style['商品數量'])}
+                                                type=&quot;text&quot;
+                                                value={cartProduct?.quantity}
+                                                readOnly
+                                            /&gt;
+                                            &lt;button
+                                                className={clsx('商品數量增加按鈕',style['商品數量增加按鈕'])}
+                                                onClick={() =&gt;{
+                                                    if(!plusOneDisabled(cartProduct)){
+                                                        updateCartProduct(
+                                                            cartProduct?.product, 
+                                                            cartProduct?.variant_product, 
+                                                            1, 
+                                                            dispatch, 
+                                                            cartProduct?.compose_base, 
+                                                            null, 
+                                                            false,
+                                                            null,
+                                                            null,
+                                                        )
+                                                    }
+
+                                                }}
+                                                disabled={plusOneDisabled(cartProduct)}
+                                            &gt;+&lt;/button&gt;
+                                        &lt;/div&gt;
+                                    &lt;/td&gt;
+                                  
+
+                                    &lt;td className={clsx('表格-小計框',style['表格-小計框'])}&gt;
+                                        &lt;span className={clsx('小計',style['小計'])}&gt;
+                                            { inventorySufficient?`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(isDiscountApplied?discountTotalPrice:originalTotalPrice, baseCurrency)}`:''}
+                                        &lt;/span&gt;
+                                    &lt;/td&gt;
+
+                                    &lt;td className={clsx('表格-動作框',style['表格-動作框'])}&gt;
+                                        {!inventorySufficient &amp;&amp;
+                                            &lt;div className={clsx('缺貨文字框',style['缺貨文字框'])}&gt;
+                                                &lt;span className={clsx('缺貨文字',style['缺貨文字'])}&gt;缺貨中&lt;/span&gt;
+                                            &lt;/div&gt;
+                                        }
+                                        {
+                                            cartProduct?.product?.type=='compose' &amp;&amp;
+                                            &lt;Fragment&gt;
+                                                &lt;ComposeProductModal 
+                                                    show={key==showComposeModalIndex} 
+                                                    onHide={()=&gt;{setShowComposeModalIndex(null)}}
+                                                    product={cartProduct?.product}
+                                                    cartProduct={cartProduct}
+                                                    composeBase={cartProduct?.compose_base}
+                                                    quantityCount={cartProduct?.quantity}
+                                                    updateCompose={true}
+                                                
+                                                /&gt;
+                                                &lt;div className={clsx('修改搭配框',style['修改搭配框'])}&gt;
+                                                    &lt;button className={clsx('修改搭配按鈕',style['修改搭配按鈕'])}
+                                                        onClick={() =&gt;{setShowComposeModalIndex(key)}}
+                                                    &gt;
+                                                    修改
+                                                    &lt;/button&gt;
+                                                &lt;/div&gt;
+                                            &lt;/Fragment&gt;
+                                        }
+                                        &lt;div className={clsx('刪除商品按鈕框',style['刪除商品按鈕框'])}&gt;
+                                            &lt;button className={clsx('刪除商品按鈕',style['刪除商品按鈕'])}
+                                            onClick={() =&gt;{
+                                                deleteCartProductV1(cartProduct?.uuid, dispatch)
+                                            }}
+                                            disabled={
+                                                // disableIndex==key
+                                                false
+                                            }
+                                            &gt;
+                                                &lt;i className=&quot;fa fa-times&quot;&gt;&lt;/i&gt;
+                                            &lt;/button&gt;
+                                        &lt;/div&gt;
+                                    &lt;/td&gt;
+                                &lt;/tr&gt;
+                            )
+
+                                
+
+                                {
+                                //   //-----------------------------------------------------Add On Product ---------------------------------
+                                //   (cartProduct?.cart_addon_products||[]).length&gt;0 &amp;&amp; 
+                                //   &lt;Fragment&gt;
+                                //     {
+                                //       (cartProduct?.cart_addon_products||[]).map((cartAddonProduct, cartAddonProductIndex)=&gt;{
+
+
+                                //         const targetProduct = cartAddonProduct?.source_product
+                                //         const {sufficientStock, left} = isStockSufficient(cartAddonProduct.quantity, targetProduct)
+                                //         const applyDiscount = isDiscountApplied(targetProduct, now)
+
+                                //         return (
+                                //           &lt;tr key={cartAddonProductIndex} style={{opacity:!sufficientStock||cartProduct?._unselect ? 0.5 : 1}}&gt;
+
+
+                                //             &lt;div className={style['cart-td']}&gt;{'(加價購)'}&lt;/div&gt;
+
+                                //             &lt;div className={clsx(style['cart-td'], &quot;product-thumbnail&quot;)}&gt;
+                                //                 &lt;img
+                                //                   className=&quot;img-fluid&quot;
+                                //                   src={cartAddonProduct?.source_product?.images?.[0]?.image}
+                                //                   alt=&quot;&quot;
+                                //                 /&gt;
+                                //             &lt;/div&gt;
+
+                                //             &lt;div className={clsx(style['cart-td'], &quot;product-name&quot;)}&gt;
+                                //               {cartAddonProduct?.source_product?.name}
+                                //             &lt;/div&gt;
+
+
+                                //             &lt;div className={clsx(style['cart-td'], &quot;product-price-cart&quot;)}&gt;
+                                //                 {applyDiscount ? (
+                                //                   &lt;Fragment&gt;
+                                //                     &lt;span className=&quot;amount old&quot;&gt;
+                                //                       {cartAddonProduct?.source_product?.currency_sign||'$'}
+                                //                       {getProductPrice(null, targetProduct, false)}
+                                //                     &lt;/span&gt;
+                                //                     &lt;span className=&quot;amount&quot;&gt;
+                                //                       {cartAddonProduct?.source_product?.currency_sign||'$'}
+                                //                       {getProductPrice(null, targetProduct, applyDiscount)}
+                                //                     &lt;/span&gt;
+                                //                   &lt;/Fragment&gt;
+                                //                 ) : (
+                                //                   &lt;span className=&quot;amount&quot;&gt;
+                                //                     {cartAddonProduct?.source_product?.currency_sign||'$'} 
+                                //                     {getProductPrice(null, targetProduct, applyDiscount)}
+                                //                   &lt;/span&gt;
+                                //                 )}
+                                //               &lt;/div&gt;
+
+
+                                //             &lt;div className={clsx(style['cart-td'], &quot;product-quantity&quot;)}&gt;
+                                              
+                                //               &lt;div className=&quot;cart-plus-minus&quot;&gt;
+                                //                 &lt;button
+                                //                   className=&quot;dec qtybutton&quot;
+                                //                   onClick={() =&gt;{
+                                //                     updateCartProduct(cartProduct?.product, null, 0, dispatch, null, null, null, targetProduct, -1)
+
+                                //                   }}
+                                //                   disabled={disableIndex==key || addonDisableIndex==cartAddonProductIndex|| cartAddonProduct.quantity&lt;=1}
+                                //                 &gt;
+                                //                   -
+                                //                 &lt;/button&gt;
+                                //                 &lt;input
+                                //                   className=&quot;cart-plus-minus-box&quot;
+                                //                   type=&quot;text&quot;
+                                //                   value={cartAddonProduct.quantity}
+                                //                   readOnly
+                                //                 /&gt;
+                                //                 &lt;button
+                                //                   className=&quot;inc qtybutton&quot;
+                                //                    onClick={() =&gt;{
+                                //                     updateCartProduct(cartProduct?.product, null, 0, dispatch, null, null, null, targetProduct, 1)
+
+                                //                   }}
+                                //                   disabled={
+                                //                     disableIndex==key || addonDisableIndex==cartAddonProductIndex ||!sufficientStock || !left || (cartAddonProduct?.quantity||0)&gt;=(cartProduct?.quantity||1)
+                                //                   }
+                                //                 &gt;
+                                //                   +
+                                //                 &lt;/button&gt;
+                                //               &lt;/div&gt;
+
+                                //             &lt;/div&gt;
+
+
+                                //             {sufficientStock?
+                                //               &lt;div className={clsx(style['cart-td'], &quot;product-subtotal&quot;)}&gt;
+                                //                 { (cartAddonProduct?.source_product?.currency_sign||'$') + (( getProductPrice(null, targetProduct, applyDiscount)) * cartAddonProduct.quantity).toFixed(2)}
+                                //               &lt;/div&gt;
+                                //               :
+                                //               &lt;div className={clsx(style['cart-td'], &quot;product-subtotal&quot;)}&gt;&lt;/div&gt;
+                                //             }
+
+                                //             &lt;div className={clsx(style['cart-td'], &quot;product-remove&quot;)}&gt;
+                                //               {!sufficientStock &amp;&amp;
+                                //                 '缺貨中'
+                                //               }
+                                            
+                                //               &lt;button
+                                //                 onClick={() =&gt;{
+                                //                   setAddonDisableIndex(cartAddonProductIndex)
+                                //                   deleteCartAddonProductV1(key, cartAddonProductIndex, cartAddonProduct, dispatch)
+                                //                   .then(()=&gt;{setAddonDisableIndex(null)}).catch(err=&gt;{setAddonDisableIndex(null)})
+
+                                //                 }}
+                                //                 disabled={disableIndex==key || addonDisableIndex==cartAddonProductIndex}
+                                //               &gt;
+                                //                 &lt;i className=&quot;fa fa-times&quot;&gt;&lt;/i&gt;
+                                //               &lt;/button&gt;
+
+                                //             &lt;/div&gt;
+
+                                //           &lt;/tr&gt;
+
+
+
+
+                                //         )
+                                //       })
+
+
+                                //     }
+
+                                //   &lt;/Fragment&gt;
+                                  
+                                }
+
+                            })}
+
+                        &lt;/tbody&gt;
+                      &lt;/table&gt;
+                      &lt;/div&gt;
+                    )}
+                
+                {
+                //   (addonProductData||[]).length &gt; 0 &amp;&amp;
+                //   &lt;Fragment&gt;
+                //     &lt;h3 className=&quot;cart-page-title mt-3&quot;&gt;加購商品 Addon Products&lt;/h3&gt;
+                //     &lt;div className={clsx('mt-3', 'p-5', style['addon-box'])} &gt;
+                //       &lt;AddonProductGridKingPork
+                //         addonProductData={addonProductData}
+                //         props={{'imageHeight':'200px'}}
+                //         // component={component}
+                //       /&gt;
+
+
+                //     &lt;/div&gt;
+                //   &lt;/Fragment&gt;
+
+                }
+                
+
+                &lt;div className={clsx('購物車-動作框',style['購物車-動作框'])}&gt;
+                    &lt;div className={clsx('繼續購物框',style['繼續購物框'])}&gt;
+                        &lt;a
+                            className={clsx('繼續購物超連結',style['繼續購物超連結'])}
+                            href={`/${routingTable?.['shop_route']}`}
+                            
+                        &gt;
+                            繼續購物
+                        &lt;/a&gt;
+                    &lt;/div&gt;
+                    &lt;div className={clsx('清空購物車按鈕框',style['清空購物車按鈕框'])}&gt;
+                        &lt;button className={clsx('清空購物車按鈕',style['清空購物車按鈕'])} onClick={() =&gt; {
+                            deleteAllCartProductV1(dispatch)
+                        }}
+
+                        &gt;
+                            清空購物車
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx('購物車-總計框',style['購物車-總計框'])}&gt;
+                    &lt;div className={clsx('總計標題框',style['總計標題框'])}&gt;
+                        &lt;h5 className={clsx('總計標題',style['總計標題'])}&gt;
+                            總計
+                        &lt;/h5&gt;
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx('商品件數框',style['商品件數框'])}&gt;
+                        &lt;h5 className={clsx('商品件數-文字',style['商品件數-文字'])}&gt;
+                            商品件數:
+                        &lt;/h5&gt;
+                        &lt;span className={clsx('商品件數',style['商品件數'])}&gt;
+                            {totalItems}
+                        &lt;/span&gt;
+                    &lt;/div&gt;
+                      
+                    &lt;div className={clsx('總金額框',style['總金額框'])}&gt;
+                        &lt;h5 className={clsx('總金額-文字',style['總金額-文字'])}&gt;
+                            金額:
+                        &lt;/h5&gt;
+                        &lt;span className={clsx('總金額',style['總金額'])}&gt;
+                            {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(subtotal, baseCurrency)}`}
+                        &lt;/span&gt;
+                    &lt;/div&gt;
+                    
+                    &lt;div className={clsx('結帳連結框',style['結帳連結框'])}&gt;
+                        &lt;a href={`/${routingTable?.['checkout_route']}?exclude_uuids=${Object.keys(finalExcludeUUIDs).join(',')}`} className={clsx('結帳連結',style['結帳連結'])}&gt;
+                            前往結帳
+                        &lt;/a&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+        &lt;/div&gt;);
+};
+
+export default CartDetail;
+</pre>
+<h2>src/components/component-instance/cart/CartDetail.module.scss</h2>
+<pre>
+
+.購物車 {
+  width: 80%;
+  max-width: 1200px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.標題框 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.標題 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.無商品框 {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.購物車-表格 {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.表格-欄位名稱 {
+  background: #f1f1f1;
+  padding: 10px;
+  text-align: left;
+}
+
+.表格-列 {
+  border-bottom: 1px solid #ddd;
+}
+
+.表格-列 td {
+  padding: 10px;
+}
+
+.表格-圖片框 img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.商品數量選擇框 button {
+  border: none;
+  background: #ddd;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.商品數量選擇框 input {
+  width: 40px;
+  text-align: center;
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.刪除商品按鈕 {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.購物車-動作框 {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.cart-shiping-update a, .cart-clear button {
+  background: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 4px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.購物車-總計框 {
+  background: #f1f1f1;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: right;
+}
+
+.結帳連結 {
+  display: inline-block;
+  background: #28a745;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 4px;
+  text-decoration: none;
+  margin-top: 10px;
+}
+</pre>
+</body>
+</html>

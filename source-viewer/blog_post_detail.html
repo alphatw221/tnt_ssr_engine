@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>blog_post_detail</title>
+</head>
+<body>
+<h1>blog_post_detail</h1>
+<h2>src/components/component-instance/blog-post-detail/BlogPostDetailSSR.jsx</h2>
+<pre>
+import PropTypes from &quot;prop-types&quot;;
+import React, { Fragment} from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+
+
+import _BlogPostDetail from './_BlogPostDetail'
+
+// import {getBlogPostDetail} from '../../../fetch/blog'
+// import { customer_retrieve_blog_post } from '@/api/blog_post'
+
+const BlogPostDetailSSR = ({  
+
+    
+    
+    element, 
+    elementProps,
+    mode,
+    actions,
+    object,
+    ...props}) =&gt; {
+
+
+
+        return (
+            &lt;Fragment&gt;
+
+              &lt;_BlogPostDetail 
+                element={element}
+                elementProps={elementProps}
+                blogPost={object}
+                mode={mode}
+                {...props}
+              /&gt;
+
+            &lt;/Fragment&gt;
+          )
+
+};
+
+BlogPostDetailSSR.propTypes = {
+};
+
+export default BlogPostDetailSSR;
+
+
+</pre>
+<h2>src/components/component-instance/blog-post-detail/BlogPostDetail.module.scss</h2>
+<pre>
+
+
+
+
+.文章容器框{
+    padding:   15vh 30px 30px 30px;
+
+}
+
+
+.文章圖片框{
+    display: flex;
+    justify-content: center;
+}
+.文章圖片{
+    max-width: 100%;
+}
+
+.文章資訊框{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.發表時間框{}
+.發表時間-標題{}
+.發表時間{}
+
+
+.更新時間框{}
+.更新時間-標題{}
+.更新時間{}
+
+.作者框{}
+.作者-標題{}
+.作者{}
+
+
+.留言數框{}
+.留言數-標題{}
+.留言數{}
+
+
+.文章類別框{}
+.文章類別-標題{}
+.文章類別{}
+
+
+.文章標籤框{}
+.文章標籤-標題{}
+.文章標籤{}
+
+
+
+.文章標題{
+    margin: 20px;
+}
+.文章副標題{
+    margin: 20px;
+}
+
+.編輯器內容{
+    width: 100%;
+    img{
+      max-width: 100%;
+    }
+}
+
+.上下文章框-頂部{
+    display: none;
+}
+
+.上下文章框-底部{
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.上一則文章大框{
+    display: flex;
+    flex-direction: column;
+}
+
+.上一則文章框{
+    max-width: 40%;
+    img{
+        max-width: 100%;
+    }
+    h5{
+        text-align: center;
+    }
+}
+
+.下一則文章大框{
+    display: flex;
+    flex-direction: column;
+}
+
+.下一則文章框{
+    max-width: 40%;
+    img{
+        max-width: 100%;
+    }
+    h5{
+        text-align: center;
+    }
+}</pre>
+</body>
+</html>

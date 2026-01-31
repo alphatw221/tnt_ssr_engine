@@ -90,8 +90,8 @@ const TypeElementSSR = ({
                     element={element}  {...props}/>
                 )  
         case 'customer_reset_password_form':
-                    return (<ResetPasswordForm 
-                         element={element}  {...props}/>) 
+            return (<ResetPasswordForm 
+                    element={element}  {...props}/>) 
         default:
             return (<div>{element?.type}</div>)
 

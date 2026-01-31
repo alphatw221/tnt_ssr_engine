@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>my_orders</title>
+</head>
+<body>
+<h1>my_orders</h1>
+<h2>src/components/component-instance/order/MyOrders.jsx</h2>
+<pre>
+import PropTypes from &quot;prop-types&quot;;
+import React, { Fragment, useState, useEffect, useRef } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './MyOrders.module.scss'
+
+         
+import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;
+
+
+
+
+// import route_names from &quot;../../route_names&quot;;
+import { customer_search_order } from &quot;@/api/order&quot;;
+import Cookies from &quot;js-cookie&quot;;
+
+import Paginator from '@/components/paginator/MyPaginator.jsx';
+
+import { setCacheKey } from &quot;@/redux/slices/order-slice&quot;
+import { getToFixedNumber } from &quot;@/lib/utils/toFixedHelper&quot;;
+
+
+
+
+const MyOrders = ({  
+    // element,  
+    // mode, 
+    // actions,
+    // routingTable, 
+    //  ...props
+    routingTable,
+
+    element, 
+    elementProps,
+    mode,
+    ...props
+    
+    }) =&gt; {
+    
+    const payment_status = {
+      'awaiting_payment':'待付款',
+      'awaiting_confirm':'待確認',
+      'failed':'失敗',
+      'expired':'過期',
+      'paid':'已付款',
+      'awaiting_refund':'待退款',
+      'refunded':'已退款',
+
+    }
+    const delivery_status = {
+      'awaiting_fulfillment':'理貨中',
+      'awaiting_shipment':'理貨完畢，待寄出',
+      'awaiting_pickup':'待自取',
+      'partially_shipped':'部分寄出',
+      'shipped':'已寄出',
+      'collected':'已收貨',
+      'awaiting_return':'待退貨',
+      'returned':'已退貨',
+    }
+
+    const order_status = {
+      'awaiting_payment':'待付款',
+      'awaiting_deliver':'處理中',
+      'awaiting_receive':'待自取',
+      'complete':'完成',
+      'cancel':'取消',
+      'return_refund':'退貨/退款',
+    }
+
+    const order_status_r = {
+      '待付款':'awaiting_payment',
+      '處理中':'awaiting_deliver',
+      '待出貨':'awaiting_deliver',    //deplicated
+      '待收貨':'awaiting_receive',    //deplicated
+      '待自取':'awaiting_receive',
+      '完成':'complete',
+      '取消':'cancel',
+      '退貨/退款':'return_refund',
+    }
+
+    const transformOrderStatus = (_input)=&gt;{
+      if(['', null, undefined].includes(_input))return null
+      return _input?.split(&quot;,&quot;)?.map(_status =&gt; order_status_r?.[_status]||'')?.join(&quot;,&quot;);  
+      }
+
+    const {cache} = useAppSelector((state) =&gt; state.order);
+
+
+    const [pageSize, setPageLimit] = useState(20);
+    const [page, setPage] = useState(cache?.[element?.uuid]?.page||1);
+    const [status, setStatus]=useState(cache?.[element?.uuid]?.status||transformOrderStatus(element?.data?.default_order_status)||'')
+
+
+
+    const [selectedFilter, setSelectedFilter]=useState(cache?.[element?.uuid]?.selectedFilter||'全部')
+
+    const defaultStatus = ''
+    const defaultPage = 1
+    const defaultPageSize = 20
+    const dispatch = useAppDispatch()
+    
+
+    useEffect(()=&gt;{
+
+        if(![undefined, null, ''].includes(Cookies.get('customer_access_token')) ||
+                 ![undefined, null, ''].includes(Cookies.get('guest_access_token')) ||
+                 ![undefined, null, ''].includes(new URLSearchParams(window.location.search).get('guest_uuid'))
+        ){
+
+   
+            if(
+              !cache?.[element?.uuid]||
+              (cache?.[element?.uuid]?.status||defaultStatus)!=status||
+              (cache?.[element?.uuid]?.page||defaultPage)!=page||
+              (cache?.[element?.uuid]?.pageSize||defaultPageSize)!=pageSize
+            ){
+
+              customer_search_order({
+                'guest_uuid':new URLSearchParams(window.location.search).get('guest_uuid'),
+                'status':status, 
+                'page':page, 
+                'page_size':pageSize}).then(res=&gt;{
+
+                  console.log(res.data)
+                  const myOrdersResult = {
+                      'key':element?.uuid,
+                      status,
+                      page,
+                      pageSize,
+                      selectedFilter,
+                      'results':res.data?.results||[],
+                      'count':res.data?.count||0,
+
+                      'awaiting_payment_count':res?.data?.awaiting_payment_count||0,
+                      'awaiting_deliver_count':res?.data?.awaiting_deliver_count||0,
+                      'awaiting_receive_count':res?.data?.awaiting_receive_count||0,
+                  }
+                  dispatch(setCacheKey(myOrdersResult))
+              })
+
+
+            }
+          
+
+            
+        }else{
+            window.location.href = `/${routingTable?.['customer_login_route']}?redirect=${encodeURIComponent(location.pathname + location.search + location.hash)}`
+
+        }
+    },[
+      status, page, pageSize, cache, selectedFilter
+    ])
+
+  
+
+   
+
+    const logistic_service_providers = {
+      'self_pickup':'自取',
+      'customize_deliver':'賣家寄送',
+      'ecpay':'綠界科技',
+    }
+    const payment_service_providers = {
+      'bank_transfer':'銀行轉帳',
+      'ecpay':'綠界科技',
+      'cash_on_delivery':'貨到付款'
+    }
+
+
+    return (
+          &lt;div 
+           {...elementProps}
+          &gt;
+
+            &lt;div className={clsx(style['標題框'], '標題框')}&gt;
+                &lt;h3 className={clsx(style['標題'], '標題')}&gt;我的訂單&lt;/h3&gt;
+            &lt;/div&gt;
+            
+            &lt;div className={clsx(style['訂單篩選器框'], '訂單篩選器框')}&gt;
+                &lt;div className={clsx(style['單訂單狀態框'], '單訂單狀態框', selectedFilter=='全部'?`${style['選取']} 選取`:'')}&gt;
+                  &lt;button className={clsx(style['單訂單狀態-按鈕'], '單訂單狀態-按鈕')} onClick={(e)=&gt;{
+
+                    setSelectedFilter('全部')
+                    setStatus(transformOrderStatus(getComputedStyle(e?.target)?.getPropertyValue('--篩選訂單狀態'))||'')
+                    setPage(1)
+
+
+                  }}&gt;
+                    &lt;span className={clsx(style['單訂單狀態-文字'], '單訂單狀態-文字')}&gt;全部&lt;/span&gt;
+                  &lt;/button&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['單訂單狀態框'], '單訂單狀態框', selectedFilter=='待付款'?`${style['選取']} 選取`:'')}&gt;
+                  &lt;button className={clsx(style['單訂單狀態-按鈕'], '單訂單狀態-按鈕')}onClick={(e)=&gt;{
+                    setSelectedFilter('待付款')
+                    setStatus(transformOrderStatus(getComputedStyle(e?.target)?.getPropertyValue('--篩選訂單狀態'))||'awaiting_payment')
+                    setPage(1)
+                 
+                  }}&gt;
+                    &lt;span className={clsx(style['單訂單狀態-文字'], '單訂單狀態-文字')}&gt;待付款&lt;/span&gt;
+                    {(cache?.[element?.uuid]?.awaiting_payment_count||0)&gt;0&amp;&amp;&lt;span className={clsx(style['單訂單狀態-數量'], '單訂單狀態-數量')}&gt;{`(${(cache?.[element?.uuid]?.awaiting_payment_count||0)})`}&lt;/span&gt;}
+                  &lt;/button&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['單訂單狀態框'], '單訂單狀態框', selectedFilter=='處理中'?`${style['選取']} 選取`:'')}&gt;
+                  &lt;button className={clsx(style['單訂單狀態-按鈕'], '單訂單狀態-按鈕')}onClick={(e)=&gt;{
+  
+                    setSelectedFilter('處理中')
+                    setStatus(transformOrderStatus(getComputedStyle(e?.target)?.getPropertyValue('--篩選訂單狀態'))||'awaiting_deliver')
+                    setPage(1)
+
+                 
+                  }}&gt;
+                    &lt;span className={clsx(style['單訂單狀態-文字'], '單訂單狀態-文字')}&gt;處理中&lt;/span&gt;
+                    {(cache?.[element?.uuid]?.awaiting_deliver_count||0)&gt;0&amp;&amp;&lt;span className={clsx(style['單訂單狀態-數量'], '單訂單狀態-數量')}&gt;{`(${(cache?.[element?.uuid]?.awaiting_deliver_count||0)})`}&lt;/span&gt;}
+                  &lt;/button&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['單訂單狀態框'], '單訂單狀態框', selectedFilter=='待自取'?`${style['選取']} 選取`:'')}&gt;
+                  &lt;button className={clsx(style['單訂單狀態-按鈕'], '單訂單狀態-按鈕')}onClick={(e)=&gt;{
+
+                    setSelectedFilter('待自取')
+                    setStatus(transformOrderStatus(getComputedStyle(e?.target)?.getPropertyValue('--篩選訂單狀態'))||'awaiting_receive')
+                    setPage(1)
+                   
+                  }}&gt;
+                    &lt;span className={clsx(style['單訂單狀態-文字'], '單訂單狀態-文字')}&gt;待自取&lt;/span&gt;
+                    {(cache?.[element?.uuid]?.awaiting_receive_count||0)&gt;0&amp;&amp;&lt;span className={clsx(style['單訂單狀態-數量'], '單訂單狀態-數量')}&gt;{`(${(cache?.[element?.uuid]?.awaiting_receive_count||0)})`}&lt;/span&gt;}
+                  &lt;/button&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['單訂單狀態框'], '單訂單狀態框', selectedFilter=='已完成'?`${style['選取']} 選取`:'')}&gt;
+                  &lt;button className={clsx(style['單訂單狀態-按鈕'], '單訂單狀態-按鈕')}onClick={(e)=&gt;{
+ 
+                    setSelectedFilter('已完成')
+                    setStatus(transformOrderStatus(getComputedStyle(e?.target)?.getPropertyValue('--篩選訂單狀態'))||'complete')
+                    setPage(1)
+                   
+                  }}&gt;
+                    &lt;span className={clsx(style['單訂單狀態-文字'], '單訂單狀態-文字')}&gt;已完成&lt;/span&gt;
+                  &lt;/button&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['單訂單狀態框'], '單訂單狀態框', selectedFilter=='取消'?`${style['選取']} 選取`:'')}&gt;
+                  &lt;button className={clsx(style['單訂單狀態-按鈕'], '單訂單狀態-按鈕')}onClick={(e)=&gt;{
+
+                    setSelectedFilter('取消')
+                    setStatus(transformOrderStatus(getComputedStyle(e?.target)?.getPropertyValue('--篩選訂單狀態'))||'cancel')
+                    setPage(1)
+             
+                  }}&gt;
+                    &lt;span className={clsx(style['單訂單狀態-文字'], '單訂單狀態-文字')}&gt;取消&lt;/span&gt;
+                  &lt;/button&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['單訂單狀態框'], '單訂單狀態框', selectedFilter=='退貨/退款'?`${style['選取']} 選取`:'')}&gt;
+                  &lt;button className={clsx(style['單訂單狀態-按鈕'], '單訂單狀態-按鈕')}onClick={(e)=&gt;{
+
+                    setSelectedFilter('退貨/退款')
+                    setStatus(transformOrderStatus(getComputedStyle(e?.target)?.getPropertyValue('--篩選訂單狀態'))||'return_refund')
+                    setPage(1)
+             
+                  }}&gt;
+                    &lt;span className={clsx(style['單訂單狀態-文字'], '單訂單狀態-文字')}&gt;退貨/退款&lt;/span&gt;
+                  &lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            {
+              (cache?.[element?.uuid]?.results||[]).length&lt;=0 &amp;&amp;
+              &lt;div className={clsx(style['無訂單框'], '無訂單框')}&gt;
+                &lt;div className={clsx(style['無訂單-圖標框'], '無訂單-圖標框')}&gt;
+                    &lt;i className={clsx(style['無訂單-圖標'], '無訂單-圖標', 'pe-7s-cart')}&gt;&lt;/i&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['無訂單-文字框'], '無訂單-文字框')}&gt;
+                    &lt;span className={clsx(style['無訂單-文字'], '無訂單-文字')}&gt;
+                      無歷史訂單
+                    &lt;/span&gt;
+                    {   
+                        routingTable?.['shop_route'] &amp;&amp;
+                        &lt;a href={`/${routingTable?.['shop_route']}`} className={clsx(style['購物去-超連結'], '購物去-超連結')}&gt;
+                            購物去
+                        &lt;/a&gt;
+                    }
+                    
+                &lt;/div&gt;
+              &lt;/div&gt;
+            }
+
+            {
+              (cache?.[element?.uuid]?.results||[]).length&gt;0 &amp;&amp;
+
+              &lt;Fragment&gt;
+              &lt;table className={clsx(style['訂單-表格'], '訂單-表格')}&gt;
+                &lt;thead className={clsx(style['表格-頭段'], '表格-頭段')}&gt;
+                  &lt;tr className={clsx(style['表格-列'], '表格-列')}&gt;
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;訂單編號&lt;/th&gt;
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;金額&lt;/th&gt;
+                    {/* &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;物流狀態&lt;/th&gt;
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;付款狀態&lt;/th&gt; */}
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;訂單狀態&lt;/th&gt;
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;運送方式&lt;/th&gt;
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;付款方式&lt;/th&gt;
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;日期&lt;/th&gt;
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;動作&lt;/th&gt;
+                  &lt;/tr&gt;
+                &lt;/thead&gt;
+                &lt;tbody className={clsx(style['表格-身體'], '表格-身體')}&gt;
+                  {
+                    (cache?.[element?.uuid]?.results||[]).map((order, key)=&gt;{
+
+
+                      return (
+                        &lt;Fragment key={key}&gt;
+                        &lt;tr className={clsx(style['表格-列'], '表格-列', )} key={key}&gt;
+
+                              &lt;td className={clsx(style['表格-訂單編號框'], &quot;表格-訂單編號框&quot;)}&gt;
+                                  &lt;span className={clsx(style['訂單編號'], &quot;訂單編號&quot;)}&gt;{`#${order?.id}`}&lt;/span&gt;
+                              &lt;/td&gt;
+
+                              &lt;td className={clsx(style['表格-訂單金額框'], &quot;表格-訂單金額框&quot;)}&gt;
+                                  &lt;span className={clsx(style['訂單金額'], &quot;訂單金額&quot;)}&gt;{order?.base_currency_sign||'$'}{getToFixedNumber(Number(order?.total||0), order?.base_currency||'TWD')}&lt;/span&gt;
+                              &lt;/td&gt;
+
+
+                              &lt;td className={clsx(style['表格-訂單狀態框'], &quot;表格-訂單狀態框&quot;, `${style?.[order_status?.[order?.status]]} ${order_status?.[order?.status]}`)}&gt;
+                                &lt;span className={clsx(style['訂單狀態'], &quot;訂單狀態&quot;)}&gt;{order_status?.[order?.status]||''}&lt;/span&gt;
+                              &lt;/td&gt;
+
+                              {/* &lt;td className={clsx(style['表格-付款狀態框'], &quot;表格-付款狀態框&quot;)}&gt;
+                                &lt;span className={clsx(style['付款狀態'], &quot;付款狀態&quot;)}&gt;{payment_status?.[order?.payment_status]||''}&lt;/span&gt;
+                              &lt;/td&gt; */}
+
+                              &lt;td className={clsx(style['表格-訂單運送方式框'], &quot;表格-訂單運送方式框&quot;, `${style?.[logistic_service_providers?.[order?.logistic_service_provider]]} ${logistic_service_providers?.[order?.logistic_service_provider]}`)}&gt;
+                                &lt;span className={clsx(style['運送方式'], &quot;運送方式&quot;)}&gt;{order?.logistic_service_option_name||''}&lt;/span&gt;
+                              &lt;/td&gt;
+
+                              &lt;td className={clsx(style['表格-訂單付款方式框'], &quot;表格-訂單付款方式框&quot;, `${style?.[payment_service_providers?.[order?.payment_service_provider]]} ${payment_service_providers?.[order?.payment_service_provider]}`)}&gt;
+                                &lt;span className={clsx(style['付款方式'], &quot;付款方式&quot;)}&gt;{order?.payment_service_option_name||''}&lt;/span&gt;
+                              &lt;/td&gt;
+
+
+                              &lt;td className={clsx(style['表格-訂單日期框'], &quot;表格-訂單日期框&quot;)}&gt;
+                                &lt;span className={clsx(style['訂單日期'], &quot;訂單日期&quot;)}&gt;{new Date(order.created_at).toLocaleDateString()}&lt;/span&gt;
+                              &lt;/td&gt;
+
+                              &lt;td className={clsx(style['表格-訂單動作框'], &quot;表格-訂單動作框&quot;)}&gt;
+                                &lt;a href={`/${routingTable?.['order_route']}/${order?.uuid}?guest_uuid=${new URLSearchParams(window.location.search).get('guest_uuid')}`} className={clsx(style['訂單內容-超連結'], '訂單內容-超連結')}&gt;
+                                    訂單內容
+                                &lt;/a&gt;
+                              &lt;/td&gt;
+
+
+                          
+                          &lt;/tr&gt;
+
+
+                          {
+                            // (order?.order_products||[]).map((order_product, key)=&gt;{
+                            //   return ( &lt;tr className={clsx(style['訂單商品'], '訂單商品')} key={key}&gt;
+                            //         &lt;td&gt;&lt;/td&gt;
+                            //         &lt;td className={clsx(style['訂單商品-圖片框'], &quot;訂單商品-圖片框&quot;)}&gt;
+                            //             &lt;a href={`${routingTable?.['product_route']}/${order_product?.product?.uuid}`}&gt;
+                            //             &lt;img
+                            //                 className={clsx(style['訂單商品-圖片'], &quot;訂單商品-圖片&quot;)}
+                            //                 src={order_product?.image}
+                            //                 alt=&quot;&quot;
+                            //             /&gt;
+                            //             &lt;/a&gt;
+                            //         &lt;/td&gt;
+                                
+                            //         &lt;td className={clsx(style['訂單商品-名稱框'], &quot;訂單商品-名稱框&quot;)}&gt;
+                            //             &lt;a href={`${routingTable?.['product_route']}/${order_product?.product?.uuid}`}&gt;
+                            //                 &lt;h4 className={clsx(style['訂單商品-名稱'], &quot;訂單商品-名稱&quot;)}&gt;
+                            //                     {`${order_product?.name||''}`}
+                            //                 &lt;/h4&gt;
+                            //             &lt;/a&gt;
+                            //         &lt;/td&gt;
+
+
+                            //         &lt;td className={clsx(style['訂單商品-數量框'], &quot;訂單商品-數量框&quot;)}&gt;
+                            //                 &lt;span className={clsx('訂單商品數量',style['訂單商品數量'])}&gt;
+                            //                     {`${order_product?.quantity}件`}
+                            //                 &lt;/span&gt;
+                            //         &lt;/td&gt;
+
+
+                            //   &lt;/tr&gt;)})
+                          }
+                          
+                        &lt;/Fragment&gt;
+                      )
+
+
+                    })
+                  }
+                &lt;/tbody&gt;
+
+                
+
+
+              &lt;/table&gt;
+              &lt;div className={clsx(style['分頁器框'], &quot;分頁器框&quot;)}&gt;
+                    &lt;Paginator
+                        totalRecords={(cache?.[element?.uuid]?.count||0)}
+                        pageLimit={pageSize}
+                        pageNeighbours={2}
+                        setOffset={()=&gt;{}}
+                        currentPage={page}
+                        setCurrentPage={(page)=&gt;{
+                          setPage(page)
+                        }}
+
+                        pagePrevText=&quot;«&quot;
+                        pageNextText=&quot;»&quot;
+                    /&gt;
+              &lt;/div&gt;
+              &lt;/Fragment&gt;
+            }
+
+         &lt;/div&gt;)
+};
+
+MyOrders.propTypes = {
+};
+
+export default MyOrders;
+
+
+
+
+</pre>
+<h2>src/components/component-instance/order/MyOrders.module.scss</h2>
+<pre>
+
+
+/*------ 24. login register Page  --------*/
+// @import &quot;@/assets/scss/variables&quot;;
+
+
+.我的訂單 {
+  min-width: 60vw;
+  // max-width: 1200px;
+  margin: 20px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.標題框 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.標題 {
+  font-size: 24px;
+  color: #333;
+}
+
+.訂單篩選器框 {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.單訂單狀態框 {
+  display: inline-block;
+}
+
+.單訂單狀態-按鈕 {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.單訂單狀態-按鈕:hover {
+  background: #0056b3;
+}
+
+.無訂單框 {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.無訂單-圖標 {
+  font-size: 50px;
+  color: #ccc;
+}
+
+.無訂單-文字 {
+  display: block;
+  font-size: 18px;
+  color: #777;
+  margin-top: 10px;
+}
+
+.訂單-表格 {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.表格-頭段 {
+  background: #007bff;
+  color: white;
+}
+
+.表格-列 {
+  border-bottom: 1px solid #ddd;
+}
+
+.表格-欄位名稱, .表格-訂單編號框, .表格-訂單金額框, .表格-物流狀態框, .表格-付款狀態框, .表格-訂單日期框, .表格-訂單動作框 {
+  padding: 12px;
+  text-align: left;
+}
+
+.訂單內容-超連結 {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.訂單內容-超連結:hover {
+  text-decoration: underline;
+}
+
+.訂單商品-圖片 {
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+}
+
+.訂單商品-名稱 {
+  font-size: 16px;
+  color: #333;
+}
+
+.分頁器框 {
+  margin-top: 20px;
+  text-align: center;
+}</pre>
+</body>
+</html>

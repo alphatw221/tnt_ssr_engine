@@ -24,7 +24,8 @@ export function htmlStyleToReactStyle(styleString) {
 
   // Step 1: 暫時將 url(...) 的內容替換為佔位符
   const urlMatches = [];
-  const safeStyleString = styleString.replace(/url\(([^)]+)\)/g, (_, urlContent) => {
+
+  const safeStyleString = styleString?.replace?.(/url\(([^)]+)\)/g, (_, urlContent) => {
     const placeholder = `__URL_${urlMatches.length}__`;
     urlMatches.push(urlContent.trim());
     return placeholder;
@@ -61,7 +62,10 @@ export function convertToReactProps(htmlProps = {}) {
     const reactKey = htmlToReactPropMap[key.toLowerCase()] || key;
 
     if(key=='style'){
-      reactProps[reactKey] = htmlStyleToReactStyle(htmlProps[key])
+      const styleValue = htmlProps[key];
+      reactProps[reactKey] = typeof styleValue === 'string'
+        ? htmlStyleToReactStyle(styleValue)
+        : styleValue;
     }else{
       reactProps[reactKey] = htmlProps[key];
     }

@@ -193,7 +193,7 @@ const ElementDev = ({ element, actions, ...props}) => {
         const createChildElement = ()=>{
             const tempUUID = uuidv4()
             const sudoElement = {uuid:tempUUID, name:'未命名'}
-            let _website = actions?.globleInsertInto(sudoElement, element?.parent_relation_uuid, 0, 0)
+            let _website = actions?.globleInsertInto(sudoElement, element?.parent_relation_uuid, -1, 0)
             _website = JSON.parse(JSON.stringify(_website))
             user_r_create_element({
                         'target_webpage_uuid':null, 
@@ -249,7 +249,7 @@ const ElementDev = ({ element, actions, ...props}) => {
                         // }).then(res=>{console.log(res.data)})
                     }
                     const inHandler = ()=>{
-                        actions.globleMoveInto(item.element, element, 0, 0)
+                        actions.globleMoveInto(item.element, element, -1, 0)
                         // user_r_action_to_element({
                         //     'parent_relation_uuid':item?.element?.parent_relation_uuid, 
                         //     'action':'move',   //move/share/clone

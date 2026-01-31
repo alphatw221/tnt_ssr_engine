@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>order_payment</title>
+</head>
+<body>
+<h1>order_payment</h1>
+<h2>src/components/component-instance/order/OrderPaymentSSR.jsx</h2>
+<pre>
+import React, { Fragment, useState, useEffect } from &quot;react&quot;;
+import OrderPayment from &quot;./OrderPayment&quot;;
+const OrderPaymentSSR = ({  
+    ...props
+}) =&gt; {
+
+
+    
+    const [guestUUID, setGuestUUID] = useState()
+    const [objectUUID, setObjectUUID] = useState()
+    useEffect(()=&gt;{
+        setGuestUUID(new URLSearchParams(window.location.search).get('guest_uuid'))
+        setObjectUUID(window?.__SSR_PARAMS__?.objectUUID)
+    },[])
+    return &lt;OrderPayment objectUUID={objectUUID} guestUUID={guestUUID} {...props}/&gt;
+};
+
+
+
+export default OrderPaymentSSR;
+
+
+
+
+</pre>
+<h2>src/components/component-instance/order/OrderPayment.module.scss</h2>
+<pre>/* 訂單付款主容器 */
+.訂單付款 {
+    // max-width: 500px;
+    min-width:60vw;
+    margin: 20px auto;
+    padding: 20px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 標題框 */
+.標題框 {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+/* 標題 */
+.標題 {
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
+
+/* 訂單編號框 */
+.訂單編號框 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+/* 訂單編號標籤 */
+.訂單編號-標籤 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #555;
+}
+
+/* 訂單編號 */
+.訂單編號 {
+    font-size: 16px;
+    color: #007bff;
+    font-weight: bold;
+}
+
+
+
+
+.單付款方式 {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 8px 0;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    background-color: #f9f9f9;
+}
+
+.單付款方式:hover {
+    border-color: #888;
+}
+
+.單付款方式.選取 {
+    border-color: #007bff;
+    // background-color: #e6f0ff;
+}
+
+.單付款方式標題框 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+.單付款方式標題 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}</pre>
+</body>
+</html>

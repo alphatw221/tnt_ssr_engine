@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>product_detail</title>
+</head>
+<body>
+<h1>product_detail</h1>
+<h2>src/components/component-instance/product-detail/ProductDetailClient.jsx</h2>
+<pre>
+import PropTypes from &quot;prop-types&quot;;
+import React, { Fragment, useState, useEffect, useRef, useCallback, useMemo } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './ProductDetail.module.scss'
+import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;
+
+import ComposeProductModal from &quot;@/components/product/ComposeProductModal&quot;
+// import AddonProductsModal from &quot;@/components/product/AddonProductsModal&quot;
+import ProductRating2 from &quot;@/components/product/sub-components/ProductRating2&quot;
+import { isStockSufficient, getProductPrice } from &quot;@/lib/utils/productHelper&quot;;
+import { updateCartProduct } from &quot;@/lib/utils/cartHelper&quot;;
+
+
+// import Lightbox from &quot;yet-another-react-lightbox&quot;;
+// import Thumbnails from &quot;yet-another-react-lightbox/plugins/thumbnails&quot;;
+// import Zoom from &quot;yet-another-react-lightbox/plugins/zoom&quot;;
+// import Fullscreen from &quot;yet-another-react-lightbox/plugins/fullscreen&quot;;
+// import &quot;yet-another-react-lightbox/plugins/thumbnails.css&quot;;
+// import &quot;yet-another-react-lightbox/styles.css&quot;;
+import { getToFixedNumber } from &quot;@/lib/utils/toFixedHelper&quot;;
+
+const ProductDetailClient = ({  
+    // params, searchParams,
+
+    product,
+    now,
+
+    routingTable,
+    element, 
+    elementProps,
+    mode,
+    actions,
+
+    ...props
+}) =&gt; {
+    
+    const dispatch = useAppDispatch();
+
+    const { cartProducts } = useAppSelector((state) =&gt; state.cart);
+    const customer = useAppSelector((state) =&gt; state.customer);
+
+    const [bigImages, setBigImages] = useState([])
+    const [images, setImages] = useState([])
+    const targetCartProducts = customer?.uuid ? customer?.cart_products : cartProducts
+
+    const [selectedProduct, setSelectedProduct] = useState(
+        (product?.variant_products||[]).length&gt;0 ? product?.variant_products[0] : product
+    )
+    const [composeBase, setComposeBase] = useState(
+        (product?.compose_bases||[]).length&gt;0 ? product?.compose_bases?.[0] : null
+    )
+
+
+    const [selectedVariantProduct, setSelectedVariantProduct] = useState(product?.variant_products ? product?.variant_products?.[0] : null);
+    const [quantityCount, setQuantityCount] = useState(1);    
+    const [variant1, setVariant1] = useState({type:null,values:[]});
+    const [variant2, setVariant2] = useState({type:null,values:[]});
+    const [selectedValue1, setSelectedValue1] = useState((product?.variant_products||[]).length ? product?.variant_products?.[0]?.value1 : null);
+    const [selectedValue2, setSelectedValue2] = useState((product?.variant_products||[]).length ? product?.variant_products?.[0]?.value2 : null);
+    const [productCartQty, setProductCartQty] = useState(0);
+    const [showComposeModal, setShowComposeModal] = useState(false)
+    const [showAddonModal, setShowAddonModal] = useState(false)
+
+    const [supportLogisticServices, setSupportLogisticServices] = useState([])
+    const [supportPaymentServices, setSupportPaymentServices] = useState([])
+
+    const [displayImage, setDisplayImage] = useState(null)
+    const [defaultImage, setDefaultImage] = useState(null)
+
+    const [selectedTabIndex, setSelectedTabIndex] = useState(0)
+
+    const smallImageRefs = useRef([]);
+    const variantType1Refs = useRef([]);
+    const variantType2Refs = useRef([]);
+    const composeBaseRefs = useRef([]);
+
+    const productContent = useMemo(
+        () =&gt; ({ __html: product?.content || &quot;&quot; }),
+        [product?.content]
+    );
+    const productSpec = useMemo(
+        () =&gt; ({ __html: selectedProduct?.spec||product?.spec || &quot;&quot; }),
+        [product?.spec, selectedProduct?.spec]
+    );
+    useEffect(()=&gt;{
+        const _cartProduct = targetCartProducts.find(
+            cartProduct=&gt;cartProduct?.product?.uuid==product?.uuid &amp;&amp; (cartProduct?.variant_product?.uuid||null)==(selectedVariantProduct?.uuid||null) &amp;&amp; (cartProduct?.compose_base?.uuid||null) == (composeBase?.uuid||null)  
+        )
+        setProductCartQty(_cartProduct?.quantity||0)
+    },[selectedVariantProduct, product, targetCartProducts, composeBase])
+    
+    useEffect(()=&gt;{
+        if(product?.type=='variant'){
+          var _type1 = null 
+          var _type2 = null
+          const _values1 = []
+          const _values2 = []
+    
+          product?.variant_products.forEach(variantProduct =&gt; {
+            if(variantProduct.type1){
+              _type1 = variantProduct.type1
+              _values1.push({'value':variantProduct.value1,'description':variantProduct?.value1_description,'price_description':variantProduct?.value1_price_description})
+            }
+            if(variantProduct.type2){
+              _type2 = variantProduct.type2
+              _values2.push({'value':variantProduct.value2,'description':variantProduct?.value2_description,'price_description':variantProduct?.value2_price_description})
+    
+            }
+          });
+    
+          setVariant1({type:_type1, values:_values1})
+          setVariant2({type:_type2, values:_values2})
+        }
+      },[product])
+      
+       useEffect(()=&gt;{
+            var _images = []
+            var _bigImages = []
+            if((product?.images||[]).length&gt;0){
+                _images = [..._images, ...product.images]
+                _bigImages = [..._bigImages, ...product.images]
+            }
+            (product?.variant_products||[]).forEach(variant_product=&gt;{
+                if(variant_product?.image)_bigImages.push({image:variant_product?.image})
+            })
+            setImages(_images)
+            setBigImages(_bigImages)
+            // setTargetImageD(product?.images?.[0])
+            setDisplayImage(product?.images?.[0])
+            setDefaultImage(product?.images?.[0])
+        },[product])
+
+    // const now = new Date().toJSON().slice(0, 10);
+
+
+    // let { object_id } = useParams();
+    // const dispatch = useAppDispatch()
+
+
+    // useEffect(()=&gt;{
+
+    //     if(shop?.product?.enable_review == true){
+    //         var _product_uuid, _order_by, _page
+    //         customer_search_product_reviews(_product_uuid=object_id, _order_by='-created_at', _page=productReviewsPage).then(res=&gt;{
+    //             dispatch(setProductReveiws({'productReviews':res?.data?.results||[], 'totalRecords':res?.data.count||0}))
+
+    //         })
+    //     }
+    // },[shop?.product?.enable_review, productReviewsPage])
+
+
+    // if(!shop.product ){
+    //     return (
+    //         &lt;div style={{width:width,maxWidth:(node?.data?.max_width||'')+(node?.data?.max_width?node?.data?.max_width_unit:'')}}&gt;
+    //             &lt;ProductNotFound /&gt;
+    //         &lt;/div&gt;
+    //     )
+    // }
+
+
+
+
+
+
+    const handleBuy = ()=&gt;{
+        if(product?.type=='compose'){
+          setShowComposeModal(true)
+        }else{
+          updateCartProduct(product, selectedVariantProduct, quantityCount, dispatch).then(()=&gt;{
+            setQuantityCount(1);
+          }).then(()=&gt;{
+            setShowAddonModal(true)
+          }).then(()=&gt;{
+            if(product?.single_page_product){
+              window.location.href = '/checkout'
+            }
+          })
+        }
+    }
+    const showImageBrowsingModal = ()=&gt;{}
+    const isDiscountApplied = ()=&gt;{
+        const {isDiscountApplied} = getProductPrice(now, product, quantityCount, selectedVariantProduct, composeBase)
+        return isDiscountApplied
+    }
+    const getDiscountTotalPrice = ()=&gt;{
+        const {discountTotalPrice} = getProductPrice(now, product, quantityCount, selectedVariantProduct, composeBase)
+        return getToFixedNumber(discountTotalPrice, product?.currency||'TWD')
+        // return discountTotalPrice
+    }
+    const getOriginalTotalPrice = ()=&gt;{
+        const {originalTotalPrice} = getProductPrice(now, product, quantityCount, selectedVariantProduct, composeBase)
+        return getToFixedNumber(originalTotalPrice, product?.currency||'TWD')
+        // return originalTotalPrice
+    }
+
+    const isRequireQtySufficient = ()=&gt;{
+        const {requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( selectedProduct, quantityCount, productCartQty)
+        return requireQtySufficient
+    }
+    const isInventoryControl = ()=&gt;{
+        const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( selectedProduct, quantityCount, productCartQty)
+        return inventoryControl
+    }
+    const isInventorySufficient = ()=&gt;{
+        const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( selectedProduct, quantityCount, productCartQty)
+        return inventorySufficient
+    }
+    const plusOneSufficient = ()=&gt;{
+        const {requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( selectedProduct, quantityCount+1, productCartQty)
+        return requireQtySufficient
+    }
+    const getInventory = ()=&gt;{
+        const {requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( selectedProduct, quantityCount, productCartQty)
+        return inventory
+    }
+    const getActionButtonText = ()=&gt;{
+        if(isRequireQtySufficient()){
+            return product?.type=='compose'? '搭配商品' : product?.single_page_product ? ' 購買 ': &quot; 加入購物車 &quot;
+        }
+        return &quot;缺貨中&quot;
+    }
+    const actionButtonDisabled = ()=&gt;{
+        return (!isRequireQtySufficient())||(product?.type=='variant'&amp;&amp; !selectedVariantProduct)||(product?.type=='compose'&amp;&amp; !composeBase)
+    }
+    useEffect(()=&gt;{
+
+        const mouseEnterHandler = (index)=&gt;(e)=&gt;{
+            (document.querySelectorAll(`.單小圖框.聚焦`)||[])?.forEach(el=&gt;el?.classList?.remove(&quot;聚焦&quot;))
+            e?.currentTarget?.classList?.add(&quot;聚焦&quot;)
+            // if(document?.querySelector(`.大圖`))document.querySelector(`.大圖`).src = images?.[index]?.image
+            setDisplayImage(images?.[index])
+        }
+        const mouseEnterHandlers = [];
+
+        (smallImageRefs?.current||[])?.forEach((el,index)=&gt;{
+            const h = mouseEnterHandler(index)
+            if(el){
+                el.addEventListener(&quot;mouseenter&quot;, h);
+            }
+        })
+
+        return ()=&gt;{
+            (smallImageRefs?.current||[])?.forEach((el,index)=&gt;{
+                if(el){
+                    el.removeEventListener(&quot;mouseenter&quot;, mouseEnterHandlers?.[index]);
+                }
+            })
+        }
+    },[smallImageRefs, images])
+
+
+
+
+    useEffect(()=&gt;{
+
+        const mouseEnterHandler = (className, value1, value2)=&gt;(e)=&gt;{
+            (document.querySelectorAll(`.${className}.聚焦`)||[])?.forEach(el=&gt;el?.classList?.remove(&quot;聚焦&quot;))
+            e?.currentTarget?.classList?.add(&quot;聚焦&quot;)
+            const variantProduct = product?.variant_products.find(variantProduct=&gt;variantProduct.value1==value1&amp;&amp;variantProduct.value2==value2)
+            // setTargetImageA({image:variantProduct?.image})
+            // setTargetImageC({image:variantProduct?.image})
+            // if(document?.querySelector(`.大圖`))document.querySelector(`.大圖`).src = variantProduct?.image
+            if(variantProduct?.image)setDisplayImage({image:variantProduct?.image})
+            
+        }
+        const mouseLeaveHandler = (e)=&gt;{
+            e?.currentTarget?.classList?.remove(&quot;聚焦&quot;)
+            setDisplayImage(defaultImage)
+            // setTargetImageA(null)
+            // if(document?.querySelector(`.大圖`))document.querySelector(`.大圖`).src = displayImage?.image
+
+        }
+
+        const mouseEnterHandlers1 = [];
+        (variantType1Refs?.current||[])?.forEach((el,index)=&gt;{
+            const h = mouseEnterHandler('單變體1-選項', variant1?.values?.[index]?.value, selectedValue2)
+            mouseEnterHandlers1.push(h)
+            if(el){
+                el.addEventListener(&quot;mouseenter&quot;, h);
+                el.addEventListener(&quot;mouseleave&quot;, mouseLeaveHandler);
+            }
+        })
+
+        const mouseEnterHandlers2 = [];
+        (variantType2Refs?.current||[])?.forEach((el,index)=&gt;{
+            const h = mouseEnterHandler('單變體2-選項', selectedValue1, variant2?.values?.[index]?.value)
+            mouseEnterHandlers2.push(h)
+            if(el){
+                el.addEventListener(&quot;mouseenter&quot;, h);
+                el.addEventListener(&quot;mouseleave&quot;, mouseLeaveHandler);
+            }
+        })
+        return ()=&gt;{
+            (variantType1Refs?.current||[])?.forEach((el,index)=&gt;{
+                if(el){
+                    el.removeEventListener(&quot;mouseenter&quot;, mouseEnterHandlers1?.[index]);
+                    el.removeEventListener(&quot;mouseleave&quot;, mouseLeaveHandler);
+                }
+            });
+            (variantType2Refs?.current||[])?.forEach((el,index)=&gt;{
+                if(el){
+                    el.removeEventListener(&quot;mouseenter&quot;, mouseEnterHandlers2?.[index]);
+                    el.removeEventListener(&quot;mouseleave&quot;, mouseLeaveHandler);
+                }
+            });
+        }
+    },[variantType1Refs, variantType2Refs, product, variant1, variant2, selectedValue1, selectedValue2, defaultImage])
+
+
+    useEffect(()=&gt;{
+        const mouseEnterHandler = (e)=&gt;{
+            (document.querySelectorAll(`.單任搭選項.聚焦`)||[])?.forEach(el=&gt;el?.classList?.remove(&quot;聚焦&quot;))
+            e?.currentTarget?.classList?.add(&quot;聚焦&quot;)
+        }
+        const mouseLeaveHandler = (e)=&gt;{
+            e?.currentTarget?.classList?.remove(&quot;聚焦&quot;)
+        }
+        (composeBaseRefs?.current||[])?.forEach((el,index)=&gt;{
+            if(el){
+                el.addEventListener(&quot;mouseenter&quot;, mouseEnterHandler);
+                el.addEventListener(&quot;mouseleave&quot;, mouseLeaveHandler);
+            }
+        })
+        return ()=&gt;{
+            (composeBaseRefs?.current||[])?.forEach((el,index)=&gt;{
+                if(el){
+                    el.removeEventListener(&quot;mouseenter&quot;, mouseEnterHandler);
+                    el.removeEventListener(&quot;mouseleave&quot;, mouseLeaveHandler);
+                }
+            });
+        }
+    },[composeBaseRefs])
+
+    return (
+        
+        &lt;div 
+            {...elementProps}
+            &gt;
+             
+
+            &lt;div className={clsx(style['商品圖片選項框'], '商品圖片選項框',)}&gt;
+
+                &lt;div className={clsx(style['大小圖框'], '大小圖框',)}&gt;
+                    &lt;div className={clsx(style['大圖框'], '大圖框',)} onClick={()=&gt;{showImageBrowsingModal()}}&gt;
+                        {(bigImages||[]).map((bigImage,i)=&gt;(
+                            &lt;div className={clsx(style['單大圖框'], '單大圖框', bigImage?.image==displayImage?.image?`${style['顯示']} 顯示`:'')} key={i} &gt;
+                                &lt;img className={clsx(style['大圖'], '大圖',)} alt=&quot;&quot; src={bigImage?.image} /&gt;
+                            &lt;/div&gt;
+                        ))}
+                    &lt;/div&gt;
+                    &lt;div className={clsx(style['小圖框'], '小圖框',)}&gt;
+                        {(images||[]).map((image,i)=&gt;(
+                            &lt;div className={clsx(style['單小圖框'], '單小圖框')} key={i} ref={(el)=&gt;{if (el) smallImageRefs.current[i] = el;}} &gt;
+                                &lt;img className={clsx(style['小圖'], '小圖',)} alt=&quot;&quot; src={image?.image} onClick={()=&gt;{showImageBrowsingModal()}}/&gt;
+                            &lt;/div&gt;
+
+                        ))}
+                        &lt;button className={clsx(style['小圖框按鈕1'], '小圖框按鈕1',)}&gt;
+                            &lt;i className={clsx(style['小圖框按鈕1-圖標'], '小圖框按鈕1-圖標',)}&gt;&lt;/i&gt;
+                        &lt;/button&gt;
+                        &lt;button className={clsx(style['小圖框按鈕2'], '小圖框按鈕2',)}&gt;
+                            &lt;i className={clsx(style['小圖框按鈕2-圖標'], '小圖框按鈕2-圖標',)}&gt;&lt;/i&gt;
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['商品選項框'], '商品選項框',)}&gt;
+                        &lt;div className={clsx(style['商品名稱框'], '商品名稱框',)}&gt; 
+                            &lt;h2 className={clsx(style['商品名稱'], '商品名稱',)}&gt;{product?.name}&lt;/h2&gt;
+                        &lt;/div&gt;
+
+                        {product?.enable_review &amp;&amp; (product?.stars_count||0) &gt; 0 &amp;&amp; 
+                            &lt;ProductRating2 ratingValue={(product?.stars_count||0)/(product?.reviews_count||1)} /&gt;   
+                        }
+
+                        &lt;div className={clsx(style['商品敘述框'], '商品敘述框',)}&gt;
+                            &lt;p className={clsx(style['商品敘述'], '商品敘述',)} dangerouslySetInnerHTML={{__html: (product?.description||'').replace(/\n/g, &quot;&lt;br /&gt;&quot;)}}/&gt;
+                        &lt;/div&gt;
+                        
+                        {(product?.support_logistic_services||[]).length&gt;0 &amp;&amp;
+                            &lt;div className={clsx(style['支援物流框'], '支援物流框',)}&gt;
+                                &lt;span className={clsx('運送方式-文字',style['運送方式-文字'])}&gt;運送方式&lt;/span&gt;
+                                {
+                                    (product?.support_logistic_services||[]).map((supportLogisticService, i)=&gt;(
+                                        &lt;div className={clsx(style['單物流選項框'], '單物流選項框',)} key={i}&gt;
+                                            &lt;span className={clsx(style['單物流選項-名稱'], '單物流選項-名稱',)}&gt;{supportLogisticService.provider}&lt;/span&gt;
+                                        &lt;/div&gt;
+                                    ))
+                                }
+                                
+                            &lt;/div&gt;
+                        }
+
+                        {(product?.support_payment_services||[]).length&gt;0 &amp;&amp;
+                            &lt;div className={clsx(style['支援付款框'], '支援付款框',)}&gt;
+                                &lt;span className={clsx('付款方式-文字',style['付款方式-文字'])}&gt;付款方式&lt;/span&gt;
+                                {
+                                    (product?.support_payment_services||[]).map((supportPaymentService, i)=&gt;(
+                                        &lt;div className={clsx(style['單付款選項框'], '單付款選項框',)} key={i}&gt;
+                                            &lt;span className={clsx(style['單付款選項-名稱'], '單付款選項-名稱',)}&gt;{supportPaymentService.provider}&lt;/span&gt;
+                                        &lt;/div&gt;
+                                    ))
+                                }
+                            &lt;/div&gt;
+                        }
+
+                        {
+                            product?.type=='compose' &amp;&amp; (product?.compose_bases||[]).length&gt;0 &amp;&amp;
+                            &lt;div className={clsx('任搭組數框',style['任搭組數框'])}&gt;
+                                &lt;span className={clsx('任搭組數-文字',style['任搭組數-文字'])}&gt;任搭組數&lt;/span&gt;
+
+                                {(product?.compose_bases||[]).map((_composeBase, key) =&gt; {
+                                        return (
+                                            &lt;label key={key} className={clsx('單任搭選項',style['單任搭選項'], _composeBase?.uuid==composeBase?.uuid?`${style['選取']} 選取`:'')} ref={(el)=&gt;{if (el) composeBaseRefs.current[key] = el;}}&gt;
+                                                &lt;input
+                                                    className={clsx('單任搭選項-勾選',style['單任搭選項-勾選'])}
+                                                    type=&quot;radio&quot;
+                                                    value={_composeBase.uuid}
+                                                    checked={_composeBase.uuid === composeBase?.uuid? &quot;checked&quot;: &quot;&quot;}
+                                                    onChange={(e) =&gt; {
+                                                        setComposeBase(_composeBase)
+                                                    }}
+                                                /&gt;
+                                                &lt;span className={clsx('單任搭選項-文字',style['單任搭選項-文字'])}&gt;{`任搭${_composeBase?.base||1}${product?.unit||'件'}`}&lt;/span&gt;  
+                                                {
+                                                    _composeBase?.description&amp;&amp;
+                                                    &lt;span className={clsx('單任搭選項-敘述',style['單任搭選項-敘述'])}&gt;{_composeBase?.description}&lt;/span&gt;   
+                                                }
+                                                {
+                                                    _composeBase?.price_description&amp;&amp;
+                                                    &lt;span className={clsx('單任搭選項-價錢敘述',style['單任搭選項-價錢敘述'])}&gt;{_composeBase?.price_description}&lt;/span&gt;   
+                                                }
+                                            &lt;/label&gt;
+                                        );
+                                })}
+                            &lt;/div&gt;
+                        }
+
+                        {
+                            product?.type=='variant' &amp;&amp; (product?.variant_products||[]).length&gt;0 &amp;&amp;
+                            &lt;div className={clsx('變體商品框',style['變體商品框'])}&gt;
+                                {
+                                    variant1.type &amp;&amp; variant1.values &amp;&amp;
+                                    &lt;div className={clsx('變體1框',style['變體1框'])}&gt;
+                                        &lt;span className={clsx('變體1-文字',style['變體1-文字'])}&gt;{variant1.type}&lt;/span&gt;
+                                        {variant1.values.map((value, key) =&gt; {
+
+                                            const variantProduct = product?.variant_products.find(variantProduct=&gt;variantProduct.value1==value.value&amp;&amp;variantProduct.value2==selectedValue2)
+
+                                            return (    
+                                                    &lt;label key={key} className={clsx('單變體1-選項',style['單變體1-選項'],value.value === selectedValue1?`${style['選取']} 選取`:'')} ref={(el)=&gt;{if (el) variantType1Refs.current[key] = el;}}&gt;
+                                                        &lt;input  className={clsx('單變體1-勾選',style['單變體1-勾選'])} type=&quot;radio&quot;
+                                                            checked={value.value === selectedValue1?&quot;checked&quot;: &quot;&quot;}
+                                                            onChange={()=&gt;{
+                                                                setSelectedValue1(value.value)
+                                                                setSelectedVariantProduct(variantProduct)
+                                                                setSelectedProduct(variantProduct)
+                                                                setQuantityCount(1);
+                                                                if(variantProduct.image){
+                                                                    setDisplayImage({image:variantProduct.image})
+                                                                    setDefaultImage({image:variantProduct.image})
+                                                                }
+                                                            }}
+                                                        /&gt;
+                                                        {
+                                                            variantProduct?.image &amp;&amp;
+                                                            &lt;img className={clsx('單變體1-圖片',style['單變體1-圖片'])} src={variantProduct?.image}/&gt;
+                                                        }
+                                                        
+                                                        &lt;span className={clsx('單變體1-文字',style['單變體1-文字'])}&gt;{value.value}&lt;/span&gt;  
+                                                        {
+                                                            value?.description&amp;&amp;
+                                                            &lt;span className={clsx('單變體1-敘述',style['單變體1-敘述'])}&gt;{value?.description}&lt;/span&gt;   
+                                                        }
+                                                        {
+                                                            value?.price_description&amp;&amp;
+                                                            &lt;span className={clsx('單變體1-價錢敘述',style['單變體1-價錢敘述'])}&gt;{value?.price_description}&lt;/span&gt;   
+                                                        }
+
+                                                    &lt;/label&gt;
+                                                )
+                                            }
+                                        )}
+                                    &lt;/div&gt;
+                                }
+                                {
+                                    variant2.type &amp;&amp; variant2.values &amp;&amp;
+                                    &lt;div className={clsx('變體2框',style['變體2框'])}&gt;
+                                        &lt;span className={clsx('變體2-文字',style['變體2-文字'])}&gt;{variant2.type}&lt;/span&gt;
+                                        {variant2.values.map((value, key) =&gt; {
+                                            const variantProduct = product?.variant_products.find(variantProduct=&gt;variantProduct.value1==selectedValue1&amp;&amp;variantProduct.value2==value.value)
+
+                                            return (    
+                                                    &lt;label key={key} className={clsx('單變體2-選項',style['單變體2-選項'], value.value === selectedValue2?`${style['選取']} 選取`:'')} ref={(el)=&gt;{if (el) variantType2Refs.current[key] = el;}}&gt;
+                                                        &lt;input  className={clsx('單變體2-勾選',style['單變體2-勾選'])} type=&quot;radio&quot;
+                                                            checked={value.value === selectedValue2?&quot;checked&quot;: &quot;&quot;}
+                                                            onChange={()=&gt;{
+                                                                setSelectedValue2(value)
+                                                                setSelectedVariantProduct(variantProduct)
+                                                                setSelectedProduct(variantProduct)
+                                                                setQuantityCount(1);
+                                                                if(variantProduct.image){
+                                                                    setDisplayImage({image:variantProduct.image})
+                                                                    setDefaultImage({image:variantProduct.image})
+                                                                }
+
+                                                            }}
+                                                        /&gt;
+                                                        {
+                                                            variantProduct?.image &amp;&amp;
+                                                            &lt;img className={clsx('單變體2-圖片',style['單變體2-圖片'])} src={variantProduct?.image}/&gt;
+                                                        }
+                                                        &lt;span className={clsx('單變體2-文字',style['單變體2-文字'])}&gt;{value.value}&lt;/span&gt;  
+                                                        {
+                                                            value?.description&amp;&amp;
+                                                            &lt;span className={clsx('單變體2-敘述',style['單變體2-敘述'])}&gt;{value?.description}&lt;/span&gt;   
+                                                        }
+                                                        {
+                                                            value?.price_description&amp;&amp;
+                                                            &lt;span className={clsx('單變體2-價錢敘述',style['單變體2-價錢敘述'])}&gt;{value?.price_description}&lt;/span&gt;   
+                                                        }
+                                                    &lt;/label&gt;
+                                            )
+                                            }
+                                        )}
+                                    &lt;/div&gt;
+                                }
+                            &lt;/div&gt;
+                        }
+                       
+
+
+
+
+                        &lt;div className={clsx('商品價格框',style['商品價格框'])}&gt;
+                            {
+                                isDiscountApplied() ?
+                                &lt;Fragment&gt;
+                                    &lt;span className={clsx('折扣後價格',style['折扣後價格'])}&gt;
+                                        {`${product?.currency_sign||'$'}${getDiscountTotalPrice()}`}
+                                    &lt;/span&gt;
+                                    &lt;span className={clsx('折扣前價格',style['折扣前價格'])}&gt;
+                                        {`${product?.currency_sign||'$'}${getOriginalTotalPrice()}`}
+                                    &lt;/span&gt;
+                                &lt;/Fragment&gt;
+                                :
+                                &lt;span className={clsx('商品價格',style['商品價格'])}&gt;
+                                    {`${product?.currency_sign||'$'}${getOriginalTotalPrice()}`}
+                                &lt;/span&gt;
+                            }
+                            
+                        &lt;/div&gt;
+
+
+
+                        &lt;div className={clsx('商品數量動作框',style['商品數量動作框'])}&gt;
+                            &lt;div className={clsx('商品數量選擇框',style['商品數量選擇框'])}&gt;
+                                &lt;button className={clsx('商品數量減去按鈕',style['商品數量減去按鈕'])} onClick={()=&gt;{setQuantityCount(quantityCount &gt; 1 ? quantityCount-1:1)}}&gt;-&lt;/button&gt;
+                                &lt;input className={clsx('商品數量',style['商品數量'])} type=&quot;text&quot; readOnly value={quantityCount}/&gt;
+                                &lt;button className={clsx('商品數量增加按鈕',style['商品數量增加按鈕'])} disabled={!plusOneSufficient()} onClick={()=&gt;{
+                                    if(plusOneSufficient()){setQuantityCount(quantityCount + 1)}
+                                }}&gt;+&lt;/button&gt;
+
+                                {
+                                    isInventoryControl() &amp;&amp; isInventorySufficient() &amp;&amp;
+                                    &lt;div className={clsx('商品剩餘數量框',style['商品剩餘數量框'])}&gt;
+                                        &lt;span className={clsx('商品剩餘數量',style['商品剩餘數量'])}&gt;{`還剩${getInventory()}件`}&lt;/span&gt;
+                                    &lt;/div&gt;
+                                }
+                                
+                            &lt;/div&gt;
+
+                            &lt;div className={clsx('購物動作框',style['購物動作框'])}&gt;
+                                &lt;button className={clsx('購物動作按鈕',style['購物動作按鈕'])}
+                                    onClick={()=&gt;{
+                                        handleBuy();
+                                    }}
+                                    disabled={actionButtonDisabled()}
+                                &gt;
+                                    {
+                                        getActionButtonText()
+                                    }
+                                &lt;/button&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                       
+
+                        {
+                            product?.single_page_product&amp;&amp;
+                            &lt;div className={clsx('單頁商品動作框',style['單頁商品動作框'])}&gt;
+                                &lt;a className={clsx('訂單查詢連結',style['訂單查詢連結'])} href={'./temp'}&gt;訂單查詢&lt;/a&gt;
+                                &lt;span className={clsx('單頁商品動作框-分隔線',style['單頁商品動作框-分隔線'])}&gt;&lt;/span&gt;
+                                &lt;button className={clsx('立即下單按鈕',style['立即下單按鈕'])}&gt;立即下單&lt;/button&gt;
+                            &lt;/div&gt;
+                        }
+
+
+
+
+                        &lt;div className={clsx('商品類別框',style['商品類別框'])}&gt;
+                            &lt;label className={clsx('商品類別-標題',style['商品類別-標題'])}&gt;商品類別：&lt;/label&gt;
+                            {(product?.product_category_relations||[]).map((product_category_relation,i)=&gt;{
+                                    //TODO a
+                                    return (&lt;div key={i} className={clsx('單商品類別框',style['單商品類別框'])}&gt;
+                                                &lt;span key={i} className={clsx('商品類別',style['商品類別'])}&gt;
+                                                    {product_category_relation?.product_category_name||''}
+                                                &lt;/span&gt;
+                                            &lt;/div&gt;
+                                    )
+                                })}
+                        &lt;/div&gt;
+
+                        &lt;div className={clsx('商品標籤框',style['商品標籤框'])}&gt;
+                            &lt;label className={clsx('商品標籤-標題',style['商品標籤-標題'])}&gt;商品標籤：&lt;/label&gt;
+                            {(product?.tags||[]).map((tag,i)=&gt;{
+                                    //TODO a
+                                    return (&lt;div key={i} className={clsx('單商品標籤框',style['單商品標籤框'])}&gt;
+                                                &lt;span key={i} className={clsx('商品標籤',style['商品標籤'])}&gt;
+                                                    {tag}
+                                                &lt;/span&gt;
+                                            &lt;/div&gt;
+                                    )
+                                })}
+                        &lt;/div&gt;
+
+                        {/* TODO */}
+                        { product?.type=='compose' &amp;&amp;
+                            &lt;ComposeProductModal 
+                                show={showComposeModal} 
+                                onHide={()=&gt;{setShowComposeModal(false)}}
+                                product={product}
+                                cartProduct={cartProducts.find(cartProduct=&gt;(
+                                            cartProduct?.product?.uuid==product?.uuid
+                                            &amp;&amp;
+                                            (cartProduct?.compose_base?.uuid||null)==(composeBase?.uuid||null)
+                                    
+                                ))}
+                                composeBase={composeBase}
+                                quantityCount={quantityCount}
+                                updateCompose={false}
+                                setShowAddonModal = {setShowAddonModal}
+                                nextAction = {null}
+                            /&gt;
+                        }
+
+                        
+                        {/* { (product?.addon_products||[]).length&gt;0 &amp;&amp;
+                            &lt;AddonProductsModal 
+                            show={showAddonModal} 
+                            onHide={()=&gt;{setShowAddonModal(false)}}
+                            addonProductData = {(product?.addon_products||[]).map((_addonProduct)=&gt;{return {'product':product, 'addonProduct':_addonProduct}}) }
+                            node={node}
+                            props={props}
+                            title='商品加價購'
+                            nextAction = {null}
+                            /&gt;
+                        } */}
+
+
+
+                &lt;/div&gt;
+            &lt;/div&gt;      
+            &lt;div className={clsx('商品資訊分頁框',style['商品資訊分頁框'])}&gt;
+                &lt;div className={clsx('導覽按鈕框',style['導覽按鈕框'])}&gt;
+                    &lt;div className={clsx('單導覽按鈕框',style['單導覽按鈕框'], selectedTabIndex==0?`${style['顯示']} 顯示`:'')}&gt;
+                        &lt;button className={clsx('商品內容-導覽按鈕',style['商品內容-導覽按鈕'])} onClick={()=&gt;{setSelectedTabIndex(0)}}&gt;商品內容&lt;/button&gt;
+                    &lt;/div&gt;
+                    &lt;div className={clsx('單導覽按鈕框',style['單導覽按鈕框'], selectedTabIndex==1?`${style['顯示']} 顯示`:'')}&gt;
+                        &lt;button className={clsx('商品規格-導覽按鈕',style['商品規格-導覽按鈕'])} onClick={()=&gt;{setSelectedTabIndex(1)}}&gt;商品規格&lt;/button&gt;
+                    &lt;/div&gt;
+                    {/* &lt;div className={clsx('單導覽按鈕框',style['單導覽按鈕框'], selectedTabIndex==2?`${style['顯示']} 顯示`:'')}&gt;
+                        &lt;button className={clsx('商品評論-導覽按鈕',style['商品評論-導覽按鈕'])} onClick={()=&gt;{setSelectedTabIndex(2)}}&gt;商品評論&lt;/button&gt;
+                    &lt;/div&gt; */}
+                &lt;/div&gt;
+                &lt;div className={clsx('分頁框',style['分頁框'])}&gt;
+                    &lt;div className={clsx('單分頁框',style['單分頁框'], selectedTabIndex==0?`${style['顯示']} 顯示`:'')}&gt;
+                        &lt;div 
+                            className={clsx('ck-content', '商品內容',style['商品內容'])}
+                            dangerouslySetInnerHTML={productContent}
+                        &gt;&lt;/div&gt;        
+                    &lt;/div&gt;
+                    &lt;div className={clsx('單分頁框',style['單分頁框'], selectedTabIndex==1?`${style['顯示']} 顯示`:'')}&gt;
+                        {/* &lt;div className={clsx('商品規格-列表',style['商品規格-列表'])}&gt;
+                            &lt;div className={clsx('單參數框',style['單參數框'])}&gt;
+                                &lt;span className={clsx('參數',style['參數'])}&gt;長 :{selectedProduct?.length||''} cm&lt;/span&gt; 
+                            &lt;/div&gt;
+                            &lt;div className={clsx('單參數框',style['單參數框'])}&gt;
+                                &lt;span className={clsx('參數',style['參數'])}&gt;寬 :{selectedProduct?.width||''} cm&lt;/span&gt; 
+                            &lt;/div&gt;
+                            &lt;div className={clsx('單參數框',style['單參數框'])}&gt;
+                                &lt;span className={clsx('參數',style['參數'])}&gt;高 :{selectedProduct?.height||''} cm&lt;/span&gt; 
+                            &lt;/div&gt;
+                            &lt;div className={clsx('單參數框',style['單參數框'])}&gt;
+                                &lt;span className={clsx('參數',style['參數'])}&gt;重量 : {selectedProduct?.weight||''}{&quot; &quot;}{selectedProduct?.weight_unit||''}&lt;/span&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt; */}
+
+                        &lt;div 
+                            className={clsx('ck-content', '商品規格',style['商品規格'])}
+                            dangerouslySetInnerHTML={productSpec}
+                        &gt;&lt;/div&gt;      
+
+
+                    &lt;/div&gt;
+                    {/* &lt;div className={clsx('單分頁框',style['單分頁框'], selectedTabIndex==2?`${style['顯示']} 顯示`:'')}&gt;
+                    &lt;/div&gt; */}
+                &lt;/div&gt;
+            &lt;/div&gt;  
+
+            {
+                (product?.relate_products||[]).length &gt;0 &amp;&amp;
+                &lt;div className={clsx('相關商品框',style['相關商品框'])}&gt;
+                
+                    &lt;div className={clsx('相關商品-標題框',style['相關商品-標題框'])}&gt;
+                        &lt;h2 className={clsx('相關商品-標題',style['相關商品-標題'])}&gt;相關產品&lt;/h2&gt; 
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx('相關商品-列表',style['相關商品-列表'])}&gt;
+                        { (product?.relate_products||[]).map((relate_product,i) =&gt; (
+                            &lt;div key={i} className={clsx('單相關商品框',style['單相關商品框'])}&gt;
+                                &lt;a href={'./temp'}&gt;
+                                    &lt;img className={clsx('單相關商品-圖片',style['單相關商品-圖片'])} src={relate_product?.images?.[0]?.image}/&gt;
+                                &lt;/a&gt;
+
+                                {/* TODO */}
+                            &lt;/div&gt;
+                        ))}
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            }
+           
+        &lt;/div&gt;)
+};
+
+ProductDetailClient.propTypes = {
+};
+
+export default ProductDetailClient;
+
+
+
+
+</pre>
+<h2>src/components/component-instance/product-detail/ProductDetail.module.scss</h2>
+<pre>.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+.商品容器框 {
+    max-width: 1200px;
+    margin: 10vh auto;
+    padding: 16px;
+    font-family: Arial, sans-serif;
+}
+
+/* 商品圖片與選項 */
+.商品圖片選項框 {
+    display: flex;
+    gap: 16px;
+    align-items: start;
+}
+/* 商品圖片容器 */
+.大小圖框 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+/* 大圖顯示區域 */
+.大圖框 {
+    flex: 1;
+    max-width: 500px;
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+.單大圖框{
+    display: none;
+    &amp;.顯示{
+        display: block;
+    }
+}
+.大圖 {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+/* 小圖選項區域 */
+.小圖框 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.單小圖框 {
+    width: 60px;
+    height: 60px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+}
+
+.單小圖框 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 滑鼠懸停或聚焦時的效果 */
+.單小圖框:hover{
+    border-color: #ff5733;
+}
+
+/* 小圖切換按鈕 */
+.小圖框按鈕1,
+.小圖框按鈕2 {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+}
+
+.小圖框按鈕1-圖標::before,
+.小圖框按鈕2-圖標::before {
+    content: '\25B2'; /* 上箭頭符號 */
+    display: block;
+    font-size: 16px;
+    color: #666;
+}
+
+.小圖框按鈕2-圖標::before {
+    content: '\25BC'; /* 下箭頭符號 */
+}
+
+
+/* 商品資訊區 */
+.商品選項框 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.商品名稱框 h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+
+
+
+
+
+
+
+
+/* 變體商品框架 */
+.變體商品框 {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* 變體類型標題 */
+  .變體1-文字, .變體2-文字 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  /* 變體選項框 */
+  .變體1框, .變體2框 {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  /* 單一變體選項 */
+  .單變體1-選項, .單變體2-選項 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  /* 選取狀態 */
+  .單變體1-選項.選取, .單變體2-選項.選取 {
+    border-color: #007bff;
+    background-color: #f0f8ff;
+  }
+  
+  /* 隱藏 radio 按鈕 */
+  .單變體1-勾選, .單變體2-勾選 {
+    display: none;
+  }
+  
+  /* 變體圖片樣式 */
+  .單變體1-圖片, .單變體2-圖片 {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  /* 變體文字區域 */
+  .單變體1-文字, .單變體2-文字 {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .單變體1-敘述, .單變體2-敘述 {
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .單變體1-價錢敘述, .單變體2-價錢敘述 {
+    font-size: 12px;
+    font-weight: bold;
+    color: #d9534f;
+  }
+
+  
+
+
+/* 任搭組數框樣式 */
+.任搭組數框 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.任搭組數-文字 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* 單個選項樣式 */
+.單任搭選項 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.單任搭選項:hover {
+    border-color: #666;
+}
+
+.單任搭選項-勾選 {
+    display: none;
+}
+
+.單任搭選項-勾選:checked + .單任搭選項-文字 {
+    font-weight: bold;
+    color: #d9534f;
+}
+
+.單任搭選項-勾選:checked + .單任搭選項-文字,
+.單任搭選項-勾選:checked ~ .單任搭選項-敘述,
+.單任搭選項-勾選:checked ~ .單任搭選項-價錢敘述 {
+    color: #d9534f;
+}
+
+/* 文字樣式 */
+.單任搭選項-文字 {
+    font-size: 14px;
+}
+
+.單任搭選項-敘述 {
+    font-size: 12px;
+    color: #666;
+}
+
+.單任搭選項-價錢敘述 {
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+}
+
+
+
+
+
+
+
+
+
+/* 價格區 */
+.商品價格框 {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.折扣後價格 {
+    font-size: 20px;
+    font-weight: bold;
+    color: red;
+}
+
+.折扣前價格 {
+    text-decoration: line-through;
+    color: gray;
+}
+
+/* 購物按鈕與數量選擇 */
+.商品數量動作框 {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.商品數量選擇框 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.商品數量 {
+    width: 40px;
+    text-align: center;
+    border: 1px solid #ddd;
+    padding: 4px;
+}
+
+.商品數量減去按鈕,
+.商品數量增加按鈕 {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.商品數量減去按鈕:hover,
+.商品數量增加按鈕:hover {
+    background-color: #ddd;
+}
+
+/* 購物動作 */
+.購物動作按鈕,
+
+
+
+
+.立即下單按鈕 {
+    padding: 8px 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+.購物動作按鈕:disabled,
+.立即下單按鈕:disabled {
+    background-color: gray;
+    cursor: not-allowed;
+}
+
+/* 商品資訊分頁 */
+.商品資訊分頁框 {
+    margin-top: 24px;
+}
+
+.導覽按鈕框 {
+    display: flex;
+    gap: 12px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+}
+
+.單導覽按鈕框 button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.單導覽按鈕框 button:hover {
+    color: #007bff;
+}
+
+/* 內容區塊 */
+.分頁框 {
+    margin-top: 16px;
+}
+
+.單分頁框 {
+    display: none;
+}
+
+.單分頁框.顯示 {
+    display: block;
+}
+
+/* 物流與付款方式 */
+.支援物流框,
+.支援付款框 {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.單物流選項框,
+.單付款選項框 {
+    border: 1px solid #ddd;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* 商品標籤與分類 */
+.商品類別框,
+.商品標籤框 {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.單商品類別框,
+.單商品標籤框 {
+    border: 1px solid #ddd;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* 相關商品 */
+.相關商品框 {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 2px solid #ddd;
+}</pre>
+</body>
+</html>

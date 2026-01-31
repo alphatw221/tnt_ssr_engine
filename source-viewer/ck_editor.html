@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ck_editor</title>
+</head>
+<body>
+<h1>ck_editor</h1>
+<h2>src/components/component-instance/my-ckeditor/CKEditorSSR.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import React, { Fragment, } from &quot;react&quot;;
+// import clsx from &quot;clsx&quot;;
+import style from './CKEditor.module.scss'
+
+
+
+
+const KPCKEditorSSR = ({  
+
+    
+    element, 
+    elementProps,
+    mode,
+    ...props
+
+
+}) =&gt; {
+    
+
+        return ( &lt;p 
+           {...elementProps}
+            dangerouslySetInnerHTML={{ __html: node?.data?.context }}
+        &gt;&lt;/p&gt;)
+
+        
+
+
+   
+};
+
+KPCKEditorSSR.propTypes = {
+};
+
+export default KPCKEditorSSR;
+
+
+
+
+</pre>
+<h2>src/components/component-instance/my-ckeditor/CKEditor.module.scss</h2>
+<pre>// @import &quot;@/assets/scss/my-variables&quot;;
+
+
+// $props: (
+//   width: (
+//     name: &quot;width&quot;,
+//   ),
+//   max-width:(
+//     name: &quot;max-width&quot;,
+//   ),
+//   min-width:(
+//     name: &quot;min-width&quot;,
+//   ),
+
+// );
+
+// .ckeditor{
+//     min-width: 10vw;
+//     min-height: 10vh;
+
+//     @include generate-rwd-stylesheet($props);
+
+//     // @media only screen and (min-width: 1536px){
+//     //     width:var(--width-xxl);
+//     //     max-width: var(--max-width-xxl);
+//     //     min-width: var(--min-width-xxl);
+
+//     // }
+//     // @media only screen and (min-width: 1280px) and (max-width: 1535px){
+//     //     width:var(--width-xl);
+//     //     max-width: var(--max-width-xl);
+//     //     min-width: var(--min-width-xl);
+
+//     // }
+//     // @media only screen and (min-width: 1024px) and (max-width: 1279px){
+//     //     width:var(--width-lg);
+//     //     max-width: var(--max-width-lg);
+//     //     min-width: var(--min-width-lg);
+
+//     // }
+//     // @media only screen and (min-width: 768px) and (max-width: 1023px){
+//     //     width:var(--width-md);
+//     //     max-width: var(--max-width-md);
+//     //     min-width: var(--min-width-md);
+
+//     // }
+//     // @media only screen and (min-width: 640px) and (max-width: 767px){
+//     //     width:var(--width-sm);
+//     //     max-width: var(--max-width-sm);
+//     //     min-width: var(--min-width-sm);
+
+//     // }
+//     // @media only screen and (min-width: 390px) and (max-width: 636px){
+//     //     width:var(--width-xs);
+//     //     max-width: var(--max-width-xs);
+//     //     min-width: var(--min-width-xs);
+
+//     // }
+//     // @media only screen and (max-width: 389px){
+//     //     width:var(--width-xxs);
+//     //     max-width: var(--max-width-xxs);
+//     //     min-width: var(--min-width-xxs);
+
+//     // }
+// }
+
+</pre>
+</body>
+</html>

@@ -499,16 +499,25 @@ const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
             useEffect(() => {
                 dataRef.current = data;
             }, [data]);
+            const cacheRef = useRef(_cache);
+            useEffect(() => {
+                cacheRef.current = _cache;
+            }, [_cache]);
             const [language, setLanguage] = useState(data?.data?.inner_lang||"javascript");
 
             const handleEditorDidMount = (editor, monaco)=> {
 
                 editor.onDidBlurEditorText(() => {
-                    // updateData(editor.getValue())
-                    const d = {...dataRef.current};
-                    d[item.key] = editor.getValue();
+                    console.log('on did blur editor text')
+                    const value = cacheRef.current;
+                    const currentData = dataRef.current;
+                    if (value === currentData?.[item.key]) {
+                        console.log('cache not changed, skip setData')
+                        return;
+                    }
+                    const d = {...currentData};
+                    d[item.key] = value;
                     setData(d)
-                    // updateData(editor.getValue())
                 });
             }
 

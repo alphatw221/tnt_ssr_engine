@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>cart_button</title>
+</head>
+<body>
+<h1>cart_button</h1>
+<h2>src/components/component-instance/cart/CartButton.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import React, { Fragment, useState, useEffect, useRef } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './CartButton.module.scss'
+
+
+import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;         
+
+// import { setBaseCurrency, setExchangeRates } from &quot;../../redux/slices/estore-slice&quot;;
+// import { get_exchange_rates } from &quot;@/api/exchange_rates&quot;;
+
+
+
+// import Link from 'next/link';
+// import { useRouter } from 'next/navigation';
+
+// import route_names from &quot;../../route_names&quot;;
+// import Cookies from &quot;js-cookie&quot;;
+
+import {deleteCartProductV1, isInventorySufficient, getCartProductName, updateCartProduct} from &quot;@/lib/utils/cartHelper.js&quot;
+import { getProductPrice, isStockSufficient } from &quot;@/lib/utils/productHelper&quot;;
+
+// import { customer_delete_cart_product } from &quot;../../api/cart&quot;;
+import {useClickOutsideEvent} from '@/lib/utils/clickOutside.js'
+import cogoToast from 'cogo-toast';
+// import { rwdHelper, RWDPropHandler} from &quot;../../lib/utils/rwdHelper&quot;
+
+
+// import { getRWDStyles} from &quot;@/lib/utils/rwdHelper&quot;
+import { getToFixedNumber } from &quot;@/lib/utils/toFixedHelper&quot;;
+import { setCartProducts } from &quot;@/redux/slices/cart-slice&quot;;
+import { createPortal } from &quot;react-dom&quot;;
+import PortalWrapper from &quot;@/components/portal-wrapper/PortalWrapper&quot;;
+
+const CartButton = ({  
+    // node,  mode, actions, update, children, routingTable, ...props
+
+
+    routingTable,
+    element, 
+    elementProps,
+    mode,
+    now,
+    ...props
+
+}) =&gt; {
+    
+
+    const dispatch = useAppDispatch()
+
+    const [showDropDown, setShowDropDown] = useState(false)
+    const dropDown = useRef(null);
+
+    const customer = useAppSelector((state) =&gt; state.customer);
+    const {cartProducts} = useAppSelector((state)=&gt; state.cart)
+    const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
+
+
+    useClickOutsideEvent(useEffect, dropDown,()=&gt;{
+        setShowDropDown(false)
+    },showDropDown)
+
+
+    
+
+    //cart products preloader
+    useEffect(()=&gt;{
+        if(localStorage.getItem(&quot;cart_products&quot;)){
+            const _cartProducts = JSON.parse(localStorage.getItem(&quot;cart_products&quot;));
+            dispatch(setCartProducts(_cartProducts));
+        }
+    },[])
+
+    // TODO
+    // const store = useAppSelector((state) =&gt; state.estore);
+    // useEffect(()=&gt;{
+    //     if(store?.e_commerce_settings?.base_currency &amp;&amp; store?.e_commerce_settings?.base_currency!=baseCurrency){
+    //       get_exchange_rates(store?.e_commerce_settings?.base_currency).then(res=&gt;{
+    //         dispatch(setBaseCurrency(store?.e_commerce_settings?.base_currency))
+    //         dispatch(setExchangeRates(res.data.rates))
+    //       })
+    //     }
+    // }, [store, baseCurrency])
+
+    const plusOneDisabled = (cartProduct)=&gt;{
+        const {requireQtySufficient, } = isStockSufficient( cartProduct?.product, 1, cartProduct?.quantity||0)
+        // console.log(requireQtySufficient)
+        return !requireQtySufficient
+    }
+
+    useEffect(()=&gt;{
+
+    },[])
+
+    return (
+        &lt;Fragment&gt;
+
+            &lt;div 
+               {...elementProps}
+                className={`${style['購物車框']} ${'購物車框'} ${elementProps?.className||''}`}
+               
+            &gt;
+            
+                &lt;button className={clsx(style['購物車按鈕'],'購物車按鈕',)} onClick={()=&gt;{setShowDropDown(true)}}&gt;
+                    &lt;i className={clsx(style['購物車按鈕-圖標'],'購物車按鈕-圖標',)}/&gt;
+                    &lt;span className={clsx(style['購物車按鈕-文字'],'購物車按鈕-文字',)}&gt;購物車&lt;/span&gt;
+                    &lt;span className={clsx(style['購物車按鈕-商品數'],'購物車按鈕-商品數',)}&gt;{(targetCartProducts||[])?.length||0}&lt;/span&gt;
+                &lt;/button&gt;
+
+                
+                &lt;PortalWrapper &gt;
+                    &lt;div className={clsx(style['購物車-下拉'], '購物車-下拉', showDropDown?style['顯示']:'', showDropDown?'顯示':'')}
+                        ref={dropDown}
+                    &gt;
+
+                        &lt;button className={clsx(style['關閉按鈕'], '關閉按鈕')} onClick={()=&gt;{setShowDropDown(false)}}&gt;
+                            &lt;i className={clsx(style['關閉圖標'], '關閉圖標')}/&gt;
+                        &lt;/button&gt;
+                        {
+                        (targetCartProducts||[]).length &gt; 0
+                        ?
+                        &lt;Fragment&gt;
+                            &lt;div className={clsx(style['購物車列表框'], '購物車列表框')}&gt;
+                                    {(targetCartProducts||[]).map((cartProduct, key) =&gt; {
+
+                                        const {inventoryControl, inventorySufficient, inventory} = isInventorySufficient(cartProduct)
+                                        const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalTotalPrice, discountTotalPrice,} = getProductPrice(now, cartProduct?.product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
+                                        
+                                        const [productName, variantName, composeName] = getCartProductName(cartProduct)
+                                        return (
+
+                                            &lt;div key={key} 
+                                                className={clsx(style['購物車商品框'], '購物車商品框', !inventorySufficient?`${style['缺貨']} 缺貨`:'')}
+                                            &gt;
+
+
+                                                &lt;div className={clsx(style['購物車商品-圖片框'], '購物車商品-圖片框')}&gt;
+                                                    &lt;a href={`/${routingTable?.['product_route']}/${cartProduct?.product?.uuid}`}&gt;
+                                                        &lt;img
+                                                            className={clsx(style['購物車商品-圖片'], '購物車商品-圖片')}
+                                                            src={cartProduct?.variant_product?.image||cartProduct?.product?.images?.[0]?.image}
+                                                            alt=&quot;&quot;
+                                                        /&gt;
+                                                    &lt;/a&gt;
+                                                &lt;/div&gt;
+
+                                                &lt;div className={clsx(style['購物車商品-資訊框'], '購物車商品-資訊框')}&gt;
+                                                    &lt;a href={`/${routingTable?.['product_route']}/${cartProduct?.product?.uuid}`}&gt;
+                                                        {/* &lt;h4 className={clsx(style['購物車商品-名稱'], '購物車商品-名稱')}&gt;{getCartProductName(cartProduct)}&lt;/h4&gt; */}
+                                                        &lt;h4 className={clsx(style['購物車商品-名稱'], &quot;購物車商品-名稱&quot;)}&gt;{productName}&lt;/h4&gt;
+                                                        &lt;h5 className={clsx(style['購物車商品-變體名稱'], &quot;購物車商品-變體名稱&quot;)}&gt;{variantName}&lt;/h5&gt;
+                                                        &lt;h5 className={clsx(style['購物車商品-任搭名稱'], &quot;購物車商品-任搭名稱&quot;)}&gt;{composeName}&lt;/h5&gt;
+                                                    &lt;/a&gt;
+                                                    {/* &lt;h6 className={clsx(style['購物車商品-數量'], '購物車商品-數量')}&gt;數量: {cartProduct?.quantity}&lt;/h6&gt; */}
+
+
+
+                                                    
+                                                    &lt;div className={clsx('購物車商品-數量選擇框',style['購物車商品-數量選擇框'])}&gt;
+                                                        
+                                                        &lt;button
+                                                            className={clsx('商品數量減去按鈕',style['商品數量減去按鈕'])}
+                                                            onClick={() =&gt;{
+                                                                
+                                                                if(cartProduct?.quantity&gt;1){
+                                                                    updateCartProduct(
+                                                                        cartProduct?.product, 
+                                                                        cartProduct?.variant_product, 
+                                                                        -1, 
+                                                                        dispatch, 
+                                                                        cartProduct?.compose_base, 
+                                                                        null, 
+                                                                        false,
+                                                                        null,
+                                                                        null,
+                                                                    )
+                                                                }
+                                                                
+                                                            }}
+                                                        &gt;-&lt;/button&gt;
+                                                        &lt;input
+                                                            className={clsx('商品數量',style['商品數量'])}
+                                                            type=&quot;text&quot;
+                                                            value={cartProduct?.quantity}
+                                                            readOnly
+                                                        /&gt;
+                                                        &lt;button
+                                                            className={clsx('商品數量增加按鈕',style['商品數量增加按鈕'])}
+                                                            onClick={() =&gt;{
+                                                                if(!plusOneDisabled(cartProduct)){
+                                                                    updateCartProduct(
+                                                                        cartProduct?.product, 
+                                                                        cartProduct?.variant_product, 
+                                                                        1, 
+                                                                        dispatch, 
+                                                                        cartProduct?.compose_base, 
+                                                                        null, 
+                                                                        false,
+                                                                        null,
+                                                                        null,
+                                                                    )
+                                                                }
+
+                                                            }}
+                                                            disabled={plusOneDisabled(cartProduct)}
+                                                        &gt;+&lt;/button&gt;
+                                                    &lt;/div&gt;
+
+
+
+                                                    &lt;span className={clsx(style['購物車商品-價錢'], '購物車商品-價錢')}&gt;
+                                                        {isDiscountApplied 
+                                                            ? (cartProduct?.product?.currency_sign||'$') +  getToFixedNumber(discountTotalPrice, cartProduct?.product?.currency)
+                                                            :   (cartProduct?.product?.currency_sign||'$') + getToFixedNumber(originalTotalPrice, cartProduct?.product?.currency)
+                                                        }
+                                                    &lt;/span&gt;
+                                                    {/* &lt;br/&gt; */}
+                                                    {
+                                                    // cartProduct?.variant_product &amp;&amp; cartProduct?.variant_product?.type1 &amp;&amp;
+                                                    //     &lt;span className={clsx(style['購物車商品-變體類別1'], '購物車商品-變體類別1')}&gt;{cartProduct?.variant_product?.type1}: {cartProduct?.variant_product?.value1}&lt;/span&gt;
+                                                    }
+                                                    {/* &lt;br/&gt; */}
+                                                    {
+                                                    // cartProduct?.variant_product &amp;&amp; cartProduct?.variant_product?.type2 &amp;&amp;
+                                                    //     &lt;span className={clsx(style['購物車商品-變體類別2'], '購物車商品-變體類別2')}&gt;{cartProduct?.variant_product?.type2}: {cartProduct?.variant_product?.value2}&lt;/span&gt;
+                                                    }
+                                                    {
+                                                    // cartProduct?.compose_base &amp;&amp;
+                                                    //     &lt;span className={clsx(style['購物車商品-任搭'], '購物車商品-任搭')}&gt;{`任搭：${cartProduct?.compose_base?.base}`}&lt;/span&gt;
+                                                    }
+                                                &lt;/div&gt;
+                                                &lt;div className={clsx(style['購物車商品-動作框'], '購物車商品-動作框')}&gt;
+                                                    &lt;button 
+                                                        className={clsx(style['購物車商品-刪除按鈕'], '購物車商品-刪除按鈕')}
+                                                        onClick={() =&gt; {
+                                                            deleteCartProductV1(cartProduct?.uuid, dispatch)
+                                                        }}&gt;
+                                                    刪除
+                                                    &lt;/button&gt;
+                                                &lt;/div&gt;
+
+                                
+
+                                            &lt;/div&gt;);
+                                    }   )}
+                                &lt;/div&gt;
+                                &lt;div className={clsx(style['超連結框'], '超連結框')}&gt;
+                                    &lt;a className={clsx(style['購物車-超連結'], '購物車-超連結')} href={`/${routingTable?.['cart_route']}`} 
+                                    &gt;
+                                        檢視購物車
+                                    &lt;/a&gt;
+                                    &lt;a
+                                        className={clsx(style['結帳-超連結'], '結帳-超連結')}
+                                        href={`/${routingTable?.['checkout_route']}`}
+                                    &gt;
+                                        結帳
+                                    &lt;/a&gt;
+                                &lt;/div&gt;
+                            &lt;/Fragment&gt;
+
+                            :
+
+                            &lt;div className={clsx(style['購物車列表框'], '購物車列表框')}&gt;
+                                &lt;span className={clsx(style['購物車無商品-文字'], '購物車無商品-文字')}&gt;購物車無商品&lt;/span&gt;
+                            &lt;/div&gt;
+
+                            }
+                    &lt;/div&gt;
+                &lt;/PortalWrapper&gt;
+ 
+
+            &lt;/div&gt;
+
+        &lt;/Fragment&gt;
+        )
+};
+
+CartButton.propTypes = {
+};
+
+export default CartButton;
+
+
+
+
+</pre>
+<h2>src/components/component-instance/cart/CartButton.module.scss</h2>
+<pre>// @import &quot;@/assets/scss/my-variables&quot;;
+
+
+
+// $props: (
+//   width: (
+//     name: &quot;width&quot;,
+//   ),
+//   max-width:(
+//     name: &quot;max-width&quot;,
+//   ),
+//   min-width:(
+//     name: &quot;min-width&quot;,
+//   ),
+//   height:(
+//     name: &quot;height&quot;,
+//   ),
+//   max-height:(
+//     name: &quot;max-height&quot;,
+//   ),
+//   min-height:(
+//     name: &quot;min-height&quot;,
+    
+//   ),
+
+// );
+
+.購物車框 {
+    // @include generate-rwd-stylesheet($props);
+
+    position: relative;
+    display: inline-block;
+}
+.購物車按鈕 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    // background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    position: relative;
+}
+.購物車按鈕:hover {
+    // background-color: #0056b3;
+}
+.購物車按鈕-圖標 {
+    width: 20px;
+    height: 20px;
+    // background-image: url('cart-icon.svg'); /* 可替換為你的購物車圖示 */
+    // background-size: cover;
+}
+.購物車按鈕-商品數 {
+    background: red;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 50%;
+    padding: 3px 6px;
+    position: absolute;
+    top: -5px;
+    right: -5px;
+}
+.購物車-下拉 {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    width: 280px;
+    padding: 12px;
+    z-index: 10;
+}
+.購物車-下拉.顯示 {
+    display: block;
+}
+.購物車列表框 {
+    max-height: 250px;
+    overflow-y: auto;
+}
+.購物車商品框 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.購物車商品框.缺貨 {
+    opacity: 0.5;
+}
+.購物車商品-圖片框 img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.購物車商品-資訊框 {
+    flex: 1;
+    font-size: 14px;
+}
+.購物車商品-名稱 {
+    font-weight: bold;
+    margin: 0;
+    color: #333;
+}
+.購物車商品-數量,
+.購物車商品-價錢,
+.購物車商品-變體類別1,
+.購物車商品-變體類別2 {
+    font-size: 12px;
+    color: #666;
+}
+.購物車商品-動作框 {
+    text-align: right;
+}
+.購物車商品-刪除按鈕 {
+    background: #ff4d4f;
+    color: white;
+    border: none;
+    padding: 5px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.購物車商品-刪除按鈕:hover {
+    background: #d9363e;
+}
+.超連結框 {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+}
+.購物車-超連結,
+.結帳-超連結 {
+    font-size: 14px;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+.購物車-超連結:hover,
+.結帳-超連結:hover {
+    text-decoration: underline;
+}
+
+
+
+// .button-block{
+
+//     .my-cart-block{
+//         display: flex;
+//         flex-direction: row;
+//         align-items: center;
+//         justify-content: center;
+//         // align-content: center;
+//         cursor: pointer;
+
+        
+//     }
+
+
+//     button{
+//         // font-size: 23px;
+//         border: none;
+//         background: none;
+//         color: #000;
+
+        
+
+//         .my_cart_block{
+//             display: flex;
+//             flex-direction: row;
+//             align-items: center;
+
+//             cursor: pointer;
+
+            
+//         }
+//     }
+
+//     .cart-item-nums{
+
+//         position: absolute;
+//         top: -50%;
+//         right:-50%;
+//         line-height: 20px;
+
+//         font-weight: bold;
+//         text-align: center;
+//         color: black;
+//         padding: 0px 8px 0px 8px;
+
+//         background-color: rgb(173, 12, 12);
+//         border-radius: 50%;
+//     }
+
+//     .dropdown {
+//         position: absolute;
+//         z-index: 220;
+//         // top: 105%;
+//         // right: 0%;
+
+//         visibility: hidden;
+
+//         // width: 125px;
+//         min-width: 200px;
+//         padding: 8px 12px 10px;
+
+//         transition: all 0.5s ease 0s;
+//         // transform: rotateX(90deg);
+//         // transform-origin: center top 0;
+//         text-align: left;
+
+//         opacity: 0;
+//         background: #fff none repeat scroll 0 0;
+//         box-shadow: 0 1px 7px -2px rgba(0, 0, 0, 0.3);
+
+//         color: #000;
+
+//         &amp;.dimension1{
+//             top: 105%;
+//             right: 0%;
+//             transform: rotateX(90deg);
+
+//             transform-origin: center top 0;
+
+//         }
+
+//         &amp;.dimension2{
+//             top: 105%;
+//             left: 0%;
+//             transform: rotateX(90deg);
+
+//             transform-origin: center top 0;
+
+//         }
+
+//         &amp;.dimension3{
+//             bottom: 105%;
+//             left:0%;
+//             transform: rotateX(90deg);
+
+//             transform-origin: center bottom 0;
+
+//         }
+
+//         &amp;.dimension4{
+//             bottom: 105%;
+//             right: 0%;
+//             transform: rotateX(90deg);
+
+//             transform-origin: center bottom 0;
+
+//         }
+
+//         &amp;.active {
+//             visibility: visible;
+
+//             transform: rotateX(0deg);
+
+//             opacity: 1;
+//         }
+        
+
+
+//         ul {
+//             overflow-y: auto;
+    
+//             max-height: 400px;
+//             margin-right: -15px;
+//             padding-top: 20px;
+//             padding-right: 15px;
+//             li {
+//             position: relative;
+    
+//             display: flex;
+//             flex-wrap: nowrap;
+    
+//             margin-bottom: 20px;
+//             padding-bottom: 15px;
+    
+//             border-bottom: 1px solid #ebebeb;
+//             .shopping_cart_img {
+//                 flex: 0 0 82px;
+    
+//                 margin-right: 15px;
+//             }
+//             .shopping_cart_title {
+//                 h4 {
+//                 font-size: 15px;
+//                 line-height: 16px;
+    
+//                 margin: 0;
+//                 margin-right: 20px;
+//                 a {
+//                     line-height: 1.2;
+    
+//                     color: #000;
+//                     &amp;:hover {
+//                     color: $theme-color;
+//                     }
+//                 }
+//                 }
+//                 h6 {
+//                 font-size: 13px;
+    
+//                 margin: 5px 0 8px;
+//                 }
+//                 span {
+//                 font-size: 14px;
+//                 }
+//             }
+//             .shopping_cart_delete {
+//                 position: absolute;
+//                 top: 0;
+//                 right: 0;
+//                 a,
+//                 button {
+//                 font-size: 16px;
+    
+//                 color: $theme-color;
+//                 &amp;:hover {
+//                     color: #333;
+//                 }
+//                 }
+//             }
+//             }
+//         }
+//         .shopping-cart-total {
+//             h4 {
+//             font-size: 14px;
+    
+//             margin-top: 17px;
+//             margin-bottom: 17px;
+//             span {
+//                 float: right;
+//             }
+//             }
+//         }
+//         .shopping-cart-btn {
+//             margin-top: 12px;
+//             a {
+//             font-size: 14px;
+//             font-weight: 500;
+    
+//             display: block;
+    
+//             margin-bottom: 10px;
+//             padding: 16px 40px 17px;
+
+//             border: 1px solid black;
+//             }
+//         }
+//     }
+
+
+
+    
+// }</pre>
+</body>
+</html>

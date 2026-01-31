@@ -53,6 +53,7 @@ export function getElementBaseSettingsB(){
                 {"name": "結帳表單", "value": "checkout_form"}, 
                 {"name": "訂單付款", "value": "order_payment"}, 
                 {"name": "我的訂單", "value": "my_orders"}, 
+                {"name": "訂單內容", "value": "order_detail"}, 
                 {"name": "我的帳戶按鈕", "value": "my_account_button"}, 
                 {"name": "購物車按鈕", "value": "cart_button"}, 
                 {"name": "商城", "value": "shop"}, 

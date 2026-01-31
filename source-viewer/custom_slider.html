@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>custom_slider</title>
+</head>
+<body>
+<h1>custom_slider</h1>
+<h2>src/components/component-instance/custom-slider/CustomSliderCSR.jsx</h2>
+<pre>
+import PropTypes from &quot;prop-types&quot;;
+import React, { Fragment, useEffect, useState, useRef } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './CustomSlider.module.scss'
+
+import { Navigation, Pagination, Scrollbar, 
+    A11y,
+      Autoplay, EffectFade, FreeMode  } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
+import 'swiper/css/scrollbar';
+import 'swiper/css/free-mode'
+
+
+
+// import { useAppDispatch, useAppSelector } from &quot;@/redux/hooks&quot;;
+// import {convertToReactProps} from '@/lib/utils/propsConverter.js'
+
+
+import Element from &quot;@/components/element/Element&quot;
+
+const CustomSliderCSR = ({  
+    element, 
+    elementProps,
+    mode,
+    ...props
+}) =&gt; {
+    // const dispatch = useAppDispatch();
+
+    const swiperRef = useRef(null)
+    const [swiperKey, setSwiperKey] = useState(1);
+    const [gotNode, setGotNode] = useState(false);
+
+    const [rwdSlidesPerView, setRwdSlidesPerView] = useState((element?.data?.rwd_swiper_slides_per_view||'')?.split(','));
+    const [rwdSpaceBetween, setRwdSpaceBetween] = useState((element?.data?.rwd_swiper_space_between||'')?.split(','));
+
+    useEffect(()=&gt;{
+        
+        if(element &amp;&amp; !gotNode){
+            setGotNode(true)
+            setSwiperKey(new Date());
+        }
+    },[element, gotNode])
+
+
+
+    useEffect(()=&gt;{
+        setSwiperKey(new Date());
+    },[
+        element?.data?.rwd_swiper_slides_per_view, 
+        element?.data?.rwd_swiper_space_between,
+        element?.data?.swiper_free_mode,
+        element?.data?.swiper_navigation,
+        element?.data?.swiper_pagination,
+        element?.data?.swiper_loop,
+        element?.data?.swiper_centered_slides,
+        element?.data?.swiper_grab_cursor,
+        element?.data?.swiper_effect,
+        element?.children,
+    ])
+
+    // useEffect(()=&gt;{
+
+    //     console.log('custom_slider_init_listenr')
+    //     const slide_prev = ()=&gt;{swiperRef?.current?.slidePrev()}
+    //     const slide_next = ()=&gt;{swiperRef?.current?.slideNext()}
+    //     const slide_to = (e)=&gt;{
+    //         console.log('slide to')
+    //         console.log(e?.detail)
+    //         swiperRef?.current?.slideTo(e?.detail?.param||0)
+        
+    //     }
+    //     document.addEventListener(`${element?.uuid}_slide_prev`, slide_prev)
+    //     document.addEventListener(`${element?.uuid}_slide_next`, slide_next)
+    //     document.addEventListener(`${element?.uuid}_slide_to`, slide_to)
+    //     return ()=&gt;{
+    //         document.removeEventListener(`${element?.uuid}_slide_prev`,slide_prev)
+    //         document.removeEventListener(`${element?.uuid}_slide_next`, slide_next)
+    //         document.removeEventListener(`${element?.uuid}_slide_to`, slide_to)
+    //     }
+    // },[swiperRef.current])
+
+    useEffect(()=&gt;{
+       setRwdSlidesPerView((element?.data?.rwd_swiper_slides_per_view||'')?.split(','))
+    },[element?.data?.rwd_swiper_slides_per_view, element])
+
+    useEffect(()=&gt;{
+        setRwdSpaceBetween((element?.data?.rwd_swiper_space_between||'')?.split(','))
+     },[element?.data?.rwd_swiper_space_between, element])
+    // const rwdSlidesPerView = (element?.data?.rwd_swiper_slides_per_view||'')?.split(',');
+    // const rwdSpaceBetween = (element?.data?.rwd_swiper_space_between||'')?.split(',');
+
+
+
+
+
+    const initSwiper = (swiper)=&gt;{
+        console.log('init swiper')
+        swiperRef.current = swiper;
+
+        const ele = document?.querySelector('.'+ CSS.escape(element.parent_relation_uuid))
+        ele.swiper = swiper;
+        const slideWidth = swiper.slides?.[0]?.offsetWidth||0;
+        swiper.slides?.forEach((slide, index)=&gt;{
+            const p = (index * slideWidth) + (slideWidth/2) + swiper.translate + (slideWidth/2)
+            const v = 180 * p / (swiper?.el?.offsetWidth + slideWidth)
+            const deg =  Math.min(Math.max(v, 0), 180);
+            slide?.style?.setProperty('--slide-deg', deg?`${deg}deg`:null)
+        })
+
+        swiper.on('setTransition',(swiper, transition)=&gt;{
+            swiper?.el?.style?.setProperty('--swiper-transition',transition?`${transition}ms`:null)
+        })
+
+        swiper.on('setTranslate',(swiper, translate)=&gt;{
+            // console.log(translate)
+            const slideWidth = swiper.slides?.[0]?.offsetWidth||0;
+            swiper.slides?.forEach((slide, index)=&gt;{
+                const p = (index * slideWidth) + (slideWidth/2) + translate + (slideWidth/2)
+                const v = 180 * p / (swiper?.el?.offsetWidth + slideWidth)
+                const deg =  Math.min(Math.max(v, 0), 180);
+                slide?.style?.setProperty('--slide-deg', deg?`${deg}deg`:null)
+            })
+
+        })
+
+        // swiper.on('slideChange', (swiper)=&gt;{
+        //     // console.log('realIndex')
+        //     // console.log(swiper?.realIndex)
+        //     const customEvent = new CustomEvent(`${element?.uuid}_換頁`, {detail:{param:`${swiper?.realIndex}`}});
+        //     document.dispatchEvent(customEvent);
+        // })
+      
+    }
+
+
+
+
+
+
+
+
+
+    return (
+            
+
+            &lt;Swiper
+                // install Swiper modules
+                {...elementProps}
+                key={swiperKey}
+                modules={[Navigation, Pagination, Scrollbar, 
+                    A11y, 
+                    Autoplay, EffectFade, FreeMode]}
+                onSwiper={initSwiper}
+                autoplay={
+                    (  mode==='edit' )?
+                    {
+                        delay: 600000,
+                        disableOnInteraction: true,
+                    }:
+                    {
+                    delay: element?.data?.autoplay_interval||2000,
+                    disableOnInteraction: false,
+
+                    }
+                }
+                slidesPerView={parseInt(rwdSlidesPerView?.[6]||rwdSlidesPerView?.[5]||rwdSlidesPerView?.[4]||rwdSlidesPerView?.[3]||rwdSlidesPerView?.[2]||rwdSlidesPerView?.[1]||rwdSlidesPerView?.[0]||1)}
+                spaceBetween={parseInt(rwdSpaceBetween?.[6]||rwdSpaceBetween?.[5]||rwdSpaceBetween?.[4]||rwdSpaceBetween?.[3]||rwdSpaceBetween?.[2]||rwdSpaceBetween?.[1]||rwdSpaceBetween?.[0]||50)}
+                breakpoints={{
+                    390: {
+                      slidesPerView: parseInt(rwdSlidesPerView?.[5]||rwdSlidesPerView?.[4]||rwdSlidesPerView?.[3]||rwdSlidesPerView?.[2]||rwdSlidesPerView?.[1]||rwdSlidesPerView?.[0]||1),
+                      spaceBetween: parseInt(rwdSpaceBetween?.[5]||rwdSpaceBetween?.[4]||rwdSpaceBetween?.[3]||rwdSpaceBetween?.[2]||rwdSpaceBetween?.[1]||rwdSpaceBetween?.[0]||50),
+                    },
+                    640: {
+                      slidesPerView: parseInt(rwdSlidesPerView?.[4]||rwdSlidesPerView?.[3]||rwdSlidesPerView?.[2]||rwdSlidesPerView?.[1]||rwdSlidesPerView?.[0]||1),
+                      spaceBetween: parseInt(rwdSpaceBetween?.[4]||rwdSpaceBetween?.[3]||rwdSpaceBetween?.[2]||rwdSpaceBetween?.[1]||rwdSpaceBetween?.[0]||50),
+                    },
+                    768: {
+                        slidesPerView: parseInt(rwdSlidesPerView?.[3]||rwdSlidesPerView?.[2]||rwdSlidesPerView?.[1]||rwdSlidesPerView?.[0]||1),
+                        spaceBetween: parseInt(rwdSpaceBetween?.[3]||rwdSpaceBetween?.[2]||rwdSpaceBetween?.[1]||rwdSpaceBetween?.[0]||50),
+                    },
+                    1024: {
+                        slidesPerView: parseInt(rwdSlidesPerView?.[2]||rwdSlidesPerView?.[1]||rwdSlidesPerView?.[0]||1),
+                        spaceBetween: parseInt(rwdSpaceBetween?.[2]||rwdSpaceBetween?.[1]||rwdSpaceBetween?.[0]||50),
+                    },
+                    1280: {
+                        slidesPerView: parseInt(rwdSlidesPerView?.[1]||rwdSlidesPerView?.[0]||1),
+                        spaceBetween: parseInt(rwdSpaceBetween?.[1]||rwdSpaceBetween?.[0]||50),
+                    },
+                    1536: {
+                        slidesPerView: parseInt(rwdSlidesPerView?.[0]||1),
+                        spaceBetween: parseInt(rwdSpaceBetween?.[0]||50),
+                    },
+
+                  }}
+                freeMode={element?.data?.swiper_free_mode||false}
+                navigation={element?.data?.swiper_navigation||false}
+                pagination={element?.data?.swiper_pagination?{ clickable: true }:false}
+                loop={false}//壞掉了 待修
+                loopAdditionalSlides={element?.data?.swiper_loop?10:0}
+                centeredSlides={element?.data?.swiper_centered_slides||false}
+                grabCursor={element?.data?.swiper_grab_cursor||false}
+                effect={element?.data?.swiper_effect}
+                fadeEffect={ {
+                    crossFade: true
+                }}
+                &gt;
+
+                {   
+                    (element?.children||[])
+                    // .filter((childrenNode, index)=&gt;childrenNode?.type=='custom_slider_slide')
+                    .map((childrenElement, index)=&gt;{
+                        return (&lt;SwiperSlide key={index} &gt;
+
+
+                                &lt;Element
+                                    element={childrenElement}  
+                                    mode={mode} 
+                                    {...props}
+                                &gt;
+
+                                &lt;/Element&gt; 
+                            
+                            
+                   
+                            &lt;/SwiperSlide&gt;
+                        )
+                    })
+
+
+
+                }
+            &lt;/Swiper&gt;
+
+    )
+};
+
+CustomSliderCSR.propTypes = {
+};
+
+export default CustomSliderCSR;
+
+
+
+</pre>
+<h2>src/components/component-instance/custom-slider/CustomSlider.module.scss</h2>
+<pre>@import &quot;@/assets/scss/variables&quot;;
+
+
+
+
+.slider{
+    // position: relative;
+    display: flex;
+    align-items: center;
+    
+    &gt;div{
+      width: 100%;
+      height: 100%;
+    }
+
+
+    .settings_dropdown{
+        position: absolute;
+        z-index: 1001;
+        top: 1%;
+        left:1%;
+
+
+    }
+}
+
+
+
+.remove_and_settings_dropdown{
+
+    position: absolute;
+    top:10px;
+    right:10px;
+    z-index: 1001;
+    display: flex;
+    flex-direction: row-reverse;
+    align-content: center;
+    align-items: center;
+    gap: 2px;
+
+    // does not effect by reveal
+    opacity: 1;
+
+    .remove_icon{
+        color: aliceblue;
+        background-color: black;
+        border-radius: 2px;
+
+        font-size: xx-small;
+        cursor:pointer
+    }
+    // .component_settings_dropdown{
+    //     position: absolute;
+    //     top:5%;
+    //     right:1%;
+    // }
+    
+
+}
+
+.add-slide-btn{
+    position: absolute;
+    bottom:0%;
+    right:0%;
+    z-index: 1001;
+    width: 20px;
+    height: 20px;
+    background-color:cadetblue;
+    // border-color: black;
+    // border-style: solid;
+    // border-width: 1px;
+    cursor:pointer;
+
+    text-align: center;
+    line-height: 20px;
+
+    border-radius: 50%;
+
+    color: white;
+    // does not effect by reveal
+    opacity: 1;
+
+    &amp;:hover {
+        width: 22px;
+        height: 22px;
+        line-height: 22px;
+    }
+}
+
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}</pre>
+</body>
+</html>

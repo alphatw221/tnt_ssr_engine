@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>shop</title>
+</head>
+<body>
+<h1>shop</h1>
+<h2>src/components/component-instance/shop-product/Shop.jsx</h2>
+<pre>import { Fragment, useState, useEffect } from 'react';
+import clsx from &quot;clsx&quot;;
+// import Paginator from 'react-hooks-paginator';
+// import { useSelector } from &quot;react-redux&quot;;
+// import { useLocation, useSearchParams } from &quot;react-router-dom&quot;
+// import { getSortedProducts } from '../../helpers/product';
+// import SEO from &quot;../../components/seo&quot;;
+// import LayoutOne from '../../layouts/LayoutOne';
+// import Breadcrumb from '../../wrappers/breadcrumb/Breadcrumb';
+// import ShopSidebar from '../../wrappers/product/ShopSidebar';
+// import ShopTopbarKingPork from '../../wrappers/product/ShopTopbarKingPork';
+// import ShopProducts from '../../wrappers/product/ShopProducts';
+// import ProductsKingPork from '../../wrappers/product/ProductsKingPork';
+// import PropTypes from &quot;prop-types&quot;;
+// import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import Paginator from '@/components/paginator/MyPaginator.jsx';
+
+import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;
+import { setCacheKey } from &quot;@/redux/slices/shop-slice&quot;
+import SingleProduct from './SingleProduct';
+import style from './Shop.module.scss'
+
+import { customer_search_product } from &quot;@/api/product&quot;
+const Shop = ({ 
+    // element,  
+    // mode, 
+    // actions,
+    // routingTable, 
+    // ...props,
+
+    routingTable,
+
+    element, 
+    elementProps,
+    mode,
+    ...props
+}) =&gt; {
+
+    // const [products, setProducts] = useState([]);
+
+    const searchParams = new URLSearchParams();
+    const customer = useAppSelector((state) =&gt; state.customer);
+    const {cartProducts} = useAppSelector((state)=&gt; state.cart)
+    const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
+
+
+    const {cache} = useAppSelector((state) =&gt; state.shop);
+
+
+    // const [offset, setOffset] = useState(0);
+
+    
+    const defaultPageSize = 25
+    const defaultPage = 1
+    const defaultOrderBy = 'priority,updated_at'
+    const defaultKeyword = ''
+
+
+    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
+    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
+    
+    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):(cache?.[element?.uuid]?.categoryUUIDs||'').split(',')||[]);
+    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[element?.uuid]?.pageSize||defaultPageSize);
+    const [page, setPage] = useState(searchParams.get('page')||cache?.[element?.uuid]?.page||defaultPage);
+    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[element?.uuid]?.orderBy||defaultOrderBy);
+    const [layoutOption, setLayoutOption] = useState(element?.data?.default_layout||'大格子');
+
+
+    const dispatch = useAppDispatch()
+    
+
+    useEffect(()=&gt;{
+        console.log(cache?.[element?.uuid])
+        if(
+            !cache?.[element?.uuid]||
+            (cache?.[element?.uuid]?.keyword||defaultKeyword)!=keyword||
+            (cache?.[element?.uuid]?.categoryUUIDs||'')!=categoryUUIDs?.join(',')||
+            (cache?.[element?.uuid]?.page||defaultPage)!=page||
+            (cache?.[element?.uuid]?.pageSize||defaultPageSize)!=pageSize||
+            (cache?.[element?.uuid]?.orderBy||defaultOrderBy)!=orderBy
+        ){
+            // dispatch(setCacheKey({
+            //     'key':element?.uuid,
+            //     keyword,
+            //     page,
+            //     pageSize,
+            //     orderBy
+            // }))
+
+            var _filter_uuids, _filter_categories, _filter_tags, _exclude_uuids, _exclude_categories, _exclude_tags, _keyword, _page, _page_size, _order_by, _with_categories
+            customer_search_product(
+                _filter_uuids='', 
+                _filter_categories=categoryUUIDs?.join(','), 
+                _filter_tags='', 
+                _exclude_uuids='',
+                _exclude_categories='',
+                _exclude_tags='',
+                _keyword=keyword, 
+                _page=page,
+                _page_size=pageSize,
+                _order_by=orderBy,
+                _with_categories=true
+            ).then(res=&gt;{
+                console.log(res.data)
+                dispatch(setCacheKey({
+                    'key':element?.uuid,
+                    keyword,
+                    page,
+                    pageSize,
+                    orderBy,
+                    'categoryUUIDs':categoryUUIDs?.join(','),
+                    'results':res.data?.results||[],
+                    'count':res.data?.count||0,
+                    'categories':res.data?.categories||[],
+                }))
+            })
+        }
+
+    },[element?.uuid, keyword, categoryUUIDs, page, pageSize, orderBy, cache])
+
+    return (
+        &lt;div 
+            {...elementProps}
+          &gt;
+
+
+            &lt;div className={clsx(style['篩選器框'], &quot;篩選器框&quot;)}&gt;
+                &lt;div className={clsx(style['搜尋框'], &quot;搜尋框&quot;)}&gt;
+                    &lt;label className={clsx(style['搜尋-標籤'], &quot;搜尋-標籤&quot;)}&gt;搜尋&lt;/label&gt;
+                    &lt;input type=&quot;text&quot; className={clsx(style['搜尋-輸入'], &quot;搜尋-輸入&quot;)}
+                        placeholder=&quot;搜尋...&quot; 
+                        value={_keyword}
+                        onKeyUp={(e)=&gt;{if(e.keyCode===13){e.target.blur();setKeyword(_keyword)}}}
+                        onChange={(e)=&gt;{_setKeyword(e.target.value)}}
+                    /&gt;
+                    &lt;button className={clsx(style['搜尋-按鈕'], &quot;搜尋-按鈕&quot;)} onClick={(e)=&gt;{setKeyword(_keyword)}}&gt;
+                        &lt;i className={clsx(style['搜尋-按鈕圖標'], &quot;搜尋-按鈕圖標&quot;, &quot;pe-7s-search&quot;)}/&gt;
+                    &lt;/button&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['商品類別框'], &quot;商品類別框&quot;)}&gt;
+                    &lt;label className={clsx(style['商品類別-標籤'], &quot;商品類別-標籤&quot;)}&gt;商品類別&lt;/label&gt;
+                    {
+                        (cache?.[element?.uuid]?.categories||[]).length == 0 &amp;&amp;
+                        &lt;div className={clsx(style['無商品類別框'], &quot;無商品類別框&quot;)}&gt;
+                            &lt;span className={clsx(style['無商品類別文字'], &quot;無商品類別文字&quot;)}&gt;無商品類別&lt;/span&gt;
+                        &lt;/div&gt;
+                    }
+                    {
+                        (cache?.[element?.uuid]?.categories||[]).map((category,key)=&gt;(                            
+                            &lt;div key={key} className={clsx(style['單商品類別框'], &quot;單商品類別框&quot;)}&gt;
+                                &lt;input className={clsx(style['單商品類別-勾選'], &quot;單商品類別-勾選&quot;)} 
+                                    type=&quot;checkbox&quot; 
+                                    checked={categoryUUIDs?.includes(category?.uuid)} 
+                                    onChange={(e)=&gt;{
+                                        if(e.target.checked){
+                                            setCategoryUUIDs([...categoryUUIDs, category?.uuid])
+                                        }else{
+                                            setCategoryUUIDs(categoryUUIDs?.filter(_category_uuid=&gt;_category_uuid!=category?.uuid))
+                                        }}}/&gt;
+                                &lt;span className={clsx(style['單商品類別'], &quot;單商品類別&quot;)}&gt;{category?.name}&lt;/span&gt;
+                            &lt;/div&gt;
+                        ))
+                    }
+
+
+                   
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;div className={clsx(style['商品框'], &quot;商品框&quot;)}&gt;
+                &lt;div className={clsx(style['商品框-頭段'], &quot;商品框-頭段&quot;)}&gt;
+                    &lt;div className={clsx(style['網格佈局按鈕框'], &quot;網格佈局按鈕框&quot;)}&gt;
+                        &lt;button className={clsx(style['網格佈局按鈕'], &quot;網格佈局按鈕&quot;, layoutOption=='列'?`${style['選取']} 選取`:'')} onClick={e =&gt; {setLayoutOption('列')}}&gt;
+                            &lt;i className={clsx(style['網格佈局按鈕-圖標'], &quot;網格佈局按鈕-圖標&quot;, &quot;fa fa-list-ul&quot;)}  /&gt;
+                        &lt;/button&gt;
+                        &lt;button className={clsx(style['網格佈局按鈕'], &quot;網格佈局按鈕&quot;, layoutOption=='大格子'?`${style['選取']} 選取`:'')} onClick={e =&gt; {setLayoutOption('大格子')}}&gt;
+                            &lt;i className={clsx(style['網格佈局按鈕-圖標'], &quot;網格佈局按鈕-圖標&quot;, &quot;fa fa-th-large&quot;)} /&gt;
+                        &lt;/button&gt;
+                        &lt;button className={clsx(style['網格佈局按鈕'], &quot;網格佈局按鈕&quot;, layoutOption=='小格子'?`${style['選取']} 選取`:'')} onClick={e =&gt; {setLayoutOption('小格子')}}&gt;
+                            &lt;i className={clsx(style['網格佈局按鈕-圖標'], &quot;網格佈局按鈕-圖標&quot;, &quot;fa fa-th&quot;)} /&gt;
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['商品框-網格'], &quot;商品框-網格&quot;, style[layoutOption], layoutOption)}&gt;
+                    {
+                        (cache?.[element?.uuid]?.results||[]).map((product,key)=&gt;(                            
+                            &lt;SingleProduct 
+                                key={key} 
+                                product={product} 
+                                cartProduct={                
+                                    targetCartProducts.find((cartProduct) =&gt; cartProduct?.product?.uuid === product?.uuid)
+                                } 
+                                routingTable={routingTable}/&gt;
+                        ))
+                    }
+                &lt;/div&gt;
+
+
+                &lt;div className={clsx(style['分頁器框'], &quot;分頁器框&quot;)}&gt;
+                    &lt;Paginator
+                        totalRecords={cache?.[element?.uuid]?.count||0}
+                        pageLimit={pageSize}
+                        pageNeighbours={2}
+                        currentPage={page}
+                        setCurrentPage={(page)=&gt;{setPage(page)}}
+                        pagePrevText=&quot;«&quot;
+                        pageNextText=&quot;»&quot;
+                        setOffset={()=&gt;{}}
+                    /&gt;
+                &lt;/div&gt;
+
+            &lt;/div&gt;
+            
+
+
+          
+
+        &lt;/div&gt;
+    )
+}
+
+Shop.propTypes = {
+
+};
+
+
+export default Shop;</pre>
+<h2>src/components/component-instance/shop-product/Shop.module.scss</h2>
+<pre>.商城 {
+    // max-width: 1200px;
+    margin: 10vh auto;
+    display: flex;
+    padding: 16px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.篩選器框 {
+    width: 250px;
+}
+
+.搜尋框{
+    display: flex;
+    align-items: center;
+    margin: 10px auto;
+}
+.商品框 {
+    max-width: 1200px;
+    flex-grow: 1;
+}
+
+.商品框-網格 {
+    display: grid;
+    gap: 20px;
+}
+
+/* 列 (單行排列) */
+.商品框-網格.列 {
+    display: flex;
+    flex-direction: column;
+}
+
+.商品框-網格.列 .單商品框 {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.商品框-網格.列 .商品圖片框 img {
+    width: 100px;
+    height: auto;
+}
+
+/* 大格子 (兩欄排列) */
+.商品框-網格.大格子 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.商品框-網格.大格子 .單商品框 {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.商品框-網格.大格子 .商品圖片框 img {
+    width: 100%;
+    height: auto;
+}
+
+/* 小格子 (三欄排列) */
+.商品框-網格.小格子 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.商品框-網格.小格子 .單商品框 {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.商品框-網格.小格子 .商品圖片框 img {
+    width: 100%;
+    height: auto;
+}
+</pre>
+</body>
+</html>

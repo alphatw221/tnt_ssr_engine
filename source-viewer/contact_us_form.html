@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>contact_us_form</title>
+</head>
+<body>
+<h1>contact_us_form</h1>
+<h2>src/components/component-instance/ContactUsForm.jsx</h2>
+<pre>
+import PropTypes from &quot;prop-types&quot;;
+import React, { Fragment, useState, useEffect, useRef } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './ContactUsForm.module.scss'
+
+// import { useSelector, useDispatch } from &quot;react-redux&quot;;            
+import { useAppSelector, useAppDispatch  } from &quot;@/redux/hooks&quot;;
+import {customer_create_inquiry} from &quot;@/api/inquiry&quot;
+// import { customer_register } from &quot;../../api/customer&quot;
+// import Cookies from &quot;js-cookie&quot;;
+import { createValidator } from &quot;@/lib/validator&quot;
+// import route_names from &quot;../../route_names&quot;;
+
+// import 'intl-tel-input/build/css/intlTelInput.css';
+// import './RegisterForm.css'
+// import { getRWDStyles} from &quot;@/lib/utils/rwdHelper&quot;
+
+
+const ContactUsForm = ({  
+    // node,  
+    // mode, 
+    // actions, 
+    // children, ...props
+    element, 
+    elementProps,
+    mode,
+    ...props
+
+}) =&gt; {
+    
+
+    const customer = useAppSelector((state) =&gt; state.customer);
+    
+    const [submitData, setSubmitData] = useState({
+        first_name:customer?.first_name||'',
+        last_name:customer?.last_name||'',
+        phone:customer?.phone||'',
+        email:customer?.email||'',
+        title:'', context:''
+    })
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [showMessage, setShowMessage] = useState(false)
+    const [toastMessage, setToastMessage] = useState('')
+    const [toastMessageClass, setToastMessageClass] = useState('')
+
+    const [, forceUpdate] = useState();
+    const contactUsFormValidator = useRef(createValidator())
+
+    const handleToastMessage = ({message, className})=&gt;{
+        setToastMessage(message)
+        setToastMessageClass(className)
+        setShowMessage(true)
+        setTimeout(()=&gt;{setShowMessage(false)},5000)
+    }
+
+    const handleSubmit = (event)=&gt;{
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+        customer_create_inquiry(submitData).then(res=&gt;{
+            handleToastMessage({'message':'送出成功', 'className':'成功'})
+
+            setSubmitData({
+                ...submitData,
+                title: '',
+                context: ''
+            });
+
+        }).catch(e=&gt;{
+            handleToastMessage({'message':'錯誤.請重試', 'className':'失敗'})
+        }).finally(() =&gt; {
+            setIsSubmitting(false);
+        });
+    }
+
+
+    useEffect(()=&gt;{
+        if(customer?.uuid){
+            setSubmitData({...submitData, 
+                first_name:customer?.first_name,
+                last_name:customer?.last_name,
+                phone:customer?.phone||'', 
+                email:customer?.email||'', 
+            })
+        }
+    }, [customer])
+
+    return (
+    
+        
+        &lt;form
+             {...elementProps}
+
+        &gt;
+                &lt;div className={clsx(style['標題框'], '標題框')}&gt;
+                    &lt;h3 className={clsx(style['標題'], '標題')}&gt;聯絡我們&lt;/h3&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['名字框'], '名字框')}&gt;
+                    &lt;label className={clsx(style['名字-標籤'], '名字-標籤')} &gt;名字：&lt;/label&gt;
+                    &lt;input
+                        className={clsx(style['名字-輸入'], '名字-輸入')}
+                        type=&quot;text&quot;
+                        name=&quot;customer-first-name&quot;
+                        placeholder=&quot;名字&quot;
+                        value={submitData.first_name}
+                        onChange={(e)=&gt;{
+                        setSubmitData({...submitData, first_name:e.target.value})
+                        }}
+                        onBlur={() =&gt; {
+                        contactUsFormValidator.current.showMessageFor(&quot;first_name&quot;)
+                        forceUpdate(new Date())
+                        }}
+                    /&gt;
+                    {contactUsFormValidator.current.message(&quot;first_name&quot;, submitData.first_name, &quot;required&quot;)}
+                &lt;/div&gt;
+                
+                &lt;div className={clsx(style['姓氏框'], '姓氏框')}&gt;
+                    &lt;label className={clsx(style['姓氏-標籤'], '姓氏-標籤')} &gt;姓氏：&lt;/label&gt;
+                    &lt;input
+                        className={clsx(style['姓氏-輸入'], '姓氏-輸入')}
+                        type=&quot;text&quot;
+                        name=&quot;customer-last-name&quot;
+                        placeholder=&quot;姓氏&quot;
+                        value={submitData.last_name}
+                        onChange={(e)=&gt;{
+                            setSubmitData({...submitData, last_name:e.target.value})
+                        }}
+                        onBlur={() =&gt; {
+                            contactUsFormValidator.current.showMessageFor(&quot;last_name&quot;)
+                            forceUpdate(new Date())
+                        }}
+                    /&gt;
+                    {contactUsFormValidator.current.message(&quot;last_name&quot;, submitData.last_name, &quot;required&quot;)}
+                &lt;/div&gt;
+                
+
+
+
+                &lt;div className={clsx(style['電子郵件框'], '電子郵件框')}&gt;
+                    &lt;label className={clsx(style['電子郵件-標籤'], '電子郵件-標籤')} &gt;電子郵件：&lt;/label&gt;
+                    &lt;input
+                        className={clsx(style['電子郵件-輸入'], '電子郵件-輸入')}
+                        type=&quot;email&quot;
+                        name=&quot;customer-email&quot;
+                        placeholder=&quot;Email&quot;
+                        value={submitData.email}
+                        onChange={(e)=&gt;{
+                        setSubmitData({...submitData, email:e.target.value})
+                        }}
+                        onBlur={() =&gt; {
+                        contactUsFormValidator.current.showMessageFor(&quot;email&quot;)
+                        forceUpdate(new Date())
+                        }}
+                    /&gt;
+                    {contactUsFormValidator.current.message(&quot;email&quot;, submitData.email, &quot;required|email&quot;)}
+                &lt;/div&gt;
+                
+                &lt;div className={clsx(style['主旨框'], '主旨框')}&gt;
+                    &lt;label className={clsx(style['主旨-標籤'], '主旨-標籤')} &gt;主旨：&lt;/label&gt;
+                    &lt;input
+                        className={clsx(style['主旨-輸入'], '主旨-輸入')}
+                        type=&quot;text&quot;
+                        name=&quot;title&quot;
+                        placeholder=&quot;主旨&quot;
+                        value={submitData.title}
+                        onChange={(e)=&gt;{
+                        setSubmitData({...submitData, title:e.target.value})
+                        }}
+                        onBlur={() =&gt; {
+                        contactUsFormValidator.current.showMessageFor(&quot;password&quot;)
+                        forceUpdate(new Date());
+                        }}
+                    /&gt;
+                    {contactUsFormValidator.current.message(&quot;password&quot;, submitData.title, &quot;required&quot;)}
+                &lt;/div&gt;
+                
+                &lt;div className={clsx(style['訊息框'], '訊息框')}&gt;
+                
+                    &lt;label className={clsx(style['訊息-標籤'], '訊息-標籤')} &gt;訊息：&lt;/label&gt;
+                    &lt;textarea
+                        className={clsx(style['訊息-輸入'], '訊息-輸入')}
+                        placeholder=&quot;訊息&quot;
+                        value={submitData.context}
+                        onChange={(e)=&gt;{
+                            setSubmitData({...submitData, context:e.target.value})
+                        }}
+                        onBlur={() =&gt; {
+                            contactUsFormValidator.current.showMessageFor(&quot;context&quot;)
+                            forceUpdate(new Date());
+                        }}/&gt;
+                    {contactUsFormValidator.current.message(&quot;context&quot;, submitData.context, &quot;required&quot;)}
+
+                &lt;/div&gt;
+               
+      
+
+                &lt;div className={clsx(style['送出狀態訊息框'], '送出狀態訊息框', showMessage &amp;&amp; style['顯示'], showMessage &amp;&amp; '顯示', style[toastMessageClass], toastMessageClass)}&gt;
+                    &lt;span  className={clsx(style['送出狀態訊息'], '送出狀態訊息')}&gt;
+                        {toastMessage}
+                    &lt;/span&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['送出框'], '送出框')}&gt;
+                    &lt;button
+                        className={clsx(style['送出-按鈕'], '送出-按鈕', isSubmitting &amp;&amp; '送出中')}
+                        type=&quot;button&quot;
+                        disabled={isSubmitting}
+                        onClick={handleSubmit}&gt;
+                        {isSubmitting ? '送出中...' : '送出 Submit'}
+                    &lt;/button&gt;
+                &lt;/div&gt;
+        &lt;/form&gt;
+
+    // &lt;/div&gt;
+    )
+};
+
+ContactUsForm.propTypes = {
+};
+
+export default ContactUsForm;
+
+
+
+
+</pre>
+<h2>src/components/component-instance/ContactUsForm.module.scss</h2>
+<pre>
+
+
+/*------ 24. login register Page  --------*/
+// @import &quot;@/assets/scss/my-variables&quot;;
+
+
+
+// $props: (
+//   width: (
+//     name: &quot;width&quot;,
+//     default:50vw,
+//   ),
+//   max-width:(
+//     name: &quot;max-width&quot;,
+//   ),
+//   min-width:(
+//     name: &quot;min-width&quot;,
+//   ),
+//   height:(
+//     name: &quot;height&quot;,
+//   ),
+//   max-height:(
+//     name: &quot;max-height&quot;,
+//   ),
+//   min-height:(
+//     name: &quot;min-height&quot;,
+    
+//   ),
+
+// );
+
+
+
+.聯絡我們表單 {
+//   @include generate-rwd-stylesheet($props);
+
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.標題框 {
+  text-align: center;
+}
+.標題 {
+  font-size: 20px;
+  color: #333;
+  margin: 0;
+}
+.名字框,
+.姓氏框,
+.電子郵件框,
+.主旨框,
+.訊息框 {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.名字-標籤,
+.姓氏-標籤,
+.電子郵件-標籤,
+.主旨-標籤,
+.訊息-標籤 {
+  font-size: 14px;
+  color: #333;
+}
+
+.名字-輸入,
+.姓氏-輸入,
+.電子郵件-輸,
+.主旨-輸入,
+.訊息-輸入 {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.訊息-輸入 {
+  height: 120px;
+  resize: none;
+}
+.送出框 {
+  display: flex;
+  justify-content: center;
+}
+
+.送出-按鈕 {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  width: 100%;
+}
+.送出-按鈕:hover {
+  background-color: #0056b3;
+}
+
+.送出-按鈕:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.送出-按鈕.送出中 {
+  background-color: #6c757d;
+  cursor: wait;
+}
+
+// Toast 訊息樣式
+.送出狀態訊息框 {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  z-index: 9999;
+  padding: 20px 40px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.送出狀態訊息框.顯示 {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.送出狀態訊息框.成功 {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.送出狀態訊息框.失敗 {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.送出狀態訊息 {
+  font-weight: 500;
+}
+
+
+
+
+
+// .聯絡我們表單{
+//   @include generate-rwd-stylesheet($props);
+
+//   display:flex;
+//   flex-direction: column;
+//   justify-content: space-evenly;
+//   align-items: start;
+//   padding: 10px 40px;
+// }
+
+
+// .標題框{margin: 0px auto}
+// .標題{}
+
+
+// .名字框{}
+// .名字-標籤{}
+// .名字-輸入{}
+
+// .姓氏框{}
+// .姓氏-標籤{}
+// .姓氏-輸入{}
+
+// .電子郵件框{}
+// .電子郵件-標籤{}
+// .電子郵件-輸入{}
+
+// .主旨框{}
+// .主旨-標籤{}
+// .主旨-輸入{}
+
+// .訊息框{}
+// .訊息-標籤{}
+// .訊息-輸入{}
+
+// .送出框{margin: 0px auto}
+// .送出-按鈕{}
+  // .contact-us-form {
+  //   // background: transparent none repeat scroll 0 0;
+  //   // box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+
+
+  //   --width-xxl:initial;
+  //   --width-xl:initial;
+  //   --width-lg:initial;
+  //   --width-md:initial;
+  //   --width-sm:initial;
+  //   --width-xs:initial;
+  //   --width-xxs:initial;
+
+  // @media only screen and (min-width: 1536px){
+  //     width:var(--width-xxl, 350px);
+  //     max-width: var(--max-width-xxl);
+  //     min-width: var(--min-width-xxl);
+  //     .title{
+  //       line-height: var(--title-line-height-xxl);
+  //       font-size: var(--title-font-size-xxl);
+  //     }
+  //     .label{
+  //       line-height: var(--label-line-height-xxl);
+  //       font-size: var(--label-font-size-xxl);
+  //     }
+  //     .button-box&gt;button&gt;span{
+  //       line-height: var(--submit-line-height-xxl);
+  //       font-size: var(--submit-font-size-xxl);
+  //     }
+  // }
+  // @media only screen and (min-width: 1280px) and (max-width: 1535px){
+  //     width:var(--width-xl, 350px);
+  //     max-width: var(--max-width-xl);
+  //     min-width: var(--min-width-xl);
+  //     .title{
+  //       line-height: var(--title-line-height-xl);
+  //       font-size: var(--title-font-size-xl);
+  //     }
+  //     .label{
+  //       line-height: var(--label-line-height-xl);
+  //       font-size: var(--label-font-size-xl);
+  //     }
+  //     .button-box&gt;button&gt;span{
+  //       line-height: var(--submit-line-height-xl);
+  //       font-size: var(--submit-font-size-xl);
+  //     }
+  // }
+  // @media only screen and (min-width: 1024px) and (max-width: 1279px){
+  //     width:var(--width-lg, 350px);
+  //     max-width: var(--max-width-lg);
+  //     min-width: var(--min-width-lg);
+  //     .title{
+  //       line-height: var(--title-line-height-lg);
+  //       font-size: var(--title-font-size-lg);
+  //     }
+  //     .label{
+  //       line-height: var(--label-line-height-lg);
+  //       font-size: var(--label-font-size-lg);
+  //     }
+  //     .button-box&gt;button&gt;span{
+  //       line-height: var(--submit-line-height-lg);
+  //       font-size: var(--submit-font-size-lg);
+  //     }
+  // }
+  // @media only screen and (min-width: 768px) and (max-width: 1023px){
+  //     width:var(--width-md, 350px);
+  //     max-width: var(--max-width-md);
+  //     min-width: var(--min-width-md);
+  //     .title{
+  //       line-height: var(--title-line-height-md);
+  //       font-size: var(--title-font-size-md);
+  //     }
+  //     .label{
+  //       line-height: var(--label-line-height-md);
+  //       font-size: var(--label-font-size-md);
+  //     }
+  //     .button-box&gt;button&gt;span{
+  //       line-height: var(--submit-line-height-md);
+  //       font-size: var(--submit-font-size-md);
+  //     }
+  // }
+  // @media only screen and (min-width: 640px) and (max-width: 767px){
+  //     width:var(--width-sm, 350px);
+  //     max-width: var(--max-width-sm);
+  //     min-width: var(--min-width-sm);
+  //     .title{
+  //       line-height: var(--title-line-height-sm);
+  //       font-size: var(--title-font-size-sm);
+  //     }
+  //     .label{
+  //       line-height: var(--label-line-height-sm);
+  //       font-size: var(--label-font-size-sm);
+  //     }
+  //     .button-box&gt;button&gt;span{
+  //       line-height: var(--submit-line-height-sm);
+  //       font-size: var(--submit-font-size-sm);
+  //     }
+  // }
+  // @media only screen and (min-width: 390px) and (max-width: 636px){
+  //     width:var(--width-xs, 350px);
+  //     max-width: var(--max-width-xs);
+  //     min-width: var(--min-width-xs);
+  //     .title{
+  //       line-height: var(--title-line-height-xs);
+  //       font-size: var(--title-font-size-xs);
+  //     }
+  //     .label{
+  //       line-height: var(--label-line-height-xs);
+  //       font-size: var(--label-font-size-xs);
+  //     }
+  //     .button-box&gt;button&gt;span{
+  //       line-height: var(--submit-line-height-xs);
+  //       font-size: var(--submit-font-size-xs);
+  //     }
+  // }
+  // @media only screen and (max-width: 389px){
+  //     width:var(--width-xxs, 350px);
+  //     max-width: var(--max-width-xxs);
+  //     min-width: var(--min-width-xxs);
+  //     .title{
+  //       line-height: var(--title-line-height-xxs);
+  //       font-size: var(--title-font-size-xxs);
+  //     }
+  //     .label{
+  //       line-height: var(--label-line-height-xxs);
+  //       font-size: var(--label-font-size-xxs);
+  //     }
+  //     .button-box&gt;button&gt;span{
+  //       line-height: var(--submit-line-height-xxs);
+  //       font-size: var(--submit-font-size-xxs);
+  //     }
+  // }
+
+  //   padding: 20px;
+  //   @media #{$lg-layout} {
+  //     padding: 20px 20px;
+  //   }
+  //   @media #{$xs-layout} {
+  //     padding: 10px 5px;
+  //   }
+
+  //   display: flex;
+  //   flex-direction: column;
+  //   justify-content: center;
+
+  //   form {
+  //       // margin-bottom: 30px;
+  //     h3{
+  //       margin-bottom: 30px;
+  //     }
+  //     input {
+  //       min-width: 280px;
+  //       background-color: transparent;
+  //       border: 1px solid #ebebeb;
+  //       color: #333;
+  //       font-size: 14px;
+  //       height: 45px;
+  //       // margin-bottom: 30px;
+  //       padding: 0 15px;
+  //     }
+  //     input[type=&quot;checkbox&quot;] {
+  //       height: 15px;
+  //       margin: 0;
+  //       position: relative;
+  //       top: 1px;
+  //       width: 17px;
+  //     }
+
+  //     textarea {
+
+  //       min-width: 280px;
+
+  //       background-color: transparent;
+  //       border: 1px solid #ebebeb;
+  //       color: #333;
+  //       font-size: 14px;
+  //       height: 100px;
+  //       // margin-bottom: 30px;
+  //       padding: 0 15px;
+  //     }
+
+  //     .button-box {
+  //       .login_toggle_btn {
+  //         margin-top: 30px;
+  //         padding: 10px 0 19px;
+  //         label {
+  //           color: #242424;
+  //           font-size: 15px;
+  //           font-weight: 400;
+  //           @media #{$xs-layout} {
+  //             font-size: 14px;
+  //           }
+  //         }
+  //         a {
+  //           color: #242424;
+  //           float: right;
+  //           font-size: 15px;
+  //           @media #{$xs-layout} {
+  //             font-size: 14px;
+  //           }
+  //           transition: all 0.3s ease 0s;
+  //           &amp;:hover {
+  //             color: $theme-color;
+  //           }
+  //         }
+  //       }
+  //       button {
+  //         background-color: var(--background-color-1, #f2f2f2);
+  //         border: medium none;
+  //         color: var(--font-color-1, #333);
+  //         cursor: pointer;
+  //         font-size: 14px;
+  //         font-weight: 500;
+  //         line-height: 1;
+  //         padding: 11px 30px;
+  //         margin-top: 30px;
+  //         margin-bottom: 30px;
+  //         text-transform: uppercase;
+  //         transition: all 0.3s ease 0s;
+  //         &amp;:hover {
+  //           background-color: var(--background-color-2, var(--background-color-1, $theme-color));
+  //           color:var(--font-color-2, var(--font-color-1,#fff));
+  //         }
+  //       }
+  //     }
+
+
+
+  //     .customer-phone{
+  //       &gt;div{
+  //         display:inline ;
+
+  //       }
+  //     }
+  //   }
+  // }</pre>
+</body>
+</html>
