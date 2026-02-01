@@ -15,8 +15,9 @@ const htmlToReactPropMap = {
   srcset: "srcSet",
   novalidate: "noValidate",
   playsinline: "playsInline",
-  datetime: "dateTime"
+  datetime: "dateTime",
   // 可自行擴充
+  onclick: "onClick"
 };
 
 export function htmlStyleToReactStyle(styleString) {
@@ -66,10 +67,19 @@ export function convertToReactProps(htmlProps = {}) {
       reactProps[reactKey] = typeof styleValue === 'string'
         ? htmlStyleToReactStyle(styleValue)
         : styleValue;
+    }else if(key === 'onclick'){
+      const onclickValue = htmlProps[key];
+      // 如果是字符串形式的 JavaScript 代码，转换成函数
+      if(typeof onclickValue === 'string'){
+        reactProps[reactKey] = new Function('event', onclickValue);
+      }else{
+        // 如果已经是函数，直接使用
+        reactProps[reactKey] = onclickValue;
+      }
     }else{
       reactProps[reactKey] = htmlProps[key];
     }
-    
+
   }
 
   return reactProps;

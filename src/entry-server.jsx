@@ -17,11 +17,11 @@ export function render(url, context = {}) {
   return { html, context };
 }
 
-export async function getWebpageHtml(webpage_name, object_uuid, now, context={}){
+export async function getWebpageHtml(host, webpage_name, object_uuid, now, context={}){
     
   const store = createSSRStore();
 
-    const res = await node_server_retrieve_wepage({webpage_name, object_uuid})
+    const res = await node_server_retrieve_wepage({'domain':host, webpage_name, object_uuid})
 
     const websiteUUID = res.data?.uuid;
     const body =  renderToString(<Provider store={store}>

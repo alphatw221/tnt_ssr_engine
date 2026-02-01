@@ -379,7 +379,8 @@ const plusOneDisabled = (cartProduct)=>{
                                                 false
                                             }
                                             >
-                                                <i className="fa fa-times"></i>
+                                                刪除
+                                                {/* <i className="fa fa-times"></i> */}
                                             </button>
                                         </div>
                                     </td>

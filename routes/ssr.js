@@ -79,7 +79,7 @@ router.get([
     }
 
 
-    const {head, body, websiteUUID:uncachedWebsiteUUID} = await render(webpageName, objectUUID);
+    const {head, body, websiteUUID:uncachedWebsiteUUID} = await render(req.get('host'), webpageName, objectUUID);
 
     const safeParams = JSON.stringify({ webpageName, objectUUID, now }).replace(/</g, '\\u003c');
     let finalHTML = template.replace(`<!--app-head-->`, head)
