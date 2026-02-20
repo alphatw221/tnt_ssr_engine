@@ -22,28 +22,31 @@ router.get([
     const url = req.originalUrl;
     const vite = req.vite;
 
+    let websiteUUIDCacheKey;
 
-    const fullUrl = req.get('host') + req.originalUrl;
+    if(vite){
+      // 開發模式 不 cache
+      console.log('開發模式 不cache')
+    }else{
+      const fullUrl = req.get('host') + req.originalUrl;
 
-
-
-    await redis.del(fullUrl);
-    const websiteUUIDCacheKey = getHtmlCacheKey(req.get('host'))
-    const websiteUUID = await redis.get(websiteUUIDCacheKey);
-    if(websiteUUID){
-      const htmlCacheKey = getWebsiteUUIDCacheKey(websiteUUID, webpageName, objectUUID)
-      const cachedHtml = await redis.get(htmlCacheKey);
-      if (cachedHtml) {
-        console.log(`[Cache] 命中 ${req.get('host')} ${htmlCacheKey}`);
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(cachedHtml);
-        return 
+      await redis.del(fullUrl);
+      websiteUUIDCacheKey = getHtmlCacheKey(req.get('host'))
+      const websiteUUID = await redis.get(websiteUUIDCacheKey);
+      if(websiteUUID){
+        const htmlCacheKey = getWebsiteUUIDCacheKey(websiteUUID, webpageName, objectUUID)
+        const cachedHtml = await redis.get(htmlCacheKey);
+        if (cachedHtml) {
+          console.log(`[Cache] 命中 ${req.get('host')} ${htmlCacheKey}`);
+          res.status(200).set({ 'Content-Type': 'text/html' }).end(cachedHtml);
+          return 
+        }
       }
+      
+      console.log(`[Cache] 未命中 ${fullUrl}，開始 SSR`);
 
     }
     
-    console.log(`[Cache] 未命中 ${fullUrl}，開始 SSR`);
-
-
 
     const templatePath = path.resolve('index.html');
     let template = fs.readFileSync(templatePath, 'utf-8');
@@ -78,9 +81,10 @@ router.get([
       // render = (await import('../dist/express/assets/entry-server.js')).getWebpageHtml;
     }
 
-
+    console.log('準備render')
     const {head, body, websiteUUID:uncachedWebsiteUUID} = await render(req.get('host'), webpageName, objectUUID);
-
+    console.log('完成render')
+    
     const safeParams = JSON.stringify({ webpageName, objectUUID, now }).replace(/</g, '\\u003c');
     let finalHTML = template.replace(`<!--app-head-->`, head)
     .replace(`<!--app-body-->`, body)
@@ -97,9 +101,14 @@ router.get([
     const htmlCacheKey = getWebsiteUUIDCacheKey(uncachedWebsiteUUID, webpageName, objectUUID)
 
     
-
-    await redis.set(htmlCacheKey, finalHTML)
-    await redis.set(websiteUUIDCacheKey, uncachedWebsiteUUID)
+    if(vite){
+      // 開發模式 不 cache
+      console.log('開發模式 不cache2')
+    }else{
+      await redis.set(htmlCacheKey, finalHTML)
+      await redis.set(websiteUUIDCacheKey, uncachedWebsiteUUID)
+    }
+    
 
     res.status(200).set({ 'Content-Type': 'text/html' }).end(finalHTML);
   } catch (err) {

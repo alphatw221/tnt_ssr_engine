@@ -19,6 +19,14 @@ const customerSlice = createSlice({
                 ...action.payload,
             }
         },
+        setCustomerAndLocalStorage(state, action){
+            const res =  {
+                ...state,
+                ...action.payload,
+            }
+            localStorage.setItem("customer", JSON.stringify(res))
+            return res
+        },
         setCustomerCartProducts(state, action){
             const res = {
                 ...state,
@@ -58,5 +66,5 @@ const customerSlice = createSlice({
     },
 });
 
-export const { setCustomer, setCustomerCartProducts, customerDeleteCartProduct, setCustomerCartProduct } = customerSlice.actions;
+export const { setCustomer, setCustomerAndLocalStorage, setCustomerCartProducts, customerDeleteCartProduct, setCustomerCartProduct } = customerSlice.actions;
 export default customerSlice.reducer;

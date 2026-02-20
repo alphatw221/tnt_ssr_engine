@@ -19,10 +19,10 @@ export function render(url, context = {}) {
 
 export async function getWebpageHtml(host, webpage_name, object_uuid, now, context={}){
     
-  const store = createSSRStore();
-
+    const store = createSSRStore();
+    console.log('準備 請求 internal api')
     const res = await node_server_retrieve_wepage({'domain':host, webpage_name, object_uuid})
-
+    console.log('完成 請求 internal api')
     const websiteUUID = res.data?.uuid;
     const body =  renderToString(<Provider store={store}>
                           <WebpageBody website={res.data} webpage={res.data.webpage} object={res.data?.object} now={now} mode='prod'/>
