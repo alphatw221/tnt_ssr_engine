@@ -30,7 +30,7 @@ import EditorToolBar from '@/components/editor-tool-bar/EditorToolBar'
 import ElementTemplateMenu from '@/components/element-template-menu/ElementTemplateMenu'
 
 import {user_update_store_settings} from '@/api/estore.js'
-import { user_update_website } from '@/api/website.js'
+import { user_update_website, user_clear_website_cache } from '@/api/website.js'
 import {getCompnentSettings} from '@/lib/utils/componentSettings.js'
 
 import MyModal from '@/components/modal/MyModal.jsx'
@@ -70,8 +70,12 @@ const EditorSideMenu = ({ website, actions, ...props}) => {
   const settings = getCompnentSettings('website')
 
 
-
-
+  const clearWebsiteCache = ()=>{
+    if(confirm('確認清除暫存')){
+        user_clear_website_cache().then(res=>{console.log(res.data)})
+    }
+  }
+  
   const updateWebsiteData = (data)=>{
 
 
@@ -217,6 +221,9 @@ const EditorSideMenu = ({ website, actions, ...props}) => {
          <ParameterizeForm  
             identifier={website?.uuid}
             settings={[
+              {"type":"inline","inline_items":[
+                  {type:'button',action:clearWebsiteCache,name:'清除暫存', style:{marginRight:'10px'}, variant:'danger'},
+              ]},
               ...settings,
             ]} 
             data={website?.data} 

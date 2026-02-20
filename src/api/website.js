@@ -7,3 +7,7 @@ export const user_retrieve_website = () => {
 export const user_update_website = ({data}) => {
     return createUserAxios().put(`/api/v1/website/website/update/`,data);
 }
+
+export const user_clear_website_cache = () => {
+    return createUserAxios().put(`/api/v1/website/website/clear_cache/`);
+}
