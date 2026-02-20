@@ -30,7 +30,7 @@ import {useClickOutsideEvent} from '@/lib/utils/clickOutside.js'
 // import { getRWDStyles} from &quot;@/lib/utils/rwdHelper&quot;
 
 // import  Link  from 'next/link';
-import { setCustomer } from '@/redux/slices/customer-slice'
+import { setCustomer, setCustomerAndLocalStorage } from '@/redux/slices/customer-slice'
 // import {  useRouter } from 'next/navigation';
 import {customer_get_account} from &quot;@/api/customer.js&quot;
 
@@ -56,8 +56,7 @@ const MyAccountButton = ({
             }else{
                 customer_get_account().then(res=&gt;{
                     console.log(res.data)
-                    localStorage.setItem(&quot;customer&quot;, JSON.stringify(res.data));
-                    dispatch(setCustomer(res.data))
+                    dispatch(setCustomerAndLocalStorage(res.data))
                 }).catch(err=&gt;{
                     Cookies.remove('customer_access_token')
                 })

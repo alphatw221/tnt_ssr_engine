@@ -45,6 +45,11 @@ const components = [
     scss: ["src/components/component-instance/ResetPasswordForm.module.scss"] },
   { name: "ComposeProductModal", file: "src/components/product/ComposeProductModal.jsx",
     scss: ["src/components/product/ComposeProductModal.module.scss"] },
+  { name: "OrderItemsSummary", file: "src/components/component-instance/order/OrderItemsSummary.jsx",
+    scss: ["src/components/component-instance/order/OrderItemsSummary.module.scss"] },
+
+
+    
 
 ];
 

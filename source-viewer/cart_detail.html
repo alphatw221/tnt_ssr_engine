@@ -115,13 +115,13 @@ const CartDetail = ({
     }, [estore, baseCurrency])
 
 
-    //cart products preloader
-    useEffect(()=&gt;{
-        if(localStorage.getItem(&quot;cart_products&quot;)){
-            const _cartProducts = JSON.parse(localStorage.getItem(&quot;cart_products&quot;));
-            dispatch(setCartProducts(_cartProducts));
-        }
-    },[])
+    //cart products preloader 統一放在cart button
+    // useEffect(()=&gt;{
+    //     if(localStorage.getItem(&quot;cart_products&quot;)){
+    //         const _cartProducts = JSON.parse(localStorage.getItem(&quot;cart_products&quot;));
+    //         dispatch(setCartProducts(_cartProducts));
+    //     }
+    // },[])
 
     useEffect(()=&gt;{
         const {subtotal, items, final_exclude_uuids} = getCartSummarize(

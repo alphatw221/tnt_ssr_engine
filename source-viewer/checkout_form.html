@@ -36,7 +36,7 @@ import { customer_checkout_cart } from &quot;@/api/cart&quot;;
 import GuestCheckoutNotification from '@/components/guest-checkout-notification/GuestCheckoutNotification'
 import Cookies from &quot;js-cookie&quot;;
 import { deleteAllCartProduct, setCartProducts } from &quot;@/redux/slices/cart-slice&quot;;
-import { setCustomer} from &quot;@/redux/slices/customer-slice&quot;;
+import { setCustomer, setCustomerAndLocalStorage} from &quot;@/redux/slices/customer-slice&quot;;
 import ComposeProductModal from &quot;@/components/product/ComposeProductModal&quot;
 
 const CheckoutForm = ({  
@@ -118,33 +118,36 @@ const CheckoutForm = ({
     const [showComposeContentModalIndex, setShowComposeContentModalIndex] = useState(null)
 
 
-    //cart products preloader ?
-    useEffect(()=&gt;{
-        if(localStorage.getItem(&quot;cart_products&quot;)){
-            const _cartProducts = JSON.parse(localStorage.getItem(&quot;cart_products&quot;));
-            dispatch(setCartProducts(_cartProducts));
-        }
-    },[])
-    //customer preloader ?
-    useEffect(()=&gt;{
-            if(Cookies.get('customer_access_token')){
-                if(localStorage.getItem(&quot;customer&quot;)){
-                    const _customer = JSON.parse(localStorage.getItem(&quot;customer&quot;));
-                    dispatch(setCustomer(_customer));
-                }else{
-                    // customer_get_account().then(res=&gt;{
-                    //     console.log(res.data)
-                    //     localStorage.setItem(&quot;customer&quot;, JSON.stringify(res.data));
-                    //     dispatch(setCustomer(res.data))
-                    // }).catch(err=&gt;{
-                    //     Cookies.remove('customer_access_token')
-                    // })
-                }
-            }else{
-                localStorage.removeItem(&quot;customer&quot;);
-                dispatch(setCustomer({uuid:null}))
-            }
-        },[])
+    //cart products preloader ? 統一放在cart button
+    // useEffect(()=&gt;{
+    //     if(localStorage.getItem(&quot;cart_products&quot;)){
+    //         const _cartProducts = JSON.parse(localStorage.getItem(&quot;cart_products&quot;));
+    //         dispatch(setCartProducts(_cartProducts));
+    //     }
+    // },[])
+
+
+    //customer preloader ?   customer preloader 統一放在my account button
+    // useEffect(()=&gt;{
+    //         if(Cookies.get('customer_access_token')){
+    //             if(localStorage.getItem(&quot;customer&quot;)){
+    //                 const _customer = JSON.parse(localStorage.getItem(&quot;customer&quot;));
+    //                 dispatch(setCustomer(_customer));
+    //             }else{
+    //                 // customer_get_account().then(res=&gt;{
+    //                 //     console.log(res.data)
+    //                 //     localStorage.setItem(&quot;customer&quot;, JSON.stringify(res.data));
+    //                 //     dispatch(setCustomer(res.data))
+    //                 // }).catch(err=&gt;{
+    //                 //     Cookies.remove('customer_access_token')
+    //                 // })
+    //             }
+    //         }else{
+    //             localStorage.removeItem(&quot;customer&quot;);
+    //             dispatch(setCustomer({uuid:null}))
+    //         }
+    // },[])
+
     useEffect(()=&gt;{   
         getClientIPCountryCode().then(_country=&gt;{
             setCountry(_country)
@@ -241,7 +244,8 @@ const CheckoutForm = ({
             if(!customer?.uuid){
                 dispatch(deleteAllCartProduct())
             }else{
-                dispatch(setCustomer({
+                console.log('checkout complete')
+                dispatch(setCustomerAndLocalStorage({
                     ...customer,
                     cart_products:(customer.cart_products||[]).filter(_cart_product=&gt;finalExcludeUUIDs?.[_cart_product?.uuid]),
                     points:(customer?.points||0)-(checkoutData?.apply_points||0)
@@ -250,6 +254,7 @@ const CheckoutForm = ({
             // router.push(`/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}`)
             window.location.href = `/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}`
         }).catch(err=&gt;{
+            console.log(err)
             setAwaitSubmitButton(false)
             setShowProceedAsGuestNotification(false)
         })

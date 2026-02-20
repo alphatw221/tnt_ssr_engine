@@ -6,7 +6,7 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 
 import {customer_retrieve_wepage} from '@/api/webpage.js'
 import WebpageBody from '@/components/webpage/WebpageBody'
-
+import HydrationComplete from '@/components/HydrationComplete'
 
 import { Provider } from 'react-redux';
 
@@ -29,7 +29,8 @@ const props = window.__INITIAL_PROPS__ || {};
 
 const csrBootstrap = async ()=>{
   const { default: AppCSR } = await import('./AppCSR.jsx');
-  createRoot(container).render(<AppCSR {...props} />);
+  createRoot(container).render(
+      <AppCSR {...props} />)
 }
 if (isSSR) {
   console.log('is ssr')
@@ -53,6 +54,7 @@ if (isSSR) {
     {/* <PersistGate loading={null} persistor={persistor}> */}
       <StoreSettingsPreloader bonus_point_policy={res.data?.bonus_point_policy} e_commerce_settings={res.data?.e_commerce_settings}/>
       <WebpageBody website={res.data} webpage={res.data.webpage} object={res.data?.object} now={new Date(window.__SSR_PARAMS__?.now)} mode='prod'/>
+      <HydrationComplete />
       {/* </PersistGate> */}
   </Provider>);
   })
