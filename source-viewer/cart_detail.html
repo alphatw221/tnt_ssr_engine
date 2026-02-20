@@ -34,6 +34,7 @@ import {
   isInventorySufficient,
   updateCartProduct,
   deleteCartProductV1,
+  getCartProductsCount
 } from &quot;@/lib/utils/cartHelper&quot;;
 
 import {getProductPrice, isStockSufficient} from &quot;@/lib/utils/productHelper&quot;
@@ -75,8 +76,7 @@ const CartDetail = ({
     const customer = useAppSelector((state) =&gt; state.customer);
     const {cartProducts} = useAppSelector((state)=&gt; state.cart)
 
-    const [targetCartProducts, setTargetCartProducts] = useState([])
-    // const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
+    const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
 
 
     const estore = useAppSelector((state) =&gt; state.estore);
@@ -84,6 +84,7 @@ const CartDetail = ({
     // const [disableIndex, setDisableIndex] = useState(null)
     // const [addonDisableIndex, setAddonDisableIndex] = useState(null)
     const [showComposeModalIndex, setShowComposeModalIndex] = useState(null)
+    const [showComposeContentModalIndex, setShowComposeContentModalIndex] = useState(null)
 
     //   const [addonProductData, setAddonProductData] = useState([])
     const [subtotal, setSubtotal] = useState(0)
@@ -96,15 +97,14 @@ const CartDetail = ({
 
 
 
-
-    useEffect(()=&gt;{
-       if(customer?.uuid){
-        setTargetCartProducts(customer?.cart_products)
-       }else{
-        setTargetCartProducts(cartProducts)
-       }
-    }, [customer?.uuid, customer?.cart_products, cartProducts])
+    useEffect(() =&gt; {
+        console.log('cart detail')
+        console.log(getCartProductsCount(targetCartProducts))
+            document.documentElement.dataset.cartCount = getCartProductsCount(targetCartProducts)
+            
+    }, [targetCartProducts]);
     
+
     useEffect(()=&gt;{
         if(estore?.e_commerce_settings?.base_currency &amp;&amp; estore?.e_commerce_settings?.base_currency!=baseCurrency){
             setBaseCurrency(estore?.e_commerce_settings?.base_currency||'TWD')
@@ -158,10 +158,13 @@ const CartDetail = ({
 
 
   // console.log(cartProducts)
-
+const minusOneDisabled = (cartProduct)=&gt;{
+    if(cartProduct?.compose_base) return true
+    return (cartProduct?.quantity||0)&gt;1
+}
 const plusOneDisabled = (cartProduct)=&gt;{
+    if(cartProduct?.compose_base) return true
     const {requireQtySufficient, } = isStockSufficient( cartProduct?.product, 1, cartProduct?.quantity||0)
-    console.log(requireQtySufficient)
     return !requireQtySufficient
 }
   return (
@@ -298,7 +301,7 @@ const plusOneDisabled = (cartProduct)=&gt;{
                                                 className={clsx('商品數量減去按鈕',style['商品數量減去按鈕'])}
                                                 onClick={() =&gt;{
                                                     
-                                                    if(cartProduct?.quantity&gt;1){
+                                                    if(!minusOneDisabled(cartProduct)){
                                                         updateCartProduct(
                                                             cartProduct?.product, 
                                                             cartProduct?.variant_product, 
@@ -313,6 +316,7 @@ const plusOneDisabled = (cartProduct)=&gt;{
                                                     }
                                                     
                                                 }}
+                                                disabled={minusOneDisabled(cartProduct)}
                                             &gt;-&lt;/button&gt;
                                             &lt;input
                                                 className={clsx('商品數量',style['商品數量'])}
@@ -360,6 +364,29 @@ const plusOneDisabled = (cartProduct)=&gt;{
                                             cartProduct?.product?.type=='compose' &amp;&amp;
                                             &lt;Fragment&gt;
                                                 &lt;ComposeProductModal 
+                                                    show={key==showComposeContentModalIndex} 
+                                                    onHide={()=&gt;{setShowComposeContentModalIndex(null)}}
+                                                    product={cartProduct?.product}
+                                                    cartProduct={cartProduct}
+                                                    composeBase={cartProduct?.compose_base}
+                                                    quantityCount={cartProduct?.quantity}
+                                                    updateCompose={true}
+                                                    reviewContent={true}
+                                                
+                                                /&gt;
+                                                &lt;div className={clsx('檢視內容框',style['檢視內容框'])}&gt;
+                                                    &lt;button className={clsx('檢視內容按鈕',style['檢視內容按鈕'])}
+                                                        onClick={() =&gt;{setShowComposeContentModalIndex(key)}}
+                                                    &gt;
+                                                    內容
+                                                    &lt;/button&gt;
+                                                &lt;/div&gt;
+                                            &lt;/Fragment&gt;
+                                        }
+                                        {
+                                            cartProduct?.product?.type=='compose' &amp;&amp;
+                                            &lt;Fragment&gt;
+                                                &lt;ComposeProductModal 
                                                     show={key==showComposeModalIndex} 
                                                     onHide={()=&gt;{setShowComposeModalIndex(null)}}
                                                     product={cartProduct?.product}
@@ -388,7 +415,8 @@ const plusOneDisabled = (cartProduct)=&gt;{
                                                 false
                                             }
                                             &gt;
-                                                &lt;i className=&quot;fa fa-times&quot;&gt;&lt;/i&gt;
+                                                刪除
+                                                {/* &lt;i className=&quot;fa fa-times&quot;&gt;&lt;/i&gt; */}
                                             &lt;/button&gt;
                                         &lt;/div&gt;
                                     &lt;/td&gt;

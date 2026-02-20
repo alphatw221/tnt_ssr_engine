@@ -9,7 +9,7 @@ import ComposeProductModal from "@/components/product/ComposeProductModal"
 // import AddonProductsModal from "@/components/product/AddonProductsModal"
 import ProductRating2 from "@/components/product/sub-components/ProductRating2"
 import { isStockSufficient, getProductPrice } from "@/lib/utils/productHelper";
-import { updateCartProduct } from "@/lib/utils/cartHelper";
+import { updateCartProduct, getCartProductsCount } from "@/lib/utils/cartHelper";
 
 
 // import Lightbox from "yet-another-react-lightbox";
@@ -43,6 +43,7 @@ const ProductDetailClient = ({
     const [bigImages, setBigImages] = useState([])
     const [images, setImages] = useState([])
     const targetCartProducts = customer?.uuid ? customer?.cart_products : cartProducts
+    // const [targetCartProducts, setTargetCartProducts] = useState([])
 
     const [selectedProduct, setSelectedProduct] = useState(
         (product?.variant_products||[]).length>0 ? product?.variant_products[0] : product
@@ -75,6 +76,17 @@ const ProductDetailClient = ({
     const variantType2Refs = useRef([]);
     const composeBaseRefs = useRef([]);
 
+
+
+
+    // useEffect(()=>{
+    //    if(customer?.uuid){
+    //     setTargetCartProducts(customer?.cart_products)
+    //    }else{
+    //     setTargetCartProducts(cartProducts)
+    //    }
+    // }, [customer?.uuid, customer?.cart_products, cartProducts])
+    
     const productContent = useMemo(
         () => ({ __html: product?.content || "" }),
         [product?.content]
@@ -131,35 +143,14 @@ const ProductDetailClient = ({
             setDefaultImage(product?.images?.[0])
         },[product])
 
-    // const now = new Date().toJSON().slice(0, 10);
 
 
-    // let { object_id } = useParams();
-    // const dispatch = useAppDispatch()
+    useEffect(() => {
+        console.log('product detail')
+        console.log(getCartProductsCount(targetCartProducts))
+        document.documentElement.dataset.cartCount = getCartProductsCount(targetCartProducts)
 
-
-    // useEffect(()=>{
-
-    //     if(shop?.product?.enable_review == true){
-    //         var _product_uuid, _order_by, _page
-    //         customer_search_product_reviews(_product_uuid=object_id, _order_by='-created_at', _page=productReviewsPage).then(res=>{
-    //             dispatch(setProductReveiws({'productReviews':res?.data?.results||[], 'totalRecords':res?.data.count||0}))
-
-    //         })
-    //     }
-    // },[shop?.product?.enable_review, productReviewsPage])
-
-
-    // if(!shop.product ){
-    //     return (
-    //         <div style={{width:width,maxWidth:(node?.data?.max_width||'')+(node?.data?.max_width?node?.data?.max_width_unit:'')}}>
-    //             <ProductNotFound />
-    //         </div>
-    //     )
-    // }
-
-
-
+    }, [targetCartProducts]);
 
 
 
@@ -173,7 +164,7 @@ const ProductDetailClient = ({
             setShowAddonModal(true)
           }).then(()=>{
             if(product?.single_page_product){
-              window.location.href = '/checkout'
+              window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
             }
           })
         }
@@ -586,12 +577,12 @@ const ProductDetailClient = ({
                        
 
                         {
-                            product?.single_page_product&&
-                            <div className={clsx('單頁商品動作框',style['單頁商品動作框'])}>
-                                <a className={clsx('訂單查詢連結',style['訂單查詢連結'])} href={'./temp'}>訂單查詢</a>
-                                <span className={clsx('單頁商品動作框-分隔線',style['單頁商品動作框-分隔線'])}></span>
-                                <button className={clsx('立即下單按鈕',style['立即下單按鈕'])}>立即下單</button>
-                            </div>
+                            // product?.single_page_product&&
+                            // <div className={clsx('單頁商品動作框',style['單頁商品動作框'])}>
+                            //     <a className={clsx('訂單查詢連結',style['訂單查詢連結'])} href={'./temp'}>訂單查詢</a>
+                            //     <span className={clsx('單頁商品動作框-分隔線',style['單頁商品動作框-分隔線'])}></span>
+                            //     <button className={clsx('立即下單按鈕',style['立即下單按鈕'])}>立即下單</button>
+                            // </div>
                         }
 
 
@@ -629,12 +620,16 @@ const ProductDetailClient = ({
                                 show={showComposeModal} 
                                 onHide={()=>{setShowComposeModal(false)}}
                                 product={product}
-                                cartProduct={cartProducts.find(cartProduct=>(
-                                            cartProduct?.product?.uuid==product?.uuid
-                                            &&
-                                            (cartProduct?.compose_base?.uuid||null)==(composeBase?.uuid||null)
+                                cartProduct={
+                                    null
+                                    // 這裡現在不放 直接添加
+                                    // cartProducts.find(cartProduct=>(
+                                    //         cartProduct?.product?.uuid==product?.uuid
+                                    //         &&
+                                    //         (cartProduct?.compose_base?.uuid||null)==(composeBase?.uuid||null)
                                     
-                                ))}
+                                    // ))
+                                }
                                 composeBase={composeBase}
                                 quantityCount={quantityCount}
                                 updateCompose={false}

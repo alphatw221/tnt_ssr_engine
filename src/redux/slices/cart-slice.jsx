@@ -52,19 +52,35 @@ const cartSlice = createSlice({
 
        
         guestUpdateCartProductQuantity(state, action){
-            const {product, variant_product, quantity, compose_base, compose_products_data, update_compose, addon_source_product, cart_addon_product_quantity} = action.payload
+            
+            const {
+                product, 
+                variant_product, 
+                quantity, 
+                compose_base, 
+                compose_products_data, 
+                update_compose, 
+                addon_source_product, 
+                cart_addon_product_quantity
+            } = action.payload
 
 
 
-            if((state?.cartProducts||[])?.some(cartProduct=>
+            const isComposeProduct = !!compose_base
+            const hasMatchedCartProduct = (state?.cartProducts||[])?.some(cartProduct=>
                 (
                     cartProduct?.product?.uuid==product.uuid
                     &&
                     (cartProduct?.variant_product?.uuid||null)==(variant_product?.uuid||null)
                     &&
                     (cartProduct?.compose_base?.uuid||null)==(compose_base?.uuid||null)
+                ))
 
-                ))){
+            // 一般/variant product：有匹配就更新
+            // compose product：有匹配且 update_compose 為 true 才更新
+            const shouldUpdate = hasMatchedCartProduct && (!isComposeProduct || update_compose)
+
+            if(shouldUpdate){
 
                 const res =  state.cartProducts.map(cartProduct=>{
                     if( 

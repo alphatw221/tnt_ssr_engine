@@ -9,7 +9,9 @@ const  StoreSettingsPreloader = ({bonus_point_policy, e_commerce_settings}) => {
 
     useEffect(()=>{
 
-
+      console.log('store settings preloader')
+      console.log(bonus_point_policy)
+      console.log(e_commerce_settings)
       dispatch(setEStore({
         bonus_point_policy,
         e_commerce_settings,

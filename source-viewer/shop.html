@@ -30,6 +30,8 @@ import SingleProduct from './SingleProduct';
 import style from './Shop.module.scss'
 
 import { customer_search_product } from &quot;@/api/product&quot;
+import { updateCartProduct, getCartProductsCount } from &quot;@/lib/utils/cartHelper&quot;;
+
 const Shop = ({ 
     // element,  
     // mode, 
@@ -57,8 +59,14 @@ const Shop = ({
 
 
     // const [offset, setOffset] = useState(0);
+    useEffect(() =&gt; {
+        console.log('shop')
+        console.log(getCartProductsCount(targetCartProducts))
+            document.documentElement.dataset.cartCount = getCartProductsCount(targetCartProducts)
 
-    
+    }, [targetCartProducts]);
+
+
     const defaultPageSize = 25
     const defaultPage = 1
     const defaultOrderBy = 'priority,updated_at'

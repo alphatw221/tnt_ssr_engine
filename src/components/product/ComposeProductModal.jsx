@@ -12,7 +12,7 @@ import { updateCartProduct } from "@/lib/utils/cartHelper";
 import { isStockSufficient } from "@/lib/utils/productHelper";
 
 
-const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, quantityCount, updateCompose, nextAction, props}) =>{
+const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, quantityCount, updateCompose, nextAction, reviewContent, props}) =>{
 
   const onCloseModal = () => {
     onHide()
@@ -23,7 +23,19 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
   const [composeProductData, setComposeProductData] = useState({})
 
   const dispatch = useAppDispatch();
-  
+
+  const handleQuantityInput = (e, uuid) => {
+    const val = e.target.value;
+    const newData = {...composeProductData};
+    if (val === '') {
+      newData[uuid] = 0;
+    } else {
+      const num = parseInt(val, 10);
+      newData[uuid] = (Number.isInteger(num) && num > 0) ? num : 0;
+    }
+    setComposeProductData(newData);
+  };
+
   useEffect(()=>{
     const data = {};
     (cartProduct?.cart_compose_products||[]).forEach(cartComposeProduct=>{
@@ -80,38 +92,46 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                               </h4>
                             </td>
                             <td className={clsx(style['表格-數量框'], "表格-數量框")}>
-                                  <button
-                                    className={clsx(style['數量減-按鈕'], "數量減-按鈕")}
-                                    onClick={() =>{
+                                  {!reviewContent &&
+                                    <button
+                                      className={clsx(style['數量減-按鈕'], "數量減-按鈕")}
+                                      onClick={() =>{
 
-                                      const newData = {...composeProductData}
-                                      newData[composeProduct?.uuid]=(composeProductData?.[composeProduct?.uuid]||1)-1
-                                      setComposeProductData(newData)
+                                        const newData = {...composeProductData}
+                                        newData[composeProduct?.uuid]=(composeProductData?.[composeProduct?.uuid]||1)-1
+                                        setComposeProductData(newData)
 
-                                    }}
-                                    disabled={(composeProductData?.[composeProduct?.uuid]||0)<=0}
-                                  >
-                                    -
-                                  </button>
+                                      }}
+                                      disabled={(composeProductData?.[composeProduct?.uuid]||0)<=0}
+                                    >
+                                      -
+                                    </button>
+                                  }
+                                  
                                   <input
                                     className={clsx(style['數量'], "數量")}
                                     type="text"
-                                    value={composeProductData?.[composeProduct?.uuid?.toString()]||0}
-                                    readOnly
+                                    value={composeProductData?.[composeProduct?.uuid?.toString()]??0}
+                                    onChange={(e) => handleQuantityInput(e, composeProduct?.uuid)}
+                                    disabled={reviewContent}
                                   />
-                                  <button
-                                    className={clsx(style['數量加-按鈕'], "數量加-按鈕")}
-                                    onClick={() =>{
-                                      const newData = {...composeProductData}
-                                      newData[composeProduct?.uuid]=(composeProductData?.[composeProduct?.uuid]||0)+1
-                                      setComposeProductData(newData)
+                                  {
+                                    !reviewContent &&
+                                    <button
+                                      className={clsx(style['數量加-按鈕'], "數量加-按鈕")}
+                                      onClick={() =>{
+                                        const newData = {...composeProductData}
+                                        newData[composeProduct?.uuid]=(composeProductData?.[composeProduct?.uuid]||0)+1
+                                        setComposeProductData(newData)
 
-                                    }}
-                                    disabled={ !requireQtySufficient || composeLeft<=0
-                                    }
-                                  >
-                                    +
-                                  </button>
+                                      }}
+                                      disabled={ !requireQtySufficient || composeLeft<=0
+                                      }
+                                    >
+                                      +
+                                    </button>
+                                  }
+                                  
                             </td>
                           </tr>
                       </Fragment>)
@@ -144,8 +164,9 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
             </Fragment>
           }
 
-
-          <button className={clsx(style['動作-按鈕'], "動作-按鈕")}
+          {
+            !reviewContent &&
+            <button className={clsx(style['動作-按鈕'], "動作-按鈕")}
                 onClick={() =>{
                   // console.log(composeProductData)
                   updateCartProduct(product, null, quantityCount, dispatch, composeBase, composeProductData, updateCompose).then(()=>{
@@ -156,8 +177,10 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                 }}
                 disabled={!composeValid}
               >
-                {" "}確認{" "}
-          </button>
+                {" "}加入購物車{" "}
+            </button>
+          }
+          
 
         </div>
     </div>

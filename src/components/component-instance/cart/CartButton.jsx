@@ -17,7 +17,7 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 // import route_names from "../../route_names";
 // import Cookies from "js-cookie";
 
-import {deleteCartProductV1, isInventorySufficient, getCartProductName, updateCartProduct} from "@/lib/utils/cartHelper.js"
+import {deleteCartProductV1, isInventorySufficient, getCartProductName, updateCartProduct, getCartProductsCount} from "@/lib/utils/cartHelper.js"
 import { getProductPrice, isStockSufficient } from "@/lib/utils/productHelper";
 
 // import { customer_delete_cart_product } from "../../api/cart";
@@ -56,6 +56,13 @@ const CartButton = ({
     const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
 
 
+    useEffect(() => {
+        console.log('cart button')
+        console.log(getCartProductsCount(targetCartProducts))
+        document.documentElement.dataset.cartCount = getCartProductsCount(targetCartProducts)
+
+    }, [targetCartProducts]);
+
     useClickOutsideEvent(useEffect, dropDown,()=>{
         setShowDropDown(false)
     },showDropDown)
@@ -81,8 +88,13 @@ const CartButton = ({
     //       })
     //     }
     // }, [store, baseCurrency])
-
+    const minusOneDisabled = (cartProduct)=>{
+        if(cartProduct?.compose_base) return true
+        return (cartProduct?.quantity||0)>1
+    }
     const plusOneDisabled = (cartProduct)=>{
+        if(cartProduct?.compose_base) return true
+
         const {requireQtySufficient, } = isStockSufficient( cartProduct?.product, 1, cartProduct?.quantity||0)
         // console.log(requireQtySufficient)
         return !requireQtySufficient
@@ -162,7 +174,7 @@ const CartButton = ({
                                                             className={clsx('商品數量減去按鈕',style['商品數量減去按鈕'])}
                                                             onClick={() =>{
                                                                 
-                                                                if(cartProduct?.quantity>1){
+                                                                if(!minusOneDisabled(cartProduct)){
                                                                     updateCartProduct(
                                                                         cartProduct?.product, 
                                                                         cartProduct?.variant_product, 
@@ -177,6 +189,7 @@ const CartButton = ({
                                                                 }
                                                                 
                                                             }}
+                                                            disabled={minusOneDisabled(cartProduct)}
                                                         >-</button>
                                                         <input
                                                             className={clsx('商品數量',style['商品數量'])}
@@ -237,6 +250,9 @@ const CartButton = ({
                                                         }}>
                                                     刪除
                                                     </button>
+                                                    {
+                                                        //這邊先不要加太多動作
+                                                    }
                                                 </div>
 
                                 

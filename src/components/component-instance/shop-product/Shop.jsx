@@ -21,6 +21,8 @@ import SingleProduct from './SingleProduct';
 import style from './Shop.module.scss'
 
 import { customer_search_product } from "@/api/product"
+import { updateCartProduct, getCartProductsCount } from "@/lib/utils/cartHelper";
+
 const Shop = ({ 
     // element,  
     // mode, 
@@ -48,8 +50,14 @@ const Shop = ({
 
 
     // const [offset, setOffset] = useState(0);
+    useEffect(() => {
+        console.log('shop')
+        console.log(getCartProductsCount(targetCartProducts))
+            document.documentElement.dataset.cartCount = getCartProductsCount(targetCartProducts)
 
-    
+    }, [targetCartProducts]);
+
+
     const defaultPageSize = 25
     const defaultPage = 1
     const defaultOrderBy = 'priority,updated_at'

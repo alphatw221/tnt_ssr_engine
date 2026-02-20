@@ -25,6 +25,7 @@ import {
   isInventorySufficient,
   updateCartProduct,
   deleteCartProductV1,
+  getCartProductsCount
 } from "@/lib/utils/cartHelper";
 
 import {getProductPrice, isStockSufficient} from "@/lib/utils/productHelper"
@@ -66,8 +67,7 @@ const CartDetail = ({
     const customer = useAppSelector((state) => state.customer);
     const {cartProducts} = useAppSelector((state)=> state.cart)
 
-    const [targetCartProducts, setTargetCartProducts] = useState([])
-    // const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
+    const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
 
 
     const estore = useAppSelector((state) => state.estore);
@@ -75,6 +75,7 @@ const CartDetail = ({
     // const [disableIndex, setDisableIndex] = useState(null)
     // const [addonDisableIndex, setAddonDisableIndex] = useState(null)
     const [showComposeModalIndex, setShowComposeModalIndex] = useState(null)
+    const [showComposeContentModalIndex, setShowComposeContentModalIndex] = useState(null)
 
     //   const [addonProductData, setAddonProductData] = useState([])
     const [subtotal, setSubtotal] = useState(0)
@@ -87,15 +88,14 @@ const CartDetail = ({
 
 
 
-
-    useEffect(()=>{
-       if(customer?.uuid){
-        setTargetCartProducts(customer?.cart_products)
-       }else{
-        setTargetCartProducts(cartProducts)
-       }
-    }, [customer?.uuid, customer?.cart_products, cartProducts])
+    useEffect(() => {
+        console.log('cart detail')
+        console.log(getCartProductsCount(targetCartProducts))
+            document.documentElement.dataset.cartCount = getCartProductsCount(targetCartProducts)
+            
+    }, [targetCartProducts]);
     
+
     useEffect(()=>{
         if(estore?.e_commerce_settings?.base_currency && estore?.e_commerce_settings?.base_currency!=baseCurrency){
             setBaseCurrency(estore?.e_commerce_settings?.base_currency||'TWD')
@@ -149,10 +149,13 @@ const CartDetail = ({
 
 
   // console.log(cartProducts)
-
+const minusOneDisabled = (cartProduct)=>{
+    if(cartProduct?.compose_base) return true
+    return (cartProduct?.quantity||0)>1
+}
 const plusOneDisabled = (cartProduct)=>{
+    if(cartProduct?.compose_base) return true
     const {requireQtySufficient, } = isStockSufficient( cartProduct?.product, 1, cartProduct?.quantity||0)
-    console.log(requireQtySufficient)
     return !requireQtySufficient
 }
   return (
@@ -289,7 +292,7 @@ const plusOneDisabled = (cartProduct)=>{
                                                 className={clsx('商品數量減去按鈕',style['商品數量減去按鈕'])}
                                                 onClick={() =>{
                                                     
-                                                    if(cartProduct?.quantity>1){
+                                                    if(!minusOneDisabled(cartProduct)){
                                                         updateCartProduct(
                                                             cartProduct?.product, 
                                                             cartProduct?.variant_product, 
@@ -304,6 +307,7 @@ const plusOneDisabled = (cartProduct)=>{
                                                     }
                                                     
                                                 }}
+                                                disabled={minusOneDisabled(cartProduct)}
                                             >-</button>
                                             <input
                                                 className={clsx('商品數量',style['商品數量'])}
@@ -346,6 +350,29 @@ const plusOneDisabled = (cartProduct)=>{
                                             <div className={clsx('缺貨文字框',style['缺貨文字框'])}>
                                                 <span className={clsx('缺貨文字',style['缺貨文字'])}>缺貨中</span>
                                             </div>
+                                        }
+                                        {
+                                            cartProduct?.product?.type=='compose' &&
+                                            <Fragment>
+                                                <ComposeProductModal 
+                                                    show={key==showComposeContentModalIndex} 
+                                                    onHide={()=>{setShowComposeContentModalIndex(null)}}
+                                                    product={cartProduct?.product}
+                                                    cartProduct={cartProduct}
+                                                    composeBase={cartProduct?.compose_base}
+                                                    quantityCount={cartProduct?.quantity}
+                                                    updateCompose={true}
+                                                    reviewContent={true}
+                                                
+                                                />
+                                                <div className={clsx('檢視內容框',style['檢視內容框'])}>
+                                                    <button className={clsx('檢視內容按鈕',style['檢視內容按鈕'])}
+                                                        onClick={() =>{setShowComposeContentModalIndex(key)}}
+                                                    >
+                                                    內容
+                                                    </button>
+                                                </div>
+                                            </Fragment>
                                         }
                                         {
                                             cartProduct?.product?.type=='compose' &&

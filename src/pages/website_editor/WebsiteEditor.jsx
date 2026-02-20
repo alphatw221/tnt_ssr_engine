@@ -416,33 +416,33 @@ const WebsiteEditor = () => {
 
 
   }
-  const moveIntoWebpageBody = (sourceElement, targetWebpage, sequence)=>{
+  const moveIntoWebpageBody = (sourceElement, targetWebpage)=>{
     const _website = {...website}
     // const _website = structuredClone(website)
     // const sourceElementClone = structuredClone(sourceElement)
     websiteFindAndRemoveElementRelation(_website, sourceElement?.parent_relation_uuid)
     for(let i=0;i<(_website?.webpages||[]).length;i++){
       if(_website?.webpages[i]?.uuid===targetWebpage?.uuid){
-        _website.webpages?.[i]?.body_elements?.splice(sequence, 0, sourceElement)
+        _website.webpages?.[i]?.body_elements?.push(sourceElement)
         break;
       }
     }
     setWebsite(_website)
   }
-  const moveIntoWebpageHead = (sourceElement, targetWebpage, sequence)=>{
+  const moveIntoWebpageHead = (sourceElement, targetWebpage)=>{
     const _website = {...website}
     // const _website = structuredClone(website)
     // const sourceElementClone = structuredClone(sourceElement)
     websiteFindAndRemoveElementRelation(_website, sourceElement?.parent_relation_uuid)
     for(let i=0;i<(_website?.webpages||[]).length;i++){
       if(_website?.webpages[i]?.uuid===targetWebpage?.uuid){
-        _website.webpages?.[i]?.head_elements?.splice(sequence, 0, sourceElement)
+        _website.webpages?.[i]?.head_elements?.push( sourceElement)
         break;
       }
     }
     setWebsite(_website)
   }
-  const insertIntoWebpageBody = (sourceElement, targetWebpage, sequence)=>{
+  const insertIntoWebpageBody = (sourceElement, targetWebpage)=>{
     // const _website = structuredClone(website)
     // const sourceElementClone = structuredClone(sourceElement)
     // for(let i=0;i<(_website?.webpages||[]).length;i++){
@@ -473,7 +473,7 @@ const WebsiteEditor = () => {
         targetPage.body_elements = [...(targetPage.body_elements || [])];
 
         // 插入元素
-        targetPage.body_elements.splice(sequence, 0, sourceElement);
+        targetPage.body_elements.push(sourceElement);
 
         // 更新陣列
         newWebsite.webpages[idx] = targetPage;
@@ -485,7 +485,7 @@ const WebsiteEditor = () => {
 
 
   }
-  const insertIntoWebpageHead = (sourceElement, targetWebpage, sequence)=>{
+  const insertIntoWebpageHead = (sourceElement, targetWebpage)=>{
     // const _website = structuredClone(website)
     // const sourceElementClone = structuredClone(sourceElement)
     // for(let i=0;i<(_website?.webpages||[]).length;i++){
@@ -514,7 +514,7 @@ const WebsiteEditor = () => {
         targetPage.head_elements = [...(targetPage.head_elements || [])];
 
         // 插入元素
-        targetPage.head_elements.splice(sequence, 0, sourceElement);
+        targetPage.head_elements.push(sourceElement);
 
         // 更新陣列
         newWebsite.webpages[idx] = targetPage;
@@ -681,7 +681,7 @@ const WebsiteEditor = () => {
             ()=>{
               //onlyIn
               if(editorMemory?.cursor?.head){
-                insertIntoWebpageHead(structuredClone(editorMemory?.clipBoard?.data), editorMemory?.cursor?.data, 0)
+                insertIntoWebpageHead(structuredClone(editorMemory?.clipBoard?.data), editorMemory?.cursor?.data)
                 user_r_action_to_element({
                   'parent_relation_uuid':editorMemory?.clipBoard?.data?.parent_relation_uuid,
                   'action':e?.shiftKey?'mirror':'clone',
@@ -689,7 +689,7 @@ const WebsiteEditor = () => {
                   'target_webpage_position':'head',
                 }).then(res=>{console.log(res.data)})
               }else{
-                insertIntoWebpageBody(structuredClone(editorMemory?.clipBoard?.data), editorMemory?.cursor?.data, 0)
+                insertIntoWebpageBody(structuredClone(editorMemory?.clipBoard?.data), editorMemory?.cursor?.data)
                 user_r_action_to_element({
                   'parent_relation_uuid':editorMemory?.clipBoard?.data?.parent_relation_uuid,
                   'action':e?.shiftKey?'mirror':'clone',

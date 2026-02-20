@@ -8,6 +8,7 @@
 <h1>ComposeProductModal</h1>
 <h2>src/components/product/ComposeProductModal.jsx</h2>
 <pre>import { Fragment, useState, useEffect } from &quot;react&quot;;
+import { createPortal } from &quot;react-dom&quot;;
 import PropTypes from &quot;prop-types&quot;;
 // import { Modal } from &quot;react-bootstrap&quot;;
 // import { useDispatch, useSelector } from &quot;react-redux&quot;;
@@ -20,7 +21,7 @@ import { updateCartProduct } from &quot;@/lib/utils/cartHelper&quot;;
 import { isStockSufficient } from &quot;@/lib/utils/productHelper&quot;;
 
 
-const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, quantityCount, updateCompose, nextAction, props}) =&gt;{
+const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, quantityCount, updateCompose, nextAction, reviewContent, props}) =&gt;{
 
   const onCloseModal = () =&gt; {
     onHide()
@@ -31,7 +32,19 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
   const [composeProductData, setComposeProductData] = useState({})
 
   const dispatch = useAppDispatch();
-  
+
+  const handleQuantityInput = (e, uuid) =&gt; {
+    const val = e.target.value;
+    const newData = {...composeProductData};
+    if (val === '') {
+      newData[uuid] = 0;
+    } else {
+      const num = parseInt(val, 10);
+      newData[uuid] = (Number.isInteger(num) &amp;&amp; num &gt; 0) ? num : 0;
+    }
+    setComposeProductData(newData);
+  };
+
   useEffect(()=&gt;{
     const data = {};
     (cartProduct?.cart_compose_products||[]).forEach(cartComposeProduct=&gt;{
@@ -51,131 +64,141 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
   },[composeBase?.base, quantityCount, composeProductData])
 
 
-  return (
+  // Modal 內容
+  const modalContent = show &amp;&amp; composeBase &amp;&amp; (
+    &lt;div className={clsx(style['任搭彈出框'], '任搭彈出框')} style={{'--任搭組數':`&quot;${composeBase?.base}&quot;`}} &gt;
+      &lt;div className={clsx(style['彈出框-頭段'], '彈出框-頭段',)}&gt;
+        &lt;h3 className={clsx(style['彈出框-標題'], &quot;彈出框-標題&quot;)}&gt;任搭商品&lt;/h3&gt;
+        &lt;button className={clsx(style['關閉彈窗-按鈕'], &quot;關閉彈窗-按鈕&quot;)} onClick={()=&gt;{onHide()}}&gt;
+          &lt;i className={clsx(style['關閉彈窗-圖標'], &quot;關閉彈窗-圖標&quot;)}&gt;x&lt;/i&gt;
+        &lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div className={clsx(style['彈出框-中段'], '彈出框-中段')}&gt;
+            &lt;table className={clsx(style['任搭表格'], '任搭表格')}&gt;
+                &lt;thead className={clsx(style['表格-頭段'], '表格-頭段')}&gt;
+                  &lt;tr className={clsx(style['表格-列'], '表格-列')}&gt;
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;圖片&lt;/th&gt;
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;產品名稱&lt;/th&gt;
+                    &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;數量&lt;/th&gt;
+                  &lt;/tr&gt;
+                &lt;/thead&gt;
+                &lt;tbody className={clsx(style['表格-身體'], '表格-身體')}&gt;
+                  {
+                    (product?.compose_products||[]).map((composeProduct,composeProductIndex)=&gt;{
+                      const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( composeProduct.source_product, (composeBase?.base||1) * (quantityCount||1), cartProduct?.quantity||0)
 
-      &lt;Fragment&gt;
-        {
-          show &amp;&amp; composeBase &amp;&amp;
-            &lt;div className={clsx(style['任搭彈出框'], '任搭彈出框')} style={{'--任搭組數':`&quot;${composeBase?.base}&quot;`}} &gt;
-              &lt;div className={clsx(style['彈出框-頭段'], '彈出框-頭段',)}&gt;
-                &lt;h3 className={clsx(style['彈出框-標題'], &quot;彈出框-標題&quot;)}&gt;任搭商品&lt;/h3&gt;
-                &lt;button className={clsx(style['關閉彈窗-按鈕'], &quot;關閉彈窗-按鈕&quot;)} onClick={()=&gt;{onHide()}}&gt;
-                  &lt;i className={clsx(style['關閉彈窗-圖標'], &quot;關閉彈窗-圖標&quot;)}&gt;x&lt;/i&gt;
-                &lt;/button&gt;
-              &lt;/div&gt;
-              &lt;div className={clsx(style['彈出框-中段'], '彈出框-中段')}&gt;
-                    &lt;table className={clsx(style['任搭表格'], '任搭表格')}&gt;
-                        &lt;thead className={clsx(style['表格-頭段'], '表格-頭段')}&gt;
-                          &lt;tr className={clsx(style['表格-列'], '表格-列')}&gt;
-                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;圖片&lt;/th&gt;
-                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;產品名稱&lt;/th&gt;
-                            &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;數量&lt;/th&gt;
+                      return (&lt;Fragment key={composeProductIndex}&gt;
+                          &lt;tr className={clsx(style['表格-列'], '表格-列', !requireQtySufficient?'存貨不足':'')}&gt;
+                            &lt;td className={clsx(style['表格-圖片框'], &quot;表格-圖片框&quot;)}&gt;
+                              &lt;img
+                                className={clsx(style['表格-圖片'], &quot;表格-圖片&quot;)}
+                                src={composeProduct?.source_product.images?.[0]?.image}
+                              /&gt;
+                            &lt;/td&gt;
+                            &lt;td className={clsx(style['表格-名稱框'], &quot;表格-名稱框&quot;)}&gt;
+                              &lt;h4 className={clsx(style['表格-名稱'], &quot;表格-名稱&quot;)}                     &gt;
+                                {composeProduct?.source_product?.name||''}
+                              &lt;/h4&gt;
+                            &lt;/td&gt;
+                            &lt;td className={clsx(style['表格-數量框'], &quot;表格-數量框&quot;)}&gt;
+                                  {!reviewContent &amp;&amp;
+                                    &lt;button
+                                      className={clsx(style['數量減-按鈕'], &quot;數量減-按鈕&quot;)}
+                                      onClick={() =&gt;{
+
+                                        const newData = {...composeProductData}
+                                        newData[composeProduct?.uuid]=(composeProductData?.[composeProduct?.uuid]||1)-1
+                                        setComposeProductData(newData)
+
+                                      }}
+                                      disabled={(composeProductData?.[composeProduct?.uuid]||0)&lt;=0}
+                                    &gt;
+                                      -
+                                    &lt;/button&gt;
+                                  }
+                                  
+                                  &lt;input
+                                    className={clsx(style['數量'], &quot;數量&quot;)}
+                                    type=&quot;text&quot;
+                                    value={composeProductData?.[composeProduct?.uuid?.toString()]??0}
+                                    onChange={(e) =&gt; handleQuantityInput(e, composeProduct?.uuid)}
+                                    disabled={reviewContent}
+                                  /&gt;
+                                  {
+                                    !reviewContent &amp;&amp;
+                                    &lt;button
+                                      className={clsx(style['數量加-按鈕'], &quot;數量加-按鈕&quot;)}
+                                      onClick={() =&gt;{
+                                        const newData = {...composeProductData}
+                                        newData[composeProduct?.uuid]=(composeProductData?.[composeProduct?.uuid]||0)+1
+                                        setComposeProductData(newData)
+
+                                      }}
+                                      disabled={ !requireQtySufficient || composeLeft&lt;=0
+                                      }
+                                    &gt;
+                                      +
+                                    &lt;/button&gt;
+                                  }
+                                  
+                            &lt;/td&gt;
                           &lt;/tr&gt;
-                        &lt;/thead&gt;
-                        &lt;tbody className={clsx(style['表格-身體'], '表格-身體')}&gt;
-                          {
-                            (product?.compose_products||[]).map((composeProduct,composeProductIndex)=&gt;{
-                              const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( composeProduct.source_product, (composeBase?.base||1) * (quantityCount||1), cartProduct?.quantity||0)
+                      &lt;/Fragment&gt;)
 
-                              return (&lt;Fragment key={composeProductIndex}&gt;
-                                  &lt;tr className={clsx(style['表格-列'], '表格-列', !requireQtySufficient?'存貨不足':'')}&gt; 
-                                    &lt;td className={clsx(style['表格-圖片框'], &quot;表格-圖片框&quot;)}&gt;
-                                      &lt;img
-                                        className={clsx(style['表格-圖片'], &quot;表格-圖片&quot;)}
-                                        src={composeProduct?.source_product.images?.[0]?.image}
-                                      /&gt;
-                                    &lt;/td&gt;
-                                    &lt;td className={clsx(style['表格-名稱框'], &quot;表格-名稱框&quot;)}&gt;
-                                      &lt;h4 className={clsx(style['表格-名稱'], &quot;表格-名稱&quot;)}                     &gt;
-                                        {composeProduct?.source_product?.name||''}
-                                      &lt;/h4&gt;
-                                    &lt;/td&gt;
-                                    &lt;td className={clsx(style['表格-數量框'], &quot;表格-數量框&quot;)}&gt;
-                                          &lt;button
-                                            className={clsx(style['數量減-按鈕'], &quot;數量減-按鈕&quot;)}
-                                            onClick={() =&gt;{
-
-                                              const newData = {...composeProductData}    
-                                              newData[composeProduct?.uuid]=(composeProductData?.[composeProduct?.uuid]||1)-1
-                                              setComposeProductData(newData)
-
-                                            }}
-                                            disabled={(composeProductData?.[composeProduct?.uuid]||0)&lt;=0}
-                                          &gt;
-                                            -
-                                          &lt;/button&gt;
-                                          &lt;input
-                                            className={clsx(style['數量'], &quot;數量&quot;)}
-                                            type=&quot;text&quot;
-                                            value={composeProductData?.[composeProduct?.uuid?.toString()]||0}
-                                            readOnly
-                                          /&gt;
-                                          &lt;button
-                                            className={clsx(style['數量加-按鈕'], &quot;數量加-按鈕&quot;)}
-                                            onClick={() =&gt;{
-                                              const newData = {...composeProductData}
-                                              newData[composeProduct?.uuid]=(composeProductData?.[composeProduct?.uuid]||0)+1
-                                              setComposeProductData(newData)
-
-                                            }}
-                                            disabled={ !requireQtySufficient || composeLeft&lt;=0
-                                            }
-                                          &gt;
-                                            +
-                                          &lt;/button&gt;
-                                    &lt;/td&gt;
-                                  &lt;/tr&gt;
-                              &lt;/Fragment&gt;)
-                              
-                            })
-                          }
-                        &lt;/tbody&gt;
-                    &lt;/table&gt;
-                &lt;/div&gt;
-
-                &lt;div className={clsx(style['動作框'], &quot;動作框&quot;)}&gt;
-
-                  
-
-
-                  { 
-                    !composeValid &amp;&amp; 
-                    &lt;Fragment&gt;
-                      {
-                        composeLeft &gt; 0
-                        ?
-                        &lt;h4 className={clsx(style['動作-文字'], &quot;動作-文字&quot;)}&gt;
-                          {`尚可選擇${composeLeft}件`}
-                        &lt;/h4&gt;
-                        :
-                        &lt;h4 className={clsx(style['動作-文字'], &quot;動作-文字&quot;)}&gt;
-                          {`超過可選件數`}
-                        &lt;/h4&gt;
-                      }
-                    &lt;/Fragment&gt;
+                    })
                   }
+                &lt;/tbody&gt;
+            &lt;/table&gt;
+        &lt;/div&gt;
+
+        &lt;div className={clsx(style['動作框'], &quot;動作框&quot;)}&gt;
 
 
-                  &lt;button className={clsx(style['動作-按鈕'], &quot;動作-按鈕&quot;)}
-                        onClick={() =&gt;{
-                          // console.log(composeProductData)
-                          updateCartProduct(product, null, quantityCount, dispatch, composeBase, composeProductData, updateCompose).then(()=&gt;{
-                            onHide()                
-                          }).then(()=&gt;{
-                            nextAction?.()
-                          })
-                        }}
-                        disabled={!composeValid}
-                      &gt;
-                        {&quot; &quot;}確認{&quot; &quot;}
-                  &lt;/button&gt;
 
-                &lt;/div&gt;
-            &lt;/div&gt;
-        }
-      &lt;/Fragment&gt;
 
+          {
+            !composeValid &amp;&amp;
+            &lt;Fragment&gt;
+              {
+                composeLeft &gt; 0
+                ?
+                &lt;h4 className={clsx(style['動作-文字'], &quot;動作-文字&quot;)}&gt;
+                  {`尚可選擇${composeLeft}件`}
+                &lt;/h4&gt;
+                :
+                &lt;h4 className={clsx(style['動作-文字'], &quot;動作-文字&quot;)}&gt;
+                  {`超過可選件數`}
+                &lt;/h4&gt;
+              }
+            &lt;/Fragment&gt;
+          }
+
+          {
+            !reviewContent &amp;&amp;
+            &lt;button className={clsx(style['動作-按鈕'], &quot;動作-按鈕&quot;)}
+                onClick={() =&gt;{
+                  // console.log(composeProductData)
+                  updateCartProduct(product, null, quantityCount, dispatch, composeBase, composeProductData, updateCompose).then(()=&gt;{
+                    onHide()
+                  }).then(()=&gt;{
+                    nextAction?.()
+                  })
+                }}
+                disabled={!composeValid}
+              &gt;
+                {&quot; &quot;}加入購物車{&quot; &quot;}
+            &lt;/button&gt;
+          }
+          
+
+        &lt;/div&gt;
+    &lt;/div&gt;
   );
+
+  // 使用 Portal 將 modal 渲染到 body
+  return modalContent &amp;&amp; typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : null;
 }
 
 ComposeProductModal.propTypes = {

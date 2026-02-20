@@ -178,12 +178,13 @@ function findAndInsertElement(currentElement, target_parent_relation_uuid, inser
 
         if((currentElement?.children[i]?.parent_relation_uuid||'')===target_parent_relation_uuid){
             currentElement?.children?.splice(i+after, 0, insertElement)
+            i++
         }else{
             findAndInsertElement(currentElement?.children[i], target_parent_relation_uuid, insertElement, after)
-        }        
-        
+        }
+
     }
-    
+
 }
 
 export function websiteFindAndInsertElement(website, target_parent_relation_uuid, insertElement, after){
@@ -193,6 +194,7 @@ export function websiteFindAndInsertElement(website, target_parent_relation_uuid
 
             if((webpage?.head_elements[i]?.parent_relation_uuid||'')===target_parent_relation_uuid){
                 webpage.head_elements.splice(i+after,0, insertElement)
+                i++
             }else{
                 findAndInsertElement(webpage.head_elements[i], target_parent_relation_uuid, insertElement, after)
             }
@@ -201,6 +203,7 @@ export function websiteFindAndInsertElement(website, target_parent_relation_uuid
 
             if((webpage?.body_elements[j]?.parent_relation_uuid||'')===target_parent_relation_uuid){
                 webpage.body_elements.splice(j+after,0, insertElement)
+                j++
             }else{
                 findAndInsertElement(webpage.body_elements[j], target_parent_relation_uuid, insertElement, after)
             }

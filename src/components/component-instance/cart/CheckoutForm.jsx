@@ -28,6 +28,7 @@ import GuestCheckoutNotification from '@/components/guest-checkout-notification/
 import Cookies from "js-cookie";
 import { deleteAllCartProduct, setCartProducts } from "@/redux/slices/cart-slice";
 import { setCustomer} from "@/redux/slices/customer-slice";
+import ComposeProductModal from "@/components/product/ComposeProductModal"
 
 const CheckoutForm = ({  
     // node,  mode, actions, update, routingTable, ...props
@@ -105,6 +106,8 @@ const CheckoutForm = ({
     
     const [country, setCountry] = useState(null)
     
+    const [showComposeContentModalIndex, setShowComposeContentModalIndex] = useState(null)
+
 
     //cart products preloader ?
     useEffect(()=>{
@@ -267,6 +270,7 @@ const CheckoutForm = ({
         if(!allValid)return
 
         if(!customer?.uuid ){
+            console.log(estore)
             if(estore?.e_commerce_settings?.allow_guest_checkout){
                 if(Cookies.get('guest_access_token')){
                     nextAction()
@@ -360,7 +364,32 @@ const CheckoutForm = ({
                                                 <h4 className={clsx(style['購物車商品-名稱'], "購物車商品-名稱")}>{productName}</h4>
                                                 <h5 className={clsx(style['購物車商品-變體名稱'], "購物車商品-變體名稱")}>{variantName}</h5>
                                                 <h5 className={clsx(style['購物車商品-任搭名稱'], "購物車商品-任搭名稱")}>{composeName}</h5>
+
+                                                
                                             </a>
+                                            {
+                                                cartProduct?.product?.type=='compose' &&
+                                                <Fragment>
+                                                    <ComposeProductModal 
+                                                        show={key==showComposeContentModalIndex} 
+                                                        onHide={()=>{setShowComposeContentModalIndex(null)}}
+                                                        product={cartProduct?.product}
+                                                        cartProduct={cartProduct}
+                                                        composeBase={cartProduct?.compose_base}
+                                                        quantityCount={cartProduct?.quantity}
+                                                        updateCompose={true}
+                                                        reviewContent={true}
+                                                    
+                                                    />
+                                                    <div className={clsx('購物車商品-檢視內容框',style['購物車商品-檢視內容框'])}>
+                                                        <button className={clsx('購物車商品-檢視內容按鈕',style['購物車商品-檢視內容按鈕'])}
+                                                            onClick={() =>{setShowComposeContentModalIndex(key)}}
+                                                        >
+                                                        內容
+                                                        </button>
+                                                    </div>
+                                                </Fragment>
+                                            }
                                         </td>
 
 

@@ -6,7 +6,7 @@ import customerReducer from '../slices/customer-slice'
 import orderReducer from '../slices/order-slice'
 import shopReducer from "../slices/shop-slice"
 import blogReducer from "../slices/blog-slice";
-
+import eStoreReducer from "../slices/estore-slice"
 
 export const rootReducer = combineReducers({
     cart: cartReducer,
@@ -14,6 +14,7 @@ export const rootReducer = combineReducers({
     order: orderReducer,
     shop: shopReducer,
     blog: blogReducer,
+    estore: eStoreReducer,
 
 });
 

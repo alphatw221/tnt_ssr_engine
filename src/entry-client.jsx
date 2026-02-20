@@ -9,6 +9,8 @@ import WebpageBody from '@/components/webpage/WebpageBody'
 
 
 import { Provider } from 'react-redux';
+
+import StoreSettingsPreloader from "@/components/website/StoreSettingsPreloader";
 // import { PersistGate } from 'redux-persist/integration/react';
 // import { store, persistor } from '@/redux/store/persistedStore';
 import { createSSRStore} from '@/redux/store/normalStore'
@@ -49,6 +51,7 @@ if (isSSR) {
   customer_retrieve_wepage({webpage_name:window.__SSR_PARAMS__?.webpageName||'', object_uuid:window.__SSR_PARAMS__?.objectUUID||''}).then(res=>{
     hydrateRoot(container,  <Provider store={store}>
     {/* <PersistGate loading={null} persistor={persistor}> */}
+      <StoreSettingsPreloader bonus_point_policy={res.data?.bonus_point_policy} e_commerce_settings={res.data?.e_commerce_settings}/>
       <WebpageBody website={res.data} webpage={res.data.webpage} object={res.data?.object} now={new Date(window.__SSR_PARAMS__?.now)} mode='prod'/>
       {/* </PersistGate> */}
   </Provider>);

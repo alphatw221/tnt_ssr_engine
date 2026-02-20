@@ -180,7 +180,7 @@ const WebpageMenuItem =({
                 ()=>{},
                 ()=>{},
                 ()=>{
-                    actions.moveIntoWebpageHead(item?.element, webpage, 0);
+                    actions.moveIntoWebpageHead(item?.element, webpage);
                     user_r_action_to_element({
                         'parent_relation_uuid':item?.element?.parent_relation_uuid,
                         'action':'move',
@@ -220,7 +220,7 @@ const WebpageMenuItem =({
                 ()=>{},
                 ()=>{},
                 ()=>{
-                    actions.moveIntoWebpageBody(item?.element, webpage, 0);
+                    actions.moveIntoWebpageBody(item?.element, webpage);
                       user_r_action_to_element({
                         'parent_relation_uuid':item?.element?.parent_relation_uuid,
                         'action':'move',

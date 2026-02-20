@@ -3,6 +3,7 @@ import Element from "@/components/element/Element";
 import React, { Fragment, useEffect, useState} from "react";
 import {convertToReactProps} from '@/lib/utils/propsConverter.js'
 
+import StoreSettingsPreloader from "@/components/website/StoreSettingsPreloader";
 
 const WebpageBody =  ({ website, webpage, now, ...props})=>{
 
@@ -35,11 +36,14 @@ const WebpageBody =  ({ website, webpage, now, ...props})=>{
 
     // 動態
     return(
-      <div {...reactWebpageProps}>
-        {
-            (webpage?.body_elements||[]).map((e,i)=><Element key={i} element={e} routingTable={routingTable} now={clientNow} {...props}/>)
-        }
-      </div>
+        <Fragment>
+            <div {...reactWebpageProps}>
+                {
+                    (webpage?.body_elements||[]).map((e,i)=><Element key={i} element={e} routingTable={routingTable} now={clientNow} {...props}/>)
+                }
+            </div>
+        </Fragment>
+      
     )
 
 }

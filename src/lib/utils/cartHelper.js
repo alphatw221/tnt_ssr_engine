@@ -377,3 +377,12 @@ export const deleteAllCartProductV1 = (dispatch)=>{
 
     }
 }
+
+export const getCartProductsCount = (targetCartProducts)=>{
+
+    var count = 0;
+    (targetCartProducts||[]).forEach(targetCartProduct=>{
+        count+=(targetCartProduct?.quantity||0)
+    })
+    return count
+}
