@@ -23,9 +23,9 @@ const components = [
     scss: ["src/components/component-instance/cart/CartButton.module.scss"] },
   { name: "my_orders", file: "src/components/component-instance/order/MyOrders.jsx",
     scss: ["src/components/component-instance/order/MyOrders.module.scss"] },
-  { name: "order_detail", file: "src/components/component-instance/order/OrderDetailSSR.jsx",
+  { name: "order_detail", file: "src/components/component-instance/order/OrderDetail.jsx",
     scss: ["src/components/component-instance/order/OrderDetail.module.scss"] },
-  { name: "order_payment", file: "src/components/component-instance/order/OrderPaymentSSR.jsx",
+  { name: "order_payment", file: "src/components/component-instance/order/OrderPayment.jsx",
     scss: ["src/components/component-instance/order/OrderPayment.module.scss"] },
   { name: "my_account_button", file: "src/components/component-instance/MyAccountButton.jsx",
     scss: ["src/components/component-instance/MyAccountButton.module.scss"] },
@@ -47,8 +47,10 @@ const components = [
     scss: ["src/components/product/ComposeProductModal.module.scss"] },
   { name: "OrderItemsSummary", file: "src/components/component-instance/order/OrderItemsSummary.jsx",
     scss: ["src/components/component-instance/order/OrderItemsSummary.module.scss"] },
-
-
+  { name: "ECPay", file: "src/components/component-instance/order/payment-method/ECPay.jsx",
+    scss: ["src/components/component-instance/order/payment-method/ECPay.module.scss"] },
+  { name: "CashOnDelivery", file: "src/components/component-instance/order/payment-method/CashOnDelivery.jsx",
+    scss: ["src/components/component-instance/order/payment-method/CashOnDelivery.module.scss"] },
     
 
 ];

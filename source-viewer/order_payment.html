@@ -6,28 +6,223 @@
 </head>
 <body>
 <h1>order_payment</h1>
-<h2>src/components/component-instance/order/OrderPaymentSSR.jsx</h2>
+<h2>src/components/component-instance/order/OrderPayment.jsx</h2>
 <pre>
-import React, { Fragment, useState, useEffect } from &quot;react&quot;;
-import OrderPayment from &quot;./OrderPayment&quot;;
-const OrderPaymentSSR = ({  
+import PropTypes from &quot;prop-types&quot;;
+import React, { Fragment, useState, useEffect, lazy } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './OrderPayment.module.scss'
+
+
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+// import { faHouse, faGear, faBars } from '@fortawesome/free-solid-svg-icons'
+
+// import { useSelector, useDispatch } from &quot;react-redux&quot;; 
+// import { useAppSelector } from &quot;@/redux/hooks&quot;;           
+// import { setSideMenuActive, setComponentMenuActive} from '../../store/slices/website-editor-slice'
+
+
+// import { useParams, useLocation } from &quot;react-router-dom&quot;;
+// import { useParams, useRouter, useSearchParams } from &quot;next/navigation&quot;;
+
+import { customer_get_store_payment_services } from &quot;@/api/estore&quot;
+import { customer_retrieve_order } from &quot;@/api/order&quot;;
+import {getClientIPCountryCode} from '@/fetch/ipapi'
+import Cookies from &quot;js-cookie&quot;;
+
+import OrderItemsSummary from &quot;./OrderItemsSummary&quot;;
+
+const ECPay = lazy(()=&gt;import(&quot;./payment-method/ECPay&quot;))
+const BankTransfer = lazy(()=&gt;import(&quot;./payment-method/BankTransfer&quot;))
+const CashOnDelivery = lazy(()=&gt;import(&quot;./payment-method/CashOnDelivery&quot;))
+
+const OrderPayment = ({  
+    // node,  mode, actions, update, routingTable, ...props,
+    
+    guestUUID,
+    objectUUID,
+
+    routingTable,
+    element, 
+    elementProps,
+    mode,
     ...props
+
+
 }) =&gt; {
 
 
+
+
     
-    const [guestUUID, setGuestUUID] = useState()
-    const [objectUUID, setObjectUUID] = useState()
+
+    const [order, setOrder] = useState(null)
+    const [selectPaymentServiceIndex, setSelectPaymentServiceIndex] = useState(null)
+
+
+
+
+
+    const [paymentServices, setPaymentServices] = useState([])
+    const [country, setCountry] = useState(null)
+
+
+    useEffect(()=&gt;{   
+            getClientIPCountryCode().then(_country=&gt;{
+                setCountry(_country)
+            })
+    }, [])
+
+    useEffect(()=&gt;{   
+        if(country){
+            customer_get_store_payment_services({
+                country,
+                'order_by':'priority'
+            }).then(res=&gt;{
+                console.log(res.data)
+                setPaymentServices(res?.data)
+            })
+        }
+    }, [country])
+    
+
     useEffect(()=&gt;{
-        setGuestUUID(new URLSearchParams(window.location.search).get('guest_uuid'))
-        setObjectUUID(window?.__SSR_PARAMS__?.objectUUID)
-    },[])
-    return &lt;OrderPayment objectUUID={objectUUID} guestUUID={guestUUID} {...props}/&gt;
+        if(![undefined, null, ''].includes(Cookies.get('customer_access_token')) ||
+                ![undefined, null, ''].includes(Cookies.get('guest_access_token')) ||
+                ![undefined, null, ''].includes(guestUUID)
+        ){
+            if(order==null &amp;&amp; objectUUID){
+                customer_retrieve_order({'order_uuid':objectUUID, 'guest_uuid':guestUUID}).then(res=&gt;{
+                    console.log(res.data)
+                    setOrder(res.data)
+                })
+                }
+        }else{
+            const redirect = encodeURIComponent(location.pathname + location.search + location.hash)
+            window.location.href = `/${routingTable?.['customer_login_route']}?redirect=${redirect}`
+        }
+    },[objectUUID])
+
+    useEffect(()=&gt;{
+        if( !['', null, undefined].includes(order?.status) &amp;&amp; order?.status!='awaiting_payment'){
+            window.location.href = `/${routingTable?.['order_route']}/${order?.uuid}?guest_uuid=${guestUUID}`
+        }
+    },[order])
+
+    const paymentServiceProviders={
+        'ecpay':'綠界科技',
+        'bank_transfer':'銀行轉帳',
+        'cash_on_delivery':'貨到付款'
+    }
+
+
+
+    const hasIntersection = (arr1, arr2) =&gt;{
+        const set1 = new Set(arr1);
+        return arr2.some(item =&gt; set1.has(item));
+    }
+
+    
+    return (
+        
+        &lt;div 
+            {...elementProps}
+           &gt;
+
+            &lt;div className={clsx(style['標題框'], '標題框')}&gt;
+                    &lt;h3 className={clsx(style['標題'], '標題')}&gt;訂單付款&lt;/h3&gt;
+            &lt;/div&gt;
+
+            &lt;div className={clsx(style['訂單編號框'], '訂單編號框')}&gt;
+                    &lt;label className={clsx(style['訂單編號-標籤'], '訂單編號-標籤')} &gt;訂單編號 &lt;/label&gt;
+                    &lt;span className={clsx(style['訂單編號'], '訂單編號')}&gt;{`#${order?.id||''}`}&lt;/span&gt;
+            &lt;/div&gt;
+
+
+            &lt;OrderItemsSummary order={order} routingTable={routingTable}/&gt;
+
+            &lt;div className={clsx(style['付款方式框'], '付款方式框')}&gt;
+                &lt;div className={clsx(style['付款方式標題框'], '付款方式標題框')}&gt;
+                    &lt;h3 className={clsx(style['付款方式標題'], '付款方式標題')}&gt;付款方式&lt;/h3&gt;
+                &lt;/div&gt;
+
+
+                {
+                    (paymentServices||[]).length&lt;=0 &amp;&amp;
+                    &lt;div className={clsx('無可用付款方式框',style['無可用付款方式框'])}&gt;
+                        &lt;h5 className={clsx('無可用付款方式-文字',style['無可用付款方式-文字'])}&gt;無可用付款方式&lt;/h5&gt;
+                    &lt;/div&gt;
+                }
+                {
+                    (paymentServices||[]).length&gt;0 &amp;&amp; order?.uuid &amp;&amp;
+                    (paymentServices||[]).map((paymentService, key)=&gt;{
+
+                        if(paymentService?.provider=='cash_on_delivery'){
+                            if(hasIntersection(paymentService?.cash_on_delivery_unsupport_logistic_service_tags||[], order?.logistic_service_tags||[]))return null
+                            if(
+                                (paymentService?.cash_on_delivery_support_logistic_service_tags||[]).length&gt;0 &amp;&amp;
+                                !hasIntersection(paymentService?.cash_on_delivery_support_logistic_service_tags||[], order?.logistic_service_tags||[])
+                            )return null
+                        }
+                        
+
+
+
+                        return (
+                            &lt;div key={key} className={clsx('單付款方式',style['單付款方式'], selectPaymentServiceIndex==key?`${style['選取']} 選取`:'')} onClick={()=&gt;{setSelectPaymentServiceIndex(key)}}&gt;
+                                &lt;div className={clsx('單付款方式標題框',style['單付款方式標題框'])}&gt;
+                                    &lt;h3 className={clsx('單付款方式標題',style['單付款方式標題'])}&gt;{paymentService?.option_name||paymentServiceProviders?.[paymentService?.provider]}&lt;/h3&gt;
+                                &lt;/div&gt;
+                               {
+                                paymentService?.provider=='bank_transfer'&amp;&amp; 
+                                // selectPaymentServiceIndex==key &amp;&amp;
+                                &lt;BankTransfer 
+                                    orderUUID={order?.uuid} 
+                                    paymentServiceUUID={paymentService?.uuid} 
+                                    bankName={paymentService?.bank_name} 
+                                    bankAccount={paymentService?.bank_account} 
+                                    bankDescription={paymentService?.bank_description} 
+                                    images={paymentService?.images} 
+                                    routingTable={routingTable}/&gt;
+                               }
+
+                               {
+                                paymentService?.provider=='ecpay'&amp;&amp; 
+                                // selectPaymentServiceIndex==key &amp;&amp;
+                                &lt;ECPay 
+                                    orderUUID={order?.uuid} 
+                                    paymentServiceUUID={paymentService?.uuid} 
+                                    ecpayMerchantID={paymentService?.ecpay_merchant_id} 
+                                    productionMode = {paymentService?.ecpay_production_mode}
+                                    routingTable={routingTable}/&gt;
+                               }
+
+                                {
+                                paymentService?.provider=='cash_on_delivery'&amp;&amp; 
+                                // selectPaymentServiceIndex==key &amp;&amp;
+                                &lt;CashOnDelivery 
+                                    order={order}
+                                    paymentService={paymentService} 
+                                    routingTable={routingTable}/&gt;
+                               }
+                            &lt;/div&gt;
+                        );
+                    })
+                }
+
+
+
+            &lt;/div&gt;
+
+
+        &lt;/div&gt;)
 };
 
+OrderPayment.propTypes = {
 
+};
 
-export default OrderPaymentSSR;
+export default OrderPayment;
 
 
 

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>CashOnDelivery</title>
+</head>
+<body>
+<h1>CashOnDelivery</h1>
+<h2>src/components/component-instance/order/payment-method/CashOnDelivery.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import clsx from &quot;clsx&quot;;
+import { useState, useEffect, Fragment, useRef, createRef } from &quot;react&quot;;
+// import { useSelector, useDispatch } from &quot;react-redux&quot;;
+// import { useAppDispatch } from '../../../../redux/hooks'
+import style from &quot;./CashOnDelivery.module.scss&quot;
+
+import { createValidator } from &quot;@/lib/validator&quot;
+
+
+
+import {customer_select_cash_on_delivery} from '@/api/order.js'
+import { useAppDispatch } from &quot;@/redux/hooks&quot;;
+import {removeCache} from &quot;@/redux/slices/order-slice&quot;
+
+
+
+const CashOnDelivery = ({ order, paymentService, routingTable}) =&gt; {
+
+    
+
+
+    const searchParams = new URLSearchParams(window.location.search);
+
+
+    const dispatch = useAppDispatch()
+
+    // const hasIntersection = (arr1, arr2) =&gt;{
+    //     const set1 = new Set(arr1);
+    //     return arr2.some(item =&gt; set1.has(item));
+    // }
+
+    // if(hasIntersection(paymentService?.cash_on_delivery_unsupport_logistic_service_tags||[], order?.logistic_service_tags||[]))return null
+    // if(
+    //     (paymentService?.cash_on_delivery_support_logistic_service_tags||[]).length&gt;0 &amp;&amp;
+    //     !hasIntersection(paymentService?.cash_on_delivery_support_logistic_service_tags||[], order?.logistic_service_tags||[])
+    // )return null
+    const [awaitSubmitButton, setAwaitSubmitButton] = useState(false)
+    
+    return (
+
+        &lt;div className={clsx(style['貨到付款資訊框'], '貨到付款資訊框')}&gt;
+            
+            &lt;div className={clsx(style['選項名稱框'], '選項名稱框')}&gt;
+                &lt;span className={clsx(style['選項名稱'], '選項名稱')}&gt;{paymentService?.cash_on_delivery_option_name||''}&lt;/span&gt;
+            &lt;/div&gt;
+            
+
+            &lt;div className={clsx(style['選擇按鈕框'], '選擇按鈕框')}&gt;
+                &lt;button className={clsx(style['選擇按鈕'], '選擇按鈕', awaitSubmitButton?`${style['等待']} 等待`:'')} disabled={awaitSubmitButton} onClick={()=&gt;{
+                    setAwaitSubmitButton(true)
+                    customer_select_cash_on_delivery({'order_uuid':order?.uuid, 'payment_service_uuid':paymentService?.uuid, 'guest_uuid':searchParams.get('guest_uuid')}).then(res=&gt;{
+                        // setAwaitSubmitButton(false)
+                        // dispatch(removeCache())
+                        window.location.href = `/${routingTable?.['order_route']}/${order?.uuid}?guest_uuid=${searchParams.get('guest_uuid')}`
+
+                        // console.log(`/${routingTable?.['order_route']}/${order?.uuid}`)
+                        dispatch(removeCache())
+                    }).catch(err=&gt;{
+                        setAwaitSubmitButton(false)
+                    })
+                }}&gt;選擇&lt;/button&gt;
+            &lt;/div&gt;
+
+
+        &lt;/div&gt;
+            
+    )
+}
+
+
+
+CashOnDelivery.propTypes = {
+    // bankOptions:PropTypes.array,
+};
+
+export default CashOnDelivery;
+</pre>
+<h2>src/components/component-instance/order/payment-method/CashOnDelivery.module.scss</h2>
+<pre></pre>
+</body>
+</html>

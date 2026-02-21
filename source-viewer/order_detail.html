@@ -6,28 +6,390 @@
 </head>
 <body>
 <h1>order_detail</h1>
-<h2>src/components/component-instance/order/OrderDetailSSR.jsx</h2>
+<h2>src/components/component-instance/order/OrderDetail.jsx</h2>
 <pre>
+import PropTypes from &quot;prop-types&quot;;
 import React, { Fragment, useState, useEffect } from &quot;react&quot;;
-import OrderDetail from &quot;./OrderDetail&quot;;
-const OrderDetailSSR = ({  
+import clsx from &quot;clsx&quot;;
+
+import style from &quot;./OrderDetail.module.scss&quot;
+
+
+// import { useParams, useSearchParams } from &quot;next/navigation&quot;;
+
+import { customer_retrieve_order } from &quot;@/api/order&quot;;
+import Cookies from &quot;js-cookie&quot;;
+
+import OrderItemsSummary from &quot;./OrderItemsSummary&quot;
+import PaymentInfo from &quot;./payment-info/PaymentInfo&quot;
+// import { useParams, useSearchParams } from &quot;react-router-dom&quot;;
+
+const OrderDetail = ({  
+    // node,  mode, actions, update, routingTable, ...props
+    // routingTable,
+    // element, 
+    // elementProps,
+    // mode,
+    // ...props
+    guestUUID, 
+    objectUUID,
+
+    routingTable,
+    element, 
+    elementProps,
+    mode,
     ...props
+
 }) =&gt; {
 
+    // const params = useParams()
+    // let { pathname } = useLocation();
+    // let { object_id } = useParams();
+    // const searchParams = useSearchParams()
+    // const searchParams = new URLSearchParams(window.location.search);
 
-    
-    const [guestUUID, setGuestUUID] = useState()
-    const [objectUUID, setObjectUUID] = useState()
+
+
+    const [order, setOrder] = useState(null)
     useEffect(()=&gt;{
-        setGuestUUID(new URLSearchParams(window.location.search).get('guest_uuid'))
-        setObjectUUID(window?.__SSR_PARAMS__?.objectUUID)
-    },[])
-    return &lt;OrderDetail objectUUID={objectUUID} guestUUID={guestUUID} {...props}/&gt;
+        
+        if(![undefined, null, ''].includes(Cookies.get('customer_access_token')) ||
+         ![undefined, null, ''].includes(Cookies.get('guest_access_token')) ||
+         ![undefined, null, ''].includes(guestUUID)
+        ){
+            if(order==null &amp;&amp; objectUUID){
+                customer_retrieve_order({'order_uuid':objectUUID, 'guest_uuid':guestUUID}).then(res=&gt;{
+                  console.log(res.data)
+                  setOrder(res.data)
+                }).catch(err=&gt;{
+                    window.location.href = `/${routingTable?.['customer_login_route']}?redirect=${encodeURIComponent(location.pathname + location.search + location.hash)}`
+                })
+              }
+        }else{
+            window.location.href = `/${routingTable?.['customer_login_route']}?redirect=${encodeURIComponent(location.pathname + location.search + location.hash)}`
+        }
+    },[objectUUID])
+    //TODO SSR. 把window.__ssr__ object_id 抓出來
+    const order_status = {
+        'awaiting_payment':'待付款',
+        'awaiting_deliver':'處理中',
+        'awaiting_receive':'待自取',
+        'complete':'完成',
+        'cancel':'取消',
+        'return_refund':'退貨/退款',
+      }
+    
+    // const logistic_service_providers = {
+    //     'self_pickup':'自取',
+    //     'customize_deliver':'賣家寄送',
+    //     'ecpay':'綠界科技',
+    // }
+    // const payment_service_providers = {
+    //     'bank_transfer':'銀行轉帳',
+    //     'ecpay':'綠界科技',
+    //     'cash_on_delivery':'貨到付款'
+    // }
+
+    const delivery_statuses = {
+        'awaiting_fulfillment':'理貨中',
+        'awaiting_shipment':'待出貨',
+        'awaiting_pickup':'待自取',
+        'partially_shipped':'部分出貨',
+        'shipped':'已出貨',
+        'collected':'已收貨',
+        'awaiting_return':'待退貨',
+        'returned':'已退貨',
+    }
+    const payment_statuses = {
+        'awaiting_payment':'未付款',
+        'awaiting_confirm':'確認中',
+        'failed':'失敗',
+        'expired':'過期',
+        'paid':'付款完成',
+        'awaiting_refund':'等待退款',
+        'refunded':'退款完成',
+        'cash_on_delivery':'貨到付款',
+    }
+
+
+
+
+    return (
+        
+        &lt;div 
+            {...elementProps}
+          &gt;
+
+
+            &lt;div className={clsx(style['標題框'], '標題框')}&gt;
+                &lt;h3 className={clsx(style['標題'], '標題')}&gt;訂單內容&lt;/h3&gt;
+            &lt;/div&gt;
+
+            &lt;div className={clsx(style['訂單編號框'], '訂單編號框')}&gt;
+                &lt;label className={clsx(style['訂單編號-標籤'], '訂單編號-標籤')} &gt;訂單編號 &lt;/label&gt;
+                &lt;span className={clsx(style['訂單編號'], '訂單編號')}&gt;{`#${order?.id||''}`}&lt;/span&gt;
+            &lt;/div&gt;
+            
+            &lt;div className={clsx(style['訂單時間框'], '訂單時間框')}&gt;
+                &lt;label className={clsx(style['訂單時間-標籤'], '訂單時間-標籤')} &gt;訂單時間 &lt;/label&gt;
+                &lt;span className={clsx(style['訂單時間'], '訂單時間')}&gt;{order?.created_at?`${new Date(order?.created_at).toLocaleString()}`:''}&lt;/span&gt;
+            &lt;/div&gt;
+
+            &lt;div className={clsx(style['訂單狀態框'], '訂單狀態框')}&gt;
+                &lt;label className={clsx(style['訂單狀態-標籤'], '訂單狀態-標籤')}&gt;訂單狀態 &lt;/label&gt;
+                &lt;span className={clsx(style['訂單狀態'], '訂單狀態', `${order_status?.[order?.status]}`)}&gt;{order_status?.[order?.status]}&lt;/span&gt;
+
+                {(order?.status=='awaiting_payment') &amp;&amp; !order?.payment_service_provider &amp;&amp;
+                &lt;a className={clsx(style['付款-超連結'], '付款-超連結')} href={`/${routingTable?.['order_payment_route']}/${order?.uuid}?guest_uuid=${guestUUID}`}&gt; 去付款&lt;/a&gt;}
+
+            &lt;/div&gt;
+            
+
+                
+            &lt;div className={clsx(style['運送資訊框'], '運送資訊框')}&gt;
+                &lt;div className={clsx(style['運送資訊標題框'], '運送資訊標題框')}&gt;
+                    &lt;h3 className={clsx(style['運送資訊標題'], '運送資訊標題')}&gt;運送資訊&lt;/h3&gt;
+                &lt;/div&gt;
+                
+                
+                &lt;div className={clsx(style['運送方式框'], '運送方式框')}&gt;
+                    &lt;label className={clsx(style['運送方式-標籤'], '運送方式-標籤')}&gt;運送方式:&lt;/label&gt;
+                    &lt;span className={clsx(style['運送方式'], &quot;運送方式&quot;)}&gt;{order?.logistic_service_option_name||''}&lt;/span&gt;
+                &lt;/div&gt;
+                
+                &lt;div className={clsx(style['運送狀態框'], '運送狀態框')}&gt;
+                    &lt;label className={clsx(style['運送狀態-標籤'], '運送狀態-標籤')}&gt;運送狀態:&lt;/label&gt;
+                    &lt;span className={clsx(style['運送狀態'], &quot;運送狀態&quot;, `${delivery_statuses?.[order?.delivery_status]}`)}&gt;{delivery_statuses?.[order?.delivery_status]||''}&lt;/span&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['收貨人姓名框'], '收貨人姓名框')}&gt;
+                    &lt;label className={clsx(style['收貨人姓名-標籤'], '收貨人姓名-標籤')}&gt;收貨人姓名:&lt;/label&gt;
+                    &lt;span className={clsx(style['收貨人姓名'], '收貨人姓名')}&gt;{order?.shipping_name||''}&lt;/span&gt;
+                &lt;/div&gt;
+
+                {
+                // &lt;div className={clsx(style['收貨人名字框'], '收貨人名字框')}&gt;
+                //     &lt;label className={clsx(style['收貨人名字-標籤'], '收貨人名字-標籤')}&gt;名字&lt;/label&gt;
+                //     &lt;span className={clsx(style['收貨人名字'], '收貨人名字')}&gt;{order?.shipping_first_name||''}&lt;/span&gt;
+                // &lt;/div&gt;
+                // &lt;div className={clsx(style['收貨人姓氏框'], '收貨人姓氏框')}&gt;
+                //     &lt;label className={clsx(style['收貨人姓氏-標籤'], '收貨人姓氏-標籤')}&gt;姓氏&lt;/label&gt;
+                //     &lt;span className={clsx(style['收貨人姓氏'], '收貨人姓氏')}&gt;{order?.shipping_last_name||''}&lt;/span&gt;
+
+                // &lt;/div&gt;
+                }
+                &lt;div className={clsx(style['收貨人電話框'], '收貨人電話框')}&gt;
+                    &lt;label className={clsx(style['收貨人電話-標籤'], '收貨人電話-標籤')}&gt;電話:&lt;/label&gt;
+                    &lt;span className={clsx(style['收貨人電話'], '收貨人電話')}&gt;{order?.shipping_cellphone||''}&lt;/span&gt;
+
+                &lt;/div&gt;
+                &lt;div className={clsx(style['收貨人信箱框'], '收貨人信箱框')}&gt;
+                    &lt;label className={clsx(style['收貨人信箱-標籤'], '收貨人信箱-標籤')}&gt;Email:&lt;/label&gt;
+                    &lt;span className={clsx(style['收貨人信箱'], '收貨人信箱')}&gt;{order?.shipping_email||''}&lt;/span&gt;
+                &lt;/div&gt;
+                {
+                    order?.shipping_postcode&amp;&amp;
+                    &lt;div className={clsx(style['收貨人郵遞區號框'], '收貨人郵遞區號框')}&gt;
+                        &lt;label className={clsx(style['收貨人郵遞區號-標籤'], '收貨人郵遞區號-標籤')}&gt;郵遞區號:&lt;/label&gt;
+                        &lt;span className={clsx(style['收貨人郵遞區號'], '收貨人郵遞區號')}&gt;{order?.shipping_postcode||''}&lt;/span&gt;
+                    &lt;/div&gt;
+                }
+                {
+                    order?.shipping_region&amp;&amp;
+                    &lt;div className={clsx(style['收貨人地區框'], '收貨人地區框')}&gt;
+                        &lt;label className={clsx(style['收貨人地區-標籤'], '收貨人地區-標籤')}&gt;地區:&lt;/label&gt;
+                        &lt;span className={clsx(style['收貨人地區'], '收貨人地區')}&gt;{order?.shipping_region||''}&lt;/span&gt;
+                    &lt;/div&gt;
+                }
+                {
+                    order?.shipping_state&amp;&amp;
+                    &lt;div className={clsx(style['收貨人州框'], '收貨人州框')}&gt;
+                        &lt;label className={clsx(style['收貨人州-標籤'], '收貨人州-標籤')}&gt;州:&lt;/label&gt;
+                        &lt;span className={clsx(style['收貨人州'], '收貨人州')}&gt;{order?.shipping_state||''}&lt;/span&gt;
+                    &lt;/div&gt;
+                }
+                {
+                    order?.shipping_city&amp;&amp;
+                    &lt;div className={clsx(style['收貨人城市框'], '收貨人城市框')}&gt;
+                        &lt;label className={clsx(style['收貨人城市-標籤'], '收貨人城市-標籤')}&gt;城市:&lt;/label&gt;
+                        &lt;span className={clsx(style['收貨人城市'], '收貨人城市')}&gt;{order?.shipping_city||''}&lt;/span&gt;
+                    &lt;/div&gt;
+                }
+                {
+                    order?.shipping_address_1&amp;&amp;
+                    &lt;div className={clsx(style['收貨人地址1框'], '收貨人地址1框')}&gt;
+                        &lt;label className={clsx(style['收貨人地址1-標籤'], '收貨人地址1-標籤')}&gt;收貨地址1:&lt;/label&gt;
+                        &lt;span className={clsx(style['收貨人地址1'], '收貨人地址1')}&gt;{order?.shipping_address_1||''}&lt;/span&gt;
+                    &lt;/div&gt;
+                }
+                {
+                    order?.shipping_address_2&amp;&amp;
+                    &lt;div className={clsx(style['收貨人地址2框'], '收貨人地址2框')}&gt;
+                        &lt;label className={clsx(style['收貨人地址2-標籤'], '收貨人地址2-標籤')}&gt;收貨地址2:&lt;/label&gt;
+                        &lt;span className={clsx(style['收貨人地址2'], '收貨人地址2')}&gt;{order?.shipping_address_2||''}&lt;/span&gt;
+                    &lt;/div&gt;    
+                }
+                {
+                    order?.customer_remark&amp;&amp;
+                    &lt;div className={clsx(style['附註框'], '附註框')}&gt;
+                        &lt;label className={clsx(style['附註-標籤'], '附註-標籤')}&gt;附註:&lt;/label&gt;
+                        &lt;span className={clsx(style['附註'], '附註')}&gt;{order?.customer_remark||''}&lt;/span&gt;
+                    &lt;/div&gt;
+                }
+              
+            &lt;/div&gt;
+            
+            &lt;div className={clsx(style['付款資訊框'], '付款資訊框')}&gt;
+                &lt;div className={clsx(style['付款資訊標題框'], '付款資訊標題框')}&gt;
+                    &lt;h3 className={clsx(style['付款資訊標題'], '付款資訊標題')}&gt;付款資訊&lt;/h3&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['付款狀態框'], '付款狀態框')}&gt;
+                    &lt;label className={clsx(style['付款狀態-標籤'], '付款狀態-標籤')}&gt;付款狀態:&lt;/label&gt;
+                    &lt;span className={clsx(style['付款狀態'], &quot;付款狀態&quot;, `${payment_statuses?.[order?.payment_status]}`)}&gt;{payment_statuses?.[order?.payment_status]||''}&lt;/span&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['付款方式框'], '付款方式框')}&gt;
+                    &lt;label className={clsx(style['付款方式-標籤'], '付款方式-標籤')}&gt;付款方式:&lt;/label&gt;
+                    &lt;span className={clsx(style['付款方式'], &quot;付款方式&quot;)}&gt;{order?.payment_service_option_name||''}&lt;/span&gt;
+                &lt;/div&gt;
+
+                &lt;PaymentInfo order={order} /&gt;
+
+                &lt;div className={clsx(style['付款時間框'], '付款時間框')}&gt;
+                    &lt;label className={clsx(style['付款時間-標籤'], '付款時間-標籤')}&gt;付款時間:&lt;/label&gt;
+                    &lt;span className={clsx(style['付款時間'], &quot;付款時間&quot;)}&gt;{order?.paid_at?new Date(order?.paid_at).toLocaleTimeString():''}&lt;/span&gt;
+                &lt;/div&gt;
+
+            &lt;/div&gt;
+
+            &lt;OrderItemsSummary order={order} routingTable={routingTable}/&gt;
+{/* 
+            &lt;div className={clsx(style['訂單商品框'], '訂單商品框')}&gt;
+                &lt;div className={clsx(style['訂單商品標題框'], '訂單商品標題框')}&gt;
+                    &lt;h3 className={clsx(style['訂單商品標題'], '訂單商品標題')}&gt;訂單商品&lt;/h3&gt;
+                &lt;/div&gt;
+
+                &lt;table className={clsx(style['訂單商品-表格'], '訂單商品-表格')}&gt;
+                    &lt;thead className={clsx(style['表格-頭段'], '表格-頭段')}&gt;
+                    &lt;tr className={clsx(style['表格-列'], '表格-列')}&gt;
+                        &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;圖片&lt;/th&gt;
+                        &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;名稱&lt;/th&gt;
+                        &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;價錢&lt;/th&gt;
+                        &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;數量&lt;/th&gt;
+                        &lt;th className={clsx(style['表格-欄位名稱'], '表格-欄位名稱')}&gt;小計&lt;/th&gt;
+                    &lt;/tr&gt;
+                    &lt;/thead&gt;
+                    &lt;tbody className={clsx(style['表格-身體'], '表格-身體')}&gt;
+                    {
+                        (order?.order_products||[]).map((order_product, key)=&gt;{
+                            return ( 
+                            &lt;Fragment key={key}&gt;
+                                &lt;tr className={clsx(style['單訂單商品框'], '單訂單商品框')} key={key}&gt;
+                                    &lt;td className={clsx(style['訂單商品-圖片框'], &quot;訂單商品-圖片框&quot;)}&gt;
+                                        &lt;a href={`${routingTable?.['product_route']}/${order_product?.product?.uuid}`}&gt;
+                                            &lt;img
+                                                className={clsx(style['訂單商品-圖片'], &quot;訂單商品-圖片&quot;)}
+                                                src={order_product?.image}
+                                                alt=&quot;&quot;
+                                            /&gt;
+                                        &lt;/a&gt;
+                                    &lt;/td&gt;
+                                    &lt;td className={clsx(style['訂單商品-名稱框'], &quot;訂單商品-名稱框&quot;)}&gt;
+                                        &lt;a href={`${routingTable?.['product_route']}/${order_product?.product?.uuid}`}&gt;
+                                            &lt;h4 className={clsx(style['訂單商品-名稱'], &quot;訂單商品-名稱&quot;)}&gt;
+                                                {`${order_product?.name||''}${order_product?.type1?`-${order_product?.type1}:${order_product?.value1}`:''}${order_product?.type2?`-${order_product?.type2}:${order_product?.value2}`:''}${order_product?.compose_base?`-任搭${order_product?.compose_base}件`:''}`}
+                                            &lt;/h4&gt;
+                                        &lt;/a&gt;
+                                    &lt;/td&gt;
+                                    &lt;td className={clsx(style['訂單商品-價錢框'], &quot;訂單商品-價錢框&quot;)}&gt;
+                                        &lt;span className={clsx('訂單商品價錢',style['訂單商品價錢'])}&gt;
+                                            {`${order_product?.currency_sign||'$'}${order_product?.price||0}`}
+                                        &lt;/span&gt;
+                                    &lt;/td&gt;
+                                    &lt;td className={clsx(style['訂單商品-數量框'], &quot;訂單商品-數量框&quot;)}&gt;
+                                            &lt;span className={clsx('訂單商品數量',style['訂單商品數量'])}&gt;
+                                                {`${order_product?.quantity||1}件`}
+                                            &lt;/span&gt;
+                                    &lt;/td&gt;
+                                   
+                                    &lt;td className={clsx(style['訂單商品-小計框'], &quot;訂單商品-小計框&quot;)}&gt;
+                                        &lt;span className={clsx('訂單商品小計',style['訂單商品小計'])}&gt;
+                                            {`${order_product?.subtotal||0}`}
+                                        &lt;/span&gt;
+                                    &lt;/td&gt;
+                                &lt;/tr&gt;
+
+                                {
+                                    (order_product?.order_compose_products||[]).length&gt;0 &amp;&amp;
+                                    (order_product?.order_compose_products||[]).map((order_compose_product, key)=&gt;{
+                                        return (
+                                            &lt;tr className={clsx(style['單任搭商品框'], &quot;單任搭商品框&quot;)} key={key}&gt;
+                                                &lt;td&gt;&lt;/td&gt;
+                                                &lt;td className={clsx(style['單任搭商品-圖片框'], &quot;單任搭商品-圖片框&quot;)}&gt;
+                                                    &lt;img
+                                                        className={clsx(style['單任搭商品-圖片'], &quot;單任搭商品-圖片&quot;)}
+                                                        src={order_compose_product?.image}
+                                                        alt=&quot;&quot;
+                                                    /&gt;
+                                                &lt;/td&gt;
+                                                &lt;td className={clsx(style['單任搭商品-名稱框'], &quot;單任搭商品-名稱框&quot;)}&gt;
+                                                    &lt;span className={clsx('單任搭商品-名稱',style['單任搭商品-名稱'])}&gt;
+                                                        {`${order_compose_product?.name}`}
+                                                    &lt;/span&gt;
+                                                &lt;/td&gt;
+                                                &lt;td className={clsx(style['單任搭商品-數量框'], &quot;單任搭商品-數量框&quot;)}&gt;
+                                                    &lt;span className={clsx('單任搭商品-數量',style['單任搭商品-數量'])}&gt;
+                                                        {`${order_compose_product?.quantity}`}
+                                                    &lt;/span&gt;
+                                                &lt;/td&gt;
+                                            &lt;/tr&gt;
+                                        )
+                                    })
+                                
+                                }
+                            &lt;/Fragment&gt;)})
+                    }
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/div&gt;
+
+            &lt;div className={clsx(style['訂單總結框'], '訂單總結框')}&gt;
+
+                &lt;div className={clsx(style['小計框'], '小計框')}&gt;
+                    &lt;label className={clsx(style['小計-標籤'], '小計-標籤')}&gt;小計 &lt;/label&gt;
+                    &lt;span className={clsx(style['小計'], '小計')}&gt;{order?.subtotal||0}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['使用紅利框'], '使用紅利框')}&gt;
+                    &lt;label className={clsx(style['使用紅利-標籤'], '使用紅利-標籤')}&gt;使用紅利&lt;/label&gt;
+                    &lt;span&gt;{order?.apply_points||0}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['紅利折抵框'], '紅利折抵框')}&gt;
+                    &lt;label className={clsx(style['紅利折抵-標籤'], '紅利折抵-標籤')}&gt;紅利折抵&lt;/label&gt;
+                    &lt;span&gt;{(order?.apply_points_discount)}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['運費框'], '運費框')}&gt;
+                    &lt;label className={clsx(style['運費-標籤'], '運費-標籤')}&gt;運費 &lt;/label&gt;
+                    &lt;span&gt;{order?.shipping_fee||0}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['稅金框'], '稅金框')}&gt;
+                    &lt;label className={clsx(style['稅金-標籤'], '稅金-標籤')}&gt;稅金 &lt;/label&gt;
+                    &lt;span&gt;{order?.tax||0}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['合計框'], '合計框')}&gt;
+                    &lt;label className={clsx(style['合計-標籤'], '合計-標籤')}&gt;合計 &lt;/label&gt;
+                    &lt;span&gt;{order?.total||0}&lt;/span&gt;
+                &lt;/div&gt;
+
+
+            &lt;/div&gt; */}
+        &lt;/div&gt;)
 };
 
+OrderDetail.propTypes = {
+};
 
-
-export default OrderDetailSSR;
+export default OrderDetail;
 
 
 

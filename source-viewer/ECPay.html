@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ECPay</title>
+</head>
+<body>
+<h1>ECPay</h1>
+<h2>src/components/component-instance/order/payment-method/ECPay.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import clsx from &quot;clsx&quot;;
+import { useState, useEffect, Fragment, useRef, createRef } from &quot;react&quot;;
+
+
+
+
+
+import {customer_get_ecpay_trade_token, customer_create_ecpay_payment} from &quot;../../../../api/ecpay_payment&quot;
+import style from './ECPay.module.scss'
+import { useAppDispatch } from &quot;@/redux/hooks&quot;;
+import {removeCache} from &quot;@/redux/slices/order-slice&quot;
+
+
+
+const ECPay = ({orderUUID, paymentServiceUUID, routingTable, ecpayMerchantID, productionMode}) =&gt; {
+
+    // ecpay_merchant_id = models.CharField(max_length=255, null=True, blank=True)
+    // ecpay_hash_key = models.CharField(max_length=255, null=True, blank=True)
+    // ecpay_hash_iv = models.CharField(max_length=255, null=True, blank=True)
+
+    const [wait, setWait] = useState(false)
+
+    const [ecpayReady, setEcpayReady] = useState(false)
+
+    const [merchantTradeNo, setMerchantTradeNo] = useState('')
+
+
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const dispatch = useAppDispatch()
+
+    useEffect(() =&gt; {
+
+        customer_get_ecpay_trade_token(orderUUID, paymentServiceUUID).then(res=&gt;{
+            setMerchantTradeNo(res.data?.merchant_trade_no)
+            const tradeToken = res.data?.trade_token
+
+            console.log(res.data)
+            var script = document.createElement( &quot;script&quot; )
+            script.id = 'ecpay_jquery'
+            script.type = &quot;text/javascript&quot;;
+            script.src = 'https://code.jquery.com/jquery-3.5.1.min.js';
+            script.onload = ()=&gt;{
+                var script = document.createElement( &quot;script&quot; )
+                script.id = 'ecpay_sdk'
+                script.type = &quot;text/javascript&quot;;
+                script.src = productionMode?'https://ecpg.ecpay.com.tw/Scripts/sdk-1.0.0.js?t=20210121100116':'https://ecpg-stage.ecpay.com.tw/Scripts/sdk-1.0.0.js?t=20210121100116';
+
+                script.onload = ()=&gt;{
+                    console.log('sdk loaded')
+
+                    const ServerType = productionMode?'Prod':'Stage'
+                    try {
+                        window?.ECPay.initialize(ServerType, 1, (errMsg)=&gt;{
+                            console.log(errMsg)
+    
+                            window?.ECPay?.createPayment(tradeToken, window?.ECPay.Language.zhTW, (errMsg)=&gt;{
+                                console.log(errMsg)
+                                setEcpayReady(true)
+                            }, 'V2')
+    
+                        })
+                    } catch (error) {
+                        console.log(error)
+                    }
+                    
+
+                }
+                document.getElementsByTagName( &quot;head&quot; )[0].appendChild( script );
+            }
+            document.getElementsByTagName( &quot;head&quot; )[0].appendChild( script );
+
+        })
+        
+        window.getApplePayResultData = (resultData, errMsg)=&gt;{
+
+            console.log('apple pay data')
+            console.log(errMsg)
+            console.log(resultData)
+        }
+        
+        return () =&gt; {
+            if(document.getElementById('ecpay_jquery'))document.getElementById('ecpay_jquery')?.remove()
+            if(document.getElementById('ecpay_sdk'))document.getElementById('ecpay_sdk')?.remove()
+            window.getApplePayResultData = null
+        };
+    }, []);
+
+
+    return (
+
+
+        &lt;Fragment &gt;
+            &lt;div id=&quot;ECPayPayment&quot; className={clsx(style['綠界付款元素'], '綠界付款元素')}&gt;&lt;/div&gt;
+            {
+
+            ecpayReady &amp;&amp;
+            &lt;div className={clsx(style['送出按鈕框'], '送出按鈕框')}&gt;
+                &lt;button className={clsx(style['送出按鈕'], '送出按鈕')} 
+                    disabled={wait}
+                    onClick={()=&gt;{
+                    
+                        setWait(true);
+
+                    window?.ECPay.getPayToken((paymentInfo, errMsg)=&gt;{
+
+                        if (errMsg != null) {
+                            console.log(errMsg)
+                            setWait(false);
+                            return;
+                        };
+
+
+                        var _order_uuid, _payment_service_uuid, _pay_token, _merchant_trade_no
+                        customer_create_ecpay_payment(_order_uuid=orderUUID, _payment_service_uuid=paymentServiceUUID, _pay_token=paymentInfo?.PayToken, _merchant_trade_no=merchantTradeNo).then(res=&gt;{
+                            console.log(res.data)
+
+                            if(res?.data?.three_d_url){
+                                window.location.href = res?.data?.three_d_url
+                            }else{
+                                dispatch(removeCache())
+                                window.location.href = `/${routingTable?.['order_route']}/${orderUUID}?guest_uuid=${searchParams.get('guest_uuid')}`
+
+                            }
+
+
+                        }).catch(err=&gt;{setWait(false)})
+
+                    });
+                }}&gt;送出&lt;/button&gt;
+            &lt;/div&gt;
+            }
+        &lt;/Fragment&gt;
+    )
+}
+
+
+
+ECPay.propTypes = {
+
+};
+
+export default ECPay;
+</pre>
+<h2>src/components/component-instance/order/payment-method/ECPay.module.scss</h2>
+<pre>/* 綠界付款元素 */
+// .綠界付款元素 {
+//     width: 100%;
+//     height: 200px; /* 根據需求調整 */
+//     background-color: #f4f4f4; /* 淺灰背景 */
+//     border: 1px solid #ccc;
+//     border-radius: 8px;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     text-align: center;
+//     font-size: 16px;
+//     color: #666;
+// }
+
+/* 送出按鈕框 */
+.送出按鈕框 {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* 送出按鈕 */
+.送出按鈕 {
+    background-color: #28a745;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.送出按鈕:hover {
+    background-color: #218838;
+}</pre>
+</body>
+</html>
