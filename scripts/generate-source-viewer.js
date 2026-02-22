@@ -51,7 +51,8 @@ const components = [
     scss: ["src/components/component-instance/order/payment-method/ECPay.module.scss"] },
   { name: "CashOnDelivery", file: "src/components/component-instance/order/payment-method/CashOnDelivery.jsx",
     scss: ["src/components/component-instance/order/payment-method/CashOnDelivery.module.scss"] },
-    
+  { name: "GuestCheckoutNotification", file: "src/components/guest-checkout-notification/GuestCheckoutNotification.jsx",
+    scss: ["src/components/guest-checkout-notification/order/GuestCheckoutNotification.module.scss"] },
 
 ];
 

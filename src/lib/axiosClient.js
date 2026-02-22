@@ -51,12 +51,15 @@ export function createCustomerAxios(){
     axiosInstance.interceptors.response.use(
         response => response,
         error => {
+            console.log(error)
             if (error.response?.data?.message){
-                cogoToast?.error?.("錯誤", {position: "top-right"});
+                alert('錯誤')
+                // cogoToast?.error?.("錯誤", {position: "top-right"});
 
                 // toast.info(error.response.data.message)
             } else{
-                cogoToast?.error?.("錯誤，請重整頁面", {position: "top-right"});
+                alert("錯誤，請重整頁面")
+                // cogoToast?.error?.("錯誤，請重整頁面", {position: "top-right"});
 
                 // toast.info('error_messages.please_refresh_page')
             }

@@ -8,6 +8,7 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { customer_register } from "../../api/customer"
 import Cookies from "js-cookie";
 import { createValidator } from "../../lib/validator"
+import MyIcon from "./my-icons/MyIcon"
 // import route_names from "../../route_names";
 
 // import 'intl-tel-input/build/css/intlTelInput.css';
@@ -78,7 +79,7 @@ const RegisterForm = ({
             setCountry(_country)
         })
     }, [])
-
+    const [submitMessage, setSubmitMessage] = useState({ type: '', text: '' })
     const [registerData, setRegisterData] = useState({
         first_name:'', last_name:'',phone:'', email:'',password:'', confirm_password:''
     })
@@ -98,19 +99,21 @@ const RegisterForm = ({
     
 
     const handleRegister = (event)=>{
-
+        setSubmitMessage({ type: '', text: '' })
         if(!registerFormValidator.current.allValid()){
+            setSubmitMessage({ type: 'error', text: '資料有誤' })
             registerFormValidator.current.showMessages()
             forceUpdate(new Date())
             return
-          }
+        }
 
-          setAwaitSubmitButton(true)
+        setAwaitSubmitButton(true)
         customer_register({registerData, country}).then(res=>{
             console.log(res.data)
             setShowEmailVerificationNotification(true)
             setAwaitSubmitButton(false)
         }).catch(err=>{
+            setSubmitMessage({ type: 'error', text: '註冊失敗 請重試' })
             setAwaitSubmitButton(false)
         })
 
@@ -246,7 +249,7 @@ const RegisterForm = ({
                         }}
                     />
                     <button className={clsx(style['顯示密碼-按鈕'], '顯示密碼-按鈕')} type="button" onClick={()=>{setViewPassword(!viewPassword)}}>
-                        <i className={clsx(style['顯示密碼-圖標'], '顯示密碼-圖標', viewPassword?"fa fa-solid fa-eye-slash":"fa fa-solid fa-eye")} />
+                        <MyIcon name={viewPassword ? 'eye-slash' : 'eye'} className={clsx(style['顯示密碼-圖標'], '顯示密碼-圖標')} />
                     </button>
                 </div>
                 
@@ -270,7 +273,7 @@ const RegisterForm = ({
                         }}
                     />
                     <button className={clsx(style['顯示確認密碼-按鈕'], '顯示確認密碼-按鈕')} type="button" onClick={()=>{setViewConfirmPassword(!viewConfirmPassword)}}>
-                        <i className={clsx(style['顯示確認密碼-圖標'], '顯示確認密碼-圖標', viewConfirmPassword?"fa fa-solid fa-eye-slash":"fa fa-solid fa-eye")} />
+                        <MyIcon name={viewConfirmPassword ? 'eye-slash' : 'eye'} className={clsx(style['顯示確認密碼-圖標'], '顯示確認密碼-圖標')} />
                     </button>
                 </div>
                
@@ -288,6 +291,20 @@ const RegisterForm = ({
                     <a className={clsx(style['登入連結'], '登入連結')} href={`/${routingTable?.['customer_login_route']}`} >登入</a>
                 </div>
             </div>
+
+            {/* Message display */}
+            {submitMessage.text && (
+                <div className={clsx(
+                    style['訊息框'],
+                    '訊息框',
+                    submitMessage.type === 'success' ? style['成功'] : style['錯誤'],
+                    submitMessage.type === 'success' ? '成功' : '錯誤'
+                )}>
+                    {submitMessage.text}
+                </div>
+            )}
+            
+
         </form>
         <div className={clsx(style['電子郵件認證通知框'], '電子郵件認證通知框', showEmailVerificationNotification?`${style['顯示']} 顯示`:'')}>
             <div className={clsx(style['電子郵件認證通知-文字框'], '電子郵件認證通知-文字框')}>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>GuestCheckoutNotification</title>
+</head>
+<body>
+<h1>GuestCheckoutNotification</h1>
+<h2>src/components/guest-checkout-notification/GuestCheckoutNotification.jsx</h2>
+<pre>import { Fragment, useEffect, useState, useRef } from &quot;react&quot;;
+
+
+import clsx from &quot;clsx&quot;;
+// import { Modal } from &quot;react-bootstrap&quot;;
+
+
+import Cookies from &quot;js-cookie&quot;;
+import PropTypes from &quot;prop-types&quot;;
+import { 
+    guest_request_cellphone_verification, 
+    guest_request_email_verification,
+    guest_verify_otp_code,
+ } from &quot;@/api/customer&quot;;
+
+import style from './GuestCheckoutNotification.module.scss'
+
+
+
+
+import {useClickOutsideEvent} from '@/lib/utils/clickOutside.js'
+
+const GuestCheckoutNotification = ({
+    show, setShow, country, cellphone, email, nextAction, routingTable, allowGuestCheckout
+}) =&gt; {
+
+    
+    const [countDown, setCountDown] = useState(0)
+    const [otpCode, setOtpCode] = useState('')
+    const [awaitSubmitButton, setAwaitSubmitButton] = useState(false)
+    
+    const [showVerificationBlock, setShowVerificationBlock] = useState(false)
+    const [errorMessage, setErrorMessage ] = useState('')
+    const [generalMessage, setGeneralMessage ] = useState('')
+    const errorMessageDiv = useRef()
+    const generalMessageDiv = useRef()
+    const ref = useRef()
+
+    const showErrorToast = (message)=&gt;{
+        setErrorMessage(message)
+        errorMessageDiv?.current?.classList?.remove(style['隱藏'])
+        errorMessageDiv?.current?.classList?.remove(`隱藏`)
+        setTimeout(()=&gt;{
+            errorMessageDiv?.current?.classList?.add(style['隱藏'])
+            errorMessageDiv?.current?.classList?.add(`隱藏`)
+        },3)
+    }
+    const showGeneralToast = (message)=&gt;{
+        setGeneralMessage(message)
+        generalMessageDiv?.current?.classList?.remove(style['隱藏'])
+        generalMessageDiv?.current?.classList?.remove(`隱藏`)
+        setTimeout(()=&gt;{
+            generalMessageDiv?.current?.classList?.add(style['隱藏'])
+            generalMessageDiv?.current?.classList?.add(`隱藏`)
+        },3)
+    }
+
+    const sendSMS = ()=&gt;{
+        setCountDown(60)
+        guest_request_cellphone_verification({country, cellphone}).then(res=&gt;{
+            showGeneralToast('驗證簡訊已發送')
+        })
+
+    }
+
+    const sendEmail = ()=&gt;{
+        setCountDown(60)
+        guest_request_email_verification({country, email}).then(res=&gt;{
+            showGeneralToast('驗證信件已發送')
+        })
+    }
+    const verifyOTPCode = ()=&gt;{
+
+        setAwaitSubmitButton(true)
+        guest_verify_otp_code({email, cellphone, 'otp_code':otpCode}).then(res=&gt;{
+            var inSevenDays = new Date(new Date().getTime() + 7 * 24 * 60 * 60 *1000)
+            Cookies.set('guest_access_token', res?.data?.guest_access_token, {expires: inSevenDays})
+            setAwaitSubmitButton(false)
+            nextAction()
+        }).catch(err=&gt;{
+            setAwaitSubmitButton(false)
+            setErrorMessage('驗證失敗')
+        })
+    }
+
+    useEffect(() =&gt; {
+        show &amp;&amp; countDown &gt; 0 &amp;&amp; setTimeout(() =&gt; setCountDown(countDown - 1), 1000);
+    }, [show, countDown]);
+    
+    
+    useClickOutsideEvent(useEffect, ref,()=&gt;{setShow(false)}, show)
+
+
+    const maskCellphone = (cellphone)=&gt;{
+        const len = (cellphone||'')?.length
+        if(len&gt;7){
+            return (cellphone||'')?.slice(0,4) + '*'.repeat(len-7)+ (cellphone||'')?.slice(-3)
+        }else{
+            return cellphone
+        }
+    }
+
+    const proceedAsGuest = ()=&gt;{
+        if(Cookies.get('guest_access_token')){
+            nextAction()
+        }else{
+            setShowVerificationBlock(true)
+        }
+    }
+
+    return (
+        &lt;div ref={ref} className={clsx(style['訪客結帳彈窗'], '訪客結帳彈窗', show?`${style['顯示']} 顯示`:'')}&gt;
+              
+            &lt;div className={clsx(style['身份選擇框'], '身份選擇框')}&gt;
+ 
+                &lt;div className={clsx(style['身份選擇訊息框'], '身份選擇訊息框')}&gt;
+                    &lt;p className={clsx(style['身份選擇訊息'], '身份選擇訊息')}&gt;身份選擇訊息&lt;/p&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['登入註冊框'], '登入註冊框')}&gt;
+                    &lt;a className={clsx(style['登入連結'], '登入連結')} href={`/${routingTable?.['customer_login_route']}`} &gt;登入&lt;/a&gt;
+                    &lt;a className={clsx(style['註冊連結'], '註冊連結')} href={`/${routingTable?.['customer_register_route']}`} &gt;註冊&lt;/a&gt;
+                &lt;/div&gt;
+
+                {
+                    allowGuestCheckout&amp;&amp;
+                    &lt;div className={clsx(style['以訪客身份繼續按鈕框'], '以訪客身份繼續按鈕框', showVerificationBlock?`${style['可隱藏']} 可隱藏`:'')}&gt;
+                        &lt;button className={clsx(style['以訪客身份繼續按鈕'], '以訪客身份繼續按鈕')} onClick={()=&gt;{proceedAsGuest()}} &gt;以訪客身份繼續&lt;/button&gt;
+                    &lt;/div&gt;
+                }
+                
+                {
+                    !allowGuestCheckout &amp;&amp;
+                    &lt;div className={clsx(style['取消按鈕框'], '取消按鈕框', showVerificationBlock?`${style['可隱藏']} 可隱藏`:'')}&gt;
+                        &lt;button className={clsx(style['取消按鈕'], '取消按鈕')} onClick={()=&gt;{setShow(false)}} &gt;取消&lt;/button&gt;
+                    &lt;/div&gt;
+                }
+                
+
+
+            &lt;/div&gt;
+            {
+                allowGuestCheckout&amp;&amp;
+                &lt;div className={clsx(style['驗證框'], '驗證框', showVerificationBlock?`${style['顯示']} 顯示`:'')}&gt;
+                                
+                    &lt;div className={clsx(style['驗證訊息框'], '驗證訊息框')}&gt;
+                        &lt;p className={clsx(style['驗證訊息'], '驗證訊息')}&gt;驗證訊息&lt;/p&gt;
+                    &lt;/div&gt;
+                    
+                    &lt;div className={clsx(style['手機驗證框'], &quot;手機驗證框&quot;)}&gt;
+                        &lt;label className={clsx(style['手機-標籤'], &quot;手機-標籤&quot;)}&gt;手機號碼:&lt;/label&gt; 
+                        &lt;span className={clsx(style['手機'], &quot;手機&quot;)}&gt;{`${maskCellphone(cellphone)}`}&lt;/span&gt;
+
+                        &lt;button className={clsx(style['手機-發送按鈕'], &quot;手機-發送按鈕&quot;)} onClick={()=&gt;{sendSMS()}} disabled={countDown&gt;0}&gt;  
+                            {countDown&gt;0?`${countDown}秒後可重新發送`:'取得簡訊驗證碼'}
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx(style['電子郵件驗證框'], &quot;電子郵件驗證框&quot;)}&gt;
+                        &lt;label className={clsx(style['電子郵件-標籤'], &quot;電子郵件-標籤&quot;)}&gt;Email:&lt;/label&gt; 
+                        &lt;span className={clsx(style['電子郵件'], &quot;電子郵件&quot;)}&gt;{email}&lt;/span&gt;
+                        &lt;button className={clsx(style['電子郵件-發送按鈕'], &quot;電子郵件-發送按鈕&quot;)} onClick={()=&gt;{sendEmail()}} disabled={countDown&gt;0}&gt;  
+                            {countDown&gt;0?`${countDown}秒後可重新發送`:'取得郵件驗證碼'}
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx(style['驗證碼輸入框'], &quot;驗證碼輸入框&quot;)}&gt;
+                        &lt;label className={clsx(style['驗證碼-標籤'], &quot;驗證碼-標籤&quot;)}&gt;驗證碼:&lt;/label&gt;  
+                        &lt;input className={clsx(style['驗證碼-輸入'], &quot;驗證碼-輸入&quot;)} type=&quot;text&quot; placeholder=&quot;驗證碼&quot; value={otpCode} onChange={(e)=&gt;{setOtpCode(e.target.value)}}/&gt;
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx(style['按鈕框'], &quot;按鈕框&quot;)}&gt;
+                        &lt;div className={clsx(style['送出按鈕框'], &quot;送出按鈕框&quot;)}&gt;
+                            &lt;button  desabled={awaitSubmitButton?&quot;true&quot;:&quot;false&quot;} className={clsx(style['送出按鈕'], &quot;送出按鈕&quot;, awaitSubmitButton?`${style['等待']} 等待`:'')} disabled={awaitSubmitButton} onClick={()=&gt;{verifyOTPCode()}} &gt;確認&lt;/button&gt;
+                        &lt;/div&gt;
+                        &lt;div className={clsx(style['取消按鈕框'], '取消按鈕框')}&gt;
+                            &lt;button className={clsx(style['取消按鈕'], '取消按鈕')} onClick={()=&gt;{setShow(false)}} &gt;取消&lt;/button&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                   
+                &lt;/div&gt;
+            }
+            
+                
+            &lt;div ref={generalMessageDiv} className={clsx(style['通用訊息框'], &quot;通用訊息框&quot;, `${style['隱藏']} 隱藏`)}&gt;
+                &lt;p className={clsx(style['通用訊息'], &quot;通用訊息&quot;)}&gt;{generalMessage}&lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div ref={errorMessageDiv} className={clsx(style['錯誤訊息框'], &quot;錯誤訊息框&quot;, `${style['隱藏']} 隱藏`)}&gt;
+                &lt;p className={clsx(style['錯誤訊息'], &quot;錯誤訊息&quot;)}&gt;{errorMessage}&lt;/p&gt;
+            &lt;/div&gt;
+                
+  
+        &lt;/div&gt;
+    );
+  };
+  
+  GuestCheckoutNotification.propTypes = {
+};
+
+
+  export default GuestCheckoutNotification;
+  </pre>
+
+</body>
+</html>

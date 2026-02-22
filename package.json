@@ -6,7 +6,10 @@
     "start": "dotenvx run -- nodemon",
     "dev": "dotenvx run --env-file=.env.prod.local -- nodemon",
     "build:website_editor": "vite build --mode production --config vite.config.website_editor.js",
-    "build:express": "vite build --mode production --config vite.config.express.js"
+    "build:express": "vite build --mode production --config vite.config.express.js",
+    "dev:checkout_widget_01": "dotenvx run --env-file=.env.prod.local -- vite --config vite.config.checkout_widget_01.dev.js",
+    "build:checkout_widget_01": "vite build --mode production --config vite.config.checkout_widget_01.js"
+    
   },
   "main": "server.js",
   "license": "MIT",

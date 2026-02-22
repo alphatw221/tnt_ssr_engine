@@ -97,7 +97,7 @@ const CheckoutForm = ({
         
     })
     const [awaitSubmitButton, setAwaitSubmitButton] = useState(false)
-    
+    const [submitMessage, setSubmitMessage] = useState({ type: '', text: '' })
     const receiverInfoValidator = useRef(createValidator())
     const addressInfoValidator = useRef(createValidator())
     const invoiceInfoValidator = useRef(createValidator())
@@ -219,6 +219,7 @@ const CheckoutForm = ({
     }, [now, targetCartProducts, exchangeRates, searchParams, checkoutData, logisticServices])
     
     const nextAction = ()=>{
+        setSubmitMessage({ type: '', text: '' })
         setAwaitSubmitButton(true)
         customer_checkout_cart(
             {
@@ -246,13 +247,14 @@ const CheckoutForm = ({
             window.location.href = `/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}`
         }).catch(err=>{
             console.log(err)
+            setSubmitMessage({ type: 'error', text: '結帳失敗 請重試' })
             setAwaitSubmitButton(false)
             setShowProceedAsGuestNotification(false)
         })
         
     }
     const checkout = ()=>{
-
+        setSubmitMessage({ type: '', text: '' })
         var allValid = true;
         if(!receiverInfoValidator.current.allValid()){
             receiverInfoValidator.current.showMessages()
@@ -272,7 +274,10 @@ const CheckoutForm = ({
         if(!applyPointsValid){
             allValid=false
         }
-        if(!allValid)return
+        if(!allValid){
+            setSubmitMessage({ type: 'error', text: '資料有誤' })
+            return
+        }
 
         if(!customer?.uuid ){
             console.log(estore)
@@ -925,6 +930,20 @@ const CheckoutForm = ({
                                 下單
                             </button>
                         </div>
+
+                        {/* Message display */}
+                        {submitMessage.text && (
+                            <div className={clsx(
+                                style['訊息框'],
+                                '訊息框',
+                                submitMessage.type === 'success' ? style['成功'] : style['錯誤'],
+                                submitMessage.type === 'success' ? '成功' : '錯誤'
+                            )}>
+                                {submitMessage.text}
+                            </div>
+                        )}
+
+
                     </div>
 
 

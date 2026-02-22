@@ -1,23 +1,14 @@
-// import React, {useEffect} from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
-// import AppCSR from './AppCSR.jsx';
-// import AppSSR from './AppSSR.jsx'
-
 
 import {customer_retrieve_wepage} from '@/api/webpage.js'
 import WebpageBody from '@/components/webpage/WebpageBody'
 import HydrationComplete from '@/components/HydrationComplete'
-
 import { Provider } from 'react-redux';
-
 import StoreSettingsPreloader from "@/components/website/StoreSettingsPreloader";
-// import { PersistGate } from 'redux-persist/integration/react';
-// import { store, persistor } from '@/redux/store/persistedStore';
 import { createSSRStore} from '@/redux/store/normalStore'
+import { store as csr_store } from '@/redux/store'
+
 const container = document.getElementById('app');
-
-// const isSSR = container.hasChildNodes();
-
 
 const isSSR = Array.from(container.childNodes).some(node => {
     return node.nodeType !== Node.COMMENT_NODE &&
@@ -25,13 +16,13 @@ const isSSR = Array.from(container.childNodes).some(node => {
   });
 const props = window.__INITIAL_PROPS__ || {};
 
-// console.log(isSSR)
 
 const csrBootstrap = async ()=>{
   const { default: AppCSR } = await import('./AppCSR.jsx');
   createRoot(container).render(
       <AppCSR {...props} />)
 }
+
 if (isSSR) {
   console.log('is ssr')
 
@@ -49,6 +40,7 @@ if (isSSR) {
   };
 
   const store = createSSRStore();
+  window.__APP_REDUX_STORE__ = store;
   customer_retrieve_wepage({webpage_name:window.__SSR_PARAMS__?.webpageName||'', object_uuid:window.__SSR_PARAMS__?.objectUUID||''}).then(res=>{
     hydrateRoot(container,  <Provider store={store}>
     {/* <PersistGate loading={null} persistor={persistor}> */}
@@ -62,6 +54,7 @@ if (isSSR) {
 } else {  //csr
 
   console.log('csr')
+  window.__APP_REDUX_STORE__ = csr_store;
   csrBootstrap();
 }
 
