@@ -17,6 +17,7 @@ import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;
 import { customer_register } from &quot;../../api/customer&quot;
 import Cookies from &quot;js-cookie&quot;;
 import { createValidator } from &quot;../../lib/validator&quot;
+import MyIcon from &quot;./my-icons/MyIcon&quot;
 // import route_names from &quot;../../route_names&quot;;
 
 // import 'intl-tel-input/build/css/intlTelInput.css';
@@ -87,7 +88,7 @@ const RegisterForm = ({
             setCountry(_country)
         })
     }, [])
-
+    const [submitMessage, setSubmitMessage] = useState({ type: '', text: '' })
     const [registerData, setRegisterData] = useState({
         first_name:'', last_name:'',phone:'', email:'',password:'', confirm_password:''
     })
@@ -107,19 +108,21 @@ const RegisterForm = ({
     
 
     const handleRegister = (event)=&gt;{
-
+        setSubmitMessage({ type: '', text: '' })
         if(!registerFormValidator.current.allValid()){
+            setSubmitMessage({ type: 'error', text: '資料有誤' })
             registerFormValidator.current.showMessages()
             forceUpdate(new Date())
             return
-          }
+        }
 
-          setAwaitSubmitButton(true)
+        setAwaitSubmitButton(true)
         customer_register({registerData, country}).then(res=&gt;{
             console.log(res.data)
             setShowEmailVerificationNotification(true)
             setAwaitSubmitButton(false)
         }).catch(err=&gt;{
+            setSubmitMessage({ type: 'error', text: '註冊失敗 請重試' })
             setAwaitSubmitButton(false)
         })
 
@@ -255,7 +258,7 @@ const RegisterForm = ({
                         }}
                     /&gt;
                     &lt;button className={clsx(style['顯示密碼-按鈕'], '顯示密碼-按鈕')} type=&quot;button&quot; onClick={()=&gt;{setViewPassword(!viewPassword)}}&gt;
-                        &lt;i className={clsx(style['顯示密碼-圖標'], '顯示密碼-圖標', viewPassword?&quot;fa fa-solid fa-eye-slash&quot;:&quot;fa fa-solid fa-eye&quot;)} /&gt;
+                        &lt;MyIcon name={viewPassword ? 'eye-slash' : 'eye'} className={clsx(style['顯示密碼-圖標'], '顯示密碼-圖標')} /&gt;
                     &lt;/button&gt;
                 &lt;/div&gt;
                 
@@ -279,7 +282,7 @@ const RegisterForm = ({
                         }}
                     /&gt;
                     &lt;button className={clsx(style['顯示確認密碼-按鈕'], '顯示確認密碼-按鈕')} type=&quot;button&quot; onClick={()=&gt;{setViewConfirmPassword(!viewConfirmPassword)}}&gt;
-                        &lt;i className={clsx(style['顯示確認密碼-圖標'], '顯示確認密碼-圖標', viewConfirmPassword?&quot;fa fa-solid fa-eye-slash&quot;:&quot;fa fa-solid fa-eye&quot;)} /&gt;
+                        &lt;MyIcon name={viewConfirmPassword ? 'eye-slash' : 'eye'} className={clsx(style['顯示確認密碼-圖標'], '顯示確認密碼-圖標')} /&gt;
                     &lt;/button&gt;
                 &lt;/div&gt;
                
@@ -297,6 +300,20 @@ const RegisterForm = ({
                     &lt;a className={clsx(style['登入連結'], '登入連結')} href={`/${routingTable?.['customer_login_route']}`} &gt;登入&lt;/a&gt;
                 &lt;/div&gt;
             &lt;/div&gt;
+
+            {/* Message display */}
+            {submitMessage.text &amp;&amp; (
+                &lt;div className={clsx(
+                    style['訊息框'],
+                    '訊息框',
+                    submitMessage.type === 'success' ? style['成功'] : style['錯誤'],
+                    submitMessage.type === 'success' ? '成功' : '錯誤'
+                )}&gt;
+                    {submitMessage.text}
+                &lt;/div&gt;
+            )}
+            
+
         &lt;/form&gt;
         &lt;div className={clsx(style['電子郵件認證通知框'], '電子郵件認證通知框', showEmailVerificationNotification?`${style['顯示']} 顯示`:'')}&gt;
             &lt;div className={clsx(style['電子郵件認證通知-文字框'], '電子郵件認證通知-文字框')}&gt;
@@ -460,6 +477,8 @@ export default RegisterForm;
 
 .顯示密碼-圖標,
 .顯示確認密碼-圖標 {
+    width: 20px;
+    height: 20px;
     font-size: 16px;
     color: #666;
 }

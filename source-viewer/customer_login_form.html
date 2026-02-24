@@ -20,6 +20,7 @@ import { setCustomer } from '../../redux/slices/customer-slice'
 import { customer_general_login, customer_forgot_password } from &quot;../../api/customer&quot;
 import Cookies from &quot;js-cookie&quot;;
 import { createValidator } from &quot;../../lib/validator&quot;
+import MyIcon from &quot;./my-icons/MyIcon&quot;
 
 const FORGOT_PASSWORD_COOLDOWN = 60; // seconds
 
@@ -77,7 +78,9 @@ const LoginForm = ({
     const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false)
     const [forgotPasswordCooldown, setForgotPasswordCooldown] = useState(0)
     const [forgotPasswordMessage, setForgotPasswordMessage] = useState({ type: '', text: '' })
-
+    
+    const [submitMessage, setSubmitMessage] = useState({ type: '', text: '' })
+    
 
     useEffect(() =&gt; {
         const urlSearchParams = new URLSearchParams(window.location.search);
@@ -100,8 +103,9 @@ const LoginForm = ({
 
 
     const handleLogin = (event)=&gt;{
-
+        setSubmitMessage({ type: '', text: '' })
         if(!loginFormValidator?.current?.allValid()){
+            setSubmitMessage({ type: 'error', text: '資料有誤' })
             loginFormValidator?.current?.showMessages()
             forceUpdate(new Date())
             return
@@ -123,6 +127,7 @@ const LoginForm = ({
             window.location.href = searchParams?.redirect||'/'
             // router.push(searchParams.get('redirect')||'/')
         }).catch(err=&gt;{
+            setSubmitMessage({ type: 'error', text: '登入失敗 請重試' })
             setAwaitSubmitButton(false)
         })
     }
@@ -253,7 +258,7 @@ const LoginForm = ({
                             }}
                         /&gt;
                         &lt;button className={clsx(style['顯示密碼-按鈕'], '顯示密碼-按鈕')} type=&quot;button&quot; onClick={()=&gt;{setViewPassword(!viewPassword)}}&gt;
-                            &lt;i className={clsx(style['顯示密碼-圖標'], '顯示密碼-圖標', viewPassword?&quot;fa fa-solid fa-eye-slash&quot;:&quot;fa fa-solid fa-eye&quot;)} /&gt;
+                            &lt;MyIcon name={viewPassword ? 'eye-slash' : 'eye'} className={clsx(style['顯示密碼-圖標'], '顯示密碼-圖標')} /&gt;
                         &lt;/button&gt;
                     &lt;/div&gt;
                     {loginFormValidator.current.message(&quot;password&quot;, loginData.password, &quot;required&quot;)}
@@ -282,6 +287,7 @@ const LoginForm = ({
             &lt;/Fragment&gt;
             }
 
+            
             &lt;div className={clsx(style['登入註冊框'], '登入註冊框')}&gt;
                 &lt;div className={clsx(style['登入按鈕框'], '登入按鈕框')}&gt;
                     {
@@ -307,6 +313,19 @@ const LoginForm = ({
                 &lt;/div&gt;
             &lt;/div&gt;
             
+            {/* Message display */}
+            {submitMessage.text &amp;&amp; (
+                &lt;div className={clsx(
+                    style['訊息框'],
+                    '訊息框',
+                    submitMessage.type === 'success' ? style['成功'] : style['錯誤'],
+                    submitMessage.type === 'success' ? '成功' : '錯誤'
+                )}&gt;
+                    {submitMessage.text}
+                &lt;/div&gt;
+            )}
+
+
         &lt;/form&gt;
 
     )
@@ -473,6 +492,8 @@ export default LoginForm;
 }
 
 .顯示密碼-圖標{
+    width: 20px;
+    height: 20px;
     font-size: 16px;
     color: #666;
 }

@@ -93,6 +93,7 @@ const OrderItemsSummary = ({order, routingTable})=>{
                                                         {`${order_compose_product?.quantity}`}
                                                     </span>
                                                 </td>
+                                                <td></td>
                                             </tr>
                                         )
                                     })

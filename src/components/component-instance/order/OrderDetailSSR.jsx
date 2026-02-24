@@ -9,11 +9,13 @@ const OrderDetailSSR = ({
     
     const [guestUUID, setGuestUUID] = useState()
     const [objectUUID, setObjectUUID] = useState()
+    const [ready, setReady] = useState(false)
     useEffect(()=>{
         setGuestUUID(new URLSearchParams(window.location.search).get('guest_uuid'))
         setObjectUUID(window?.__SSR_PARAMS__?.objectUUID)
+        setReady(true)
     },[])
-    return <OrderDetail objectUUID={objectUUID} guestUUID={guestUUID} {...props}/>
+    return ready?<OrderDetail objectUUID={objectUUID} guestUUID={guestUUID} {...props}/>:null
 };
 
 

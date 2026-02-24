@@ -59,7 +59,7 @@ const OrderDetail = ({
         }else{
             window.location.href = `/${routingTable?.['customer_login_route']}?redirect=${encodeURIComponent(location.pathname + location.search + location.hash)}`
         }
-    },[objectUUID])
+    },[objectUUID, guestUUID])
     //TODO SSR. 把window.__ssr__ object_id 抓出來
     const order_status = {
         'awaiting_payment':'待付款',

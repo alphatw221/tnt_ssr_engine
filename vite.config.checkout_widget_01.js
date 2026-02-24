@@ -2,12 +2,22 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import replace from '@rollup/plugin-replace'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [
     react(),
+    //需要replace 因為redux有問題
+    replace({
+      preventAssignment: true,
+
+      // ✅ 強制取代所有來源（含 node_modules）
+      values: {
+        'process.env.NODE_ENV': JSON.stringify('production'),
+      },
+    }),
   ],
   resolve: {
     alias: {

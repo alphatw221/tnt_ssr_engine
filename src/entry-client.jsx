@@ -55,6 +55,7 @@ if (isSSR) {
 
   console.log('csr')
   window.__APP_REDUX_STORE__ = csr_store;
+  window.__IS_CSR__ = true;
   csrBootstrap();
 }
 
