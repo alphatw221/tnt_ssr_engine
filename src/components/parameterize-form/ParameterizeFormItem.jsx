@@ -500,9 +500,6 @@ const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
                 dataRef.current = data;
             }, [data]);
             const cacheRef = useRef(_cache);
-            useEffect(() => {
-                cacheRef.current = _cache;
-            }, [_cache]);
             const [language, setLanguage] = useState(data?.data?.inner_lang||"javascript");
 
             const handleEditorDidMount = (editor, monaco)=> {
@@ -540,7 +537,7 @@ const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
                             theme={item.theme||'vs-light'}
                             value={_cache}
                             options={item?.options||{}}
-                            onChange={(e)=>{setCache(e)}}
+                            onChange={(e)=>{setCache(e); cacheRef.current = e;}}
                             onMount={handleEditorDidMount}
                             onBlur={(editor)=>{console.log('editor on blur')}}
 
