@@ -97,14 +97,14 @@ const ECPay = ({orderUUID, paymentServiceUUID, routingTable, ecpayMerchantID, pr
 
             ecpayReady &&
             <div className={clsx(style['送出按鈕框'], '送出按鈕框')}>
-                <button className={clsx(style['送出按鈕'], '送出按鈕')} 
+                <button className={clsx(style['送出按鈕'], '送出按鈕', wait?`${style['等待']} 等待`:'')} 
                     disabled={wait}
                     onClick={()=>{
                     
                         setWait(true);
 
                     window?.ECPay.getPayToken((paymentInfo, errMsg)=>{
-
+                        console.log(paymentInfo)
                         if (errMsg != null) {
                             console.log(errMsg)
                             setWait(false);
@@ -125,7 +125,10 @@ const ECPay = ({orderUUID, paymentServiceUUID, routingTable, ecpayMerchantID, pr
                             }
 
 
-                        }).catch(err=>{setWait(false)})
+                        }).catch(err=>{
+                            console.log(err)
+                            setWait(false)
+                        })
 
                     });
                 }}>送出</button>

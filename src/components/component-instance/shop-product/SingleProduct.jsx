@@ -11,7 +11,6 @@ import { getProductPrice, isStockSufficient } from "@/lib/utils/productHelper"
 
 // import ProductModal from "./ProductModal"
 
-import {useClickOutsideEvent} from '@/lib/utils/clickOutside.js'
 import ProductDetailClient from '@/components/component-instance/product-detail/ProductDetailClient'
 import { getToFixedNumber } from "@/lib/utils/toFixedHelper";
 
@@ -26,13 +25,8 @@ const SingleProduct = ({
     const dispatch = useAppDispatch();
     const now = new Date().toJSON().slice(0, 10);
     const ref = useRef()
-    const modalRef = useRef()
     const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalMinimumPrice, originalMaximumPrice, discountMinimumPrice, discountMaximumPrice, discountMaximumPercent, discountMinimumPercent} = getProductPrice(now, product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
     const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( product, 1, cartProduct?.quantity||0)
-
-    useClickOutsideEvent(useEffect, modalRef,()=>{
-        setModalShow(false)
-    },modalShow)
 
     useEffect(()=>{
             const mouseEnterHandler = (e)=>{
@@ -195,8 +189,13 @@ const SingleProduct = ({
 
         {
             modalShow &&
-            <div className={clsx(style["快速瀏覽彈窗"], '快速瀏覽彈窗')} ref={modalRef}>
-                <ProductDetailClient product={product}/>
+            <div className={clsx(style["快速瀏覽彈窗"], '快速瀏覽彈窗')}>
+                <div className={clsx(style["快速瀏覽標頭"], '快速瀏覽標頭')}>
+                    <button className={clsx(style["快速瀏覽關閉"], '快速瀏覽關閉')} onClick={() => setModalShow(false)}>✕</button>
+                </div>
+                <div className={clsx(style["快速瀏覽內容"], '快速瀏覽內容')}>
+                    <ProductDetailClient product={product}/>
+                </div>
             </div>
         }
     </Fragment>
