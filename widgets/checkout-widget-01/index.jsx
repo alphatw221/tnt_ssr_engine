@@ -135,6 +135,11 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
     }, [sameAsReceiver, purchaserData])
 
     useEffect(()=>{
+        receiverInfoValidator.current.purgeFields()
+        forceUpdate(new Date())
+    }, [sameAsReceiver])
+
+    useEffect(()=>{
         if(country){
             customer_get_store_checkout_services({
                 country,

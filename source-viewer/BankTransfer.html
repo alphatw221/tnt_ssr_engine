@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>BankTransfer</title>
+</head>
+<body>
+<h1>BankTransfer</h1>
+<h2>src/components/component-instance/order/payment-method/BankTransfer.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import clsx from &quot;clsx&quot;;
+import { useState, useEffect, Fragment, useRef, createRef } from &quot;react&quot;;
+// import { useSelector, useDispatch } from &quot;react-redux&quot;;
+// import { useAppDispatch } from '../../../../redux/hooks'
+import style from &quot;./BankTransfer.module.scss&quot;
+
+import { createValidator } from &quot;@/lib/validator&quot;
+import { customer_upload_receipt } from &quot;@/api/order&quot;;
+// import { Link, useLocation, useParams, useNavigate } from &quot;react-router-dom&quot;;
+
+import { useAppDispatch } from &quot;@/redux/hooks&quot;;
+import {removeCache} from &quot;@/redux/slices/order-slice&quot;
+
+const BankTransfer = ({ orderUUID, paymentServiceUUID, bankName, bankAccount, bankDescription, images,  routingTable}) =&gt; {
+
+
+
+    const searchParams = new URLSearchParams(window.location.search);
+
+    // let { object_id } = useParams();
+
+    const [, forceUpdate] = useState();
+    const [uploadData,setUploadData] = useState(
+        { payment_service_bank_account_identifier:''}
+    )
+
+    const uploadReceiptFormValidator = useRef(createValidator())
+    const [receiptImage,setReceiptImage] = useState(null)
+    const [previewReceiptImage,setPreviewReceiptImage] = useState(null)
+
+    const fileUploadInput = createRef()
+
+    const dispatch = useAppDispatch()
+    
+    const handleFileChange = (e) =&gt; {
+      if (e.target.files) {
+  
+        setReceiptImage(e.target.files[0]);
+  
+        let reader = new FileReader();
+        reader.readAsDataURL(e.target.files[0]);
+        reader.onload = event =&gt;{ setPreviewReceiptImage( event.target.result )};
+  
+      }
+    };
+  
+    const removeReceiptImage = ()=&gt;{
+        fileUploadInput.current.value=&quot;&quot;
+        setReceiptImage(null)
+        setPreviewReceiptImage(null)
+    }
+
+    const [awaitSubmitButton, setAwaitSubmitButton] = useState(false)
+
+
+    const uploadReceipt = ()=&gt;{
+        if(!uploadReceiptFormValidator.current.allValid()){
+            uploadReceiptFormValidator.current.showMessages()
+            forceUpdate(new Date())
+            return
+          }
+        console.log(uploadData)
+        
+        const formData = new FormData()
+        if(receiptImage){
+            formData.set('payment_service_bank_transfer_receipt',receiptImage)
+        }
+        formData.set('payment_service_bank_account_identifier',uploadData.payment_service_bank_account_identifier)
+        setAwaitSubmitButton(true)
+        customer_upload_receipt({
+            'order_uuid':orderUUID,
+            'guest_uuid':searchParams.get('guest_uuid'),
+            'payment_service_uuid':paymentServiceUUID,
+            'data':formData
+        }).then(res=&gt;{
+            console.log(res.data)
+            dispatch(removeCache())
+            window.location.href = `/${routingTable?.['order_route']}/${orderUUID}?guest_uuid=${searchParams.get('guest_uuid')}`
+
+        }).catch(err=&gt;{
+            console.log(err)
+            setAwaitSubmitButton(false)
+        })
+    }
+
+
+
+    return (
+
+
+        &lt;Fragment &gt;
+
+
+            &lt;div className={clsx(style['銀行資訊框'], '銀行資訊框')}&gt;
+                {
+                    (images||[]).length&gt;0 &amp;&amp;
+                    &lt;div className={clsx(style['銀行圖片框'], '銀行圖片框')}&gt;
+                        {
+                            (images||[]).map((paymentServiceImage,key)=&gt;{
+                                return (
+                                    &lt;div className={clsx(style['單銀行圖片框'], '單銀行圖片框')} key={key}&gt;
+                                        &lt;img className={clsx(style['單銀行圖片'], '單銀行圖片')} src={paymentServiceImage?.image} /&gt;
+                                    &lt;/div&gt;
+                                )
+                            })
+                        }
+                    &lt;/div&gt;
+                }
+                
+                &lt;div className={clsx(style['銀行名稱框'], '銀行名稱框')}&gt;
+                    &lt;label className={clsx(style['銀行名稱框-標籤'], '銀行名稱框-標籤')}&gt;銀行名稱&lt;/label&gt;
+                    &lt;span className={clsx(style['銀行名稱'], '銀行名稱')}&gt;{bankName}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['銀行帳號框'], '銀行帳號框')}&gt;
+                    &lt;label className={clsx(style['銀行帳號-標籤'], '銀行帳號-標籤')}&gt;銀行帳號&lt;/label&gt;
+                    &lt;span className={clsx(style['銀行帳號'], '銀行帳號')}&gt;{bankAccount}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['轉帳資訊框'], '轉帳資訊框')}&gt;
+                    &lt;label className={clsx(style['轉帳資訊-標籤'], '轉帳資訊-標籤')}&gt;轉帳資訊&lt;/label&gt;
+                    &lt;p className={clsx(&quot;ck-content&quot;, style['轉帳資訊'], '轉帳資訊')}
+                        dangerouslySetInnerHTML={{ __html: bankDescription }}
+                    &gt;&lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;div className={clsx(style['上傳付款證明框'], '上傳付款證明框')}&gt;
+
+                
+                &lt;div className={clsx(style['上傳單據框'], '上傳單據框')}&gt;
+                    &lt;label className={clsx(style['上傳單據-標籤'], '上傳單據框-標籤')}&gt;上傳單據&lt;/label&gt;
+                    {previewReceiptImage?
+
+                    &lt;div className={clsx(style['上傳圖片框'], '上傳圖片框')}&gt;
+                        &lt;img className={clsx(style['上傳圖片'], '上傳圖片')} src={previewReceiptImage}/&gt;
+                        &lt;button className={clsx(style['上傳圖片-移除按鈕'], '上傳圖片-移除按鈕')} onClick={()=&gt;{removeReceiptImage()}}&gt;x&lt;/button&gt;
+                    &lt;/div&gt;
+                    
+                    :
+                    &lt;button className={clsx(style['上傳單據-按鈕'], '上傳單據-按鈕')} onClick={()=&gt;{fileUploadInput.current.click()}}&gt;
+                        上傳檔案
+                    &lt;/button&gt;
+                    }
+                    
+                    &lt;input ref={fileUploadInput} type=&quot;file&quot; accept=&quot;image/jpeg,image/pen,image/jpg&quot; hidden onChange={handleFileChange}/&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['帳戶識別框'], '帳戶識別框')}&gt;
+                    &lt;label className={clsx(style['帳戶識別-標籤'], '帳戶識別-標籤')}&gt;帳號末五碼&lt;/label&gt;
+                    &lt;input className={clsx(style['帳戶識別-輸入'], '帳戶識別-輸入')} type=&quot;text&quot; value={uploadData?.payment_service_bank_account_identifier} onChange={(event)=&gt;{setUploadData({...uploadData, payment_service_bank_account_identifier:event.target.value})}}/&gt;
+                    {uploadReceiptFormValidator.current.message(&quot;payment_service_bank_account_identifier&quot;, uploadData.payment_service_bank_account_identifier, &quot;required&quot;)}
+                &lt;/div&gt;
+                
+
+                &lt;div className={clsx(style['送出按鈕框'], '送出按鈕框')}&gt;
+                    &lt;button className={clsx(style['送出按鈕'], '送出按鈕', awaitSubmitButton?`${style['等待']} 等待`:'')} disabled={awaitSubmitButton} onClick={()=&gt;{uploadReceipt()}}&gt;送出&lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            
+        &lt;/Fragment&gt;
+
+    )
+    }
+
+
+
+    BankTransfer.propTypes = {
+    // bankOptions:PropTypes.array,
+};
+
+export default BankTransfer;
+</pre>
+<h2>src/components/component-instance/order/payment-method/BankTransfer.module.scss</h2>
+<pre>/* === 銀行資訊框 === */
+.銀行資訊框 {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 銀行圖片區 */
+.銀行圖片框 {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* 單個銀行圖片框 */
+.單銀行圖片框 {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+}
+
+/* 銀行圖片 */
+.單銀行圖片 {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* 銀行名稱與帳號 */
+.銀行名稱框,
+.銀行帳號框,
+.轉帳資訊框 {
+  margin-bottom: 12px;
+}
+
+/* 標籤通用樣式 */
+.銀行名稱框-標籤,
+.銀行帳號-標籤,
+.轉帳資訊-標籤 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* 銀行名稱與帳號文字 */
+.銀行名稱,
+.銀行帳號 {
+  font-size: 16px;
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* 轉帳資訊 */
+.轉帳資訊 {
+  font-size: 14px;
+  color: #555;
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+/* === 上傳付款證明框 === */
+.上傳付款證明框 {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background-color: #fefefe;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 上傳單據框 */
+.上傳單據框 {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+/* 上傳標籤 */
+.上傳單據框-標籤 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* 上傳按鈕 */
+.上傳單據-按鈕 {
+  display: inline-block;
+  background-color: #007bff;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.上傳單據-按鈕:hover {
+  background-color: #0056b3;
+}
+
+/* 帳戶識別框 */
+.帳戶識別框 {
+  margin-bottom: 16px;
+}
+
+/* 帳戶識別標籤 */
+.帳戶識別-標籤 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* 帳戶識別輸入框 */
+.帳戶識別-輸入 {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* 錯誤訊息 */
+.錯誤訊息 {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  color: red;
+}
+
+/* 送出按鈕 */
+.送出按鈕框 {
+  text-align: center;
+}
+
+.送出按鈕 {
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.送出按鈕:hover {
+  background-color: #218838;
+}
+</pre>
+</body>
+</html>
