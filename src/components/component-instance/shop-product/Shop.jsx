@@ -48,6 +48,8 @@ const Shop = ({
 
     const {cache} = useAppSelector((state) => state.shop);
 
+    // SSR fallback: use element.data.cache when Redux cache is not yet populated
+    const effectiveCache = cache?.[element?.uuid] ?? element?.data?.cache;
 
     // const [offset, setOffset] = useState(0);
     useEffect(() => {
@@ -64,13 +66,14 @@ const Shop = ({
     const defaultKeyword = ''
 
 
-    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
-    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
-    
-    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):(cache?.[element?.uuid]?.categoryUUIDs||'').split(',')||[]);
-    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[element?.uuid]?.pageSize||defaultPageSize);
-    const [page, setPage] = useState(searchParams.get('page')||cache?.[element?.uuid]?.page||defaultPage);
-    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[element?.uuid]?.orderBy||defaultOrderBy);
+    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
+    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
+
+    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):cache?.[element?.uuid]?.categoryUUIDs??((element?.data?.filter_categories??'').split(',')||[]));
+    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[element?.uuid]?.pageSize||element?.data?.page_size||defaultPageSize);
+    const [page, setPage] = useState(searchParams.get('page')||cache?.[element?.uuid]?.page||element?.data?.page||defaultPage);
+    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[element?.uuid]?.orderBy||element?.data?.order_by||defaultOrderBy);
+
     const [layoutOption, setLayoutOption] = useState(element?.data?.default_layout||'大格子');
 
 
@@ -78,7 +81,40 @@ const Shop = ({
     
 
     useEffect(()=>{
-        console.log(cache?.[element?.uuid])
+        // If Redux cache is empty but SSR cache exists, seed Redux cache and skip fetch
+        if (!cache?.[element?.uuid] && element?.data?.cache?.results) {
+            const ssrCount = element.data.cache.count
+            const ssrResults = element.data.cache.results
+            const ssrCategories = element?.data?.cache?.categories
+            const ssrKeyword = element.data?.keyword ?? defaultKeyword
+            const ssrCategoryUUIDs = (element?.data?.filter_categories??'').split(',')||[]
+            const ssrPage = element?.data?.page||defaultPage
+            const ssrPageSize = element?.data?.page_size||defaultPageSize
+            const ssrOrderBy = element?.data?.order_by||defaultOrderBy
+            
+
+            if (
+                ssrKeyword == keyword &&
+                ssrCategoryUUIDs?.join(',') == categoryUUIDs?.join(',') &&
+                ssrPage == page &&
+                ssrPageSize == pageSize &&
+                ssrOrderBy == orderBy
+            ) {
+                dispatch(setCacheKey({
+                    key: element?.uuid,
+                    keyword:ssrKeyword,
+                    page:ssrPage,
+                    pageSize:ssrPageSize,
+                    orderBy:ssrOrderBy,
+                    categoryUUIDs: ssrCategoryUUIDs,
+                    results: ssrResults || [],
+                    count: ssrCount || 0,
+                    categories: ssrCategories || [],
+                }))
+                return
+            }
+        }
+
         if(
             !cache?.[element?.uuid]||
             (cache?.[element?.uuid]?.keyword||defaultKeyword)!=keyword||
@@ -142,13 +178,13 @@ const Shop = ({
                 <div className={clsx(style['商品類別框'], "商品類別框")}>
                     <label className={clsx(style['商品類別-標籤'], "商品類別-標籤")}>商品類別</label>
                     {
-                        (cache?.[element?.uuid]?.categories||[]).length == 0 &&
+                        (effectiveCache?.categories||[]).length == 0 &&
                         <div className={clsx(style['無商品類別框'], "無商品類別框")}>
                             <span className={clsx(style['無商品類別文字'], "無商品類別文字")}>無商品類別</span>
                         </div>
                     }
                     {
-                        (cache?.[element?.uuid]?.categories||[]).map((category,key)=>(                            
+                        (effectiveCache?.categories||[]).map((category,key)=>(                            
                             <div key={key} className={clsx(style['單商品類別框'], "單商品類別框")}>
                                 <input className={clsx(style['單商品類別-勾選'], "單商品類別-勾選")} 
                                     type="checkbox" 
@@ -185,7 +221,7 @@ const Shop = ({
                 </div>
                 <div className={clsx(style['商品框-網格'], "商品框-網格", style[layoutOption], layoutOption)}>
                     {
-                        (cache?.[element?.uuid]?.results||[]).map((product,key)=>(                            
+                        (effectiveCache?.results||[]).map((product,key)=>(                            
                             <SingleProduct 
                                 key={key} 
                                 product={product} 
@@ -200,7 +236,7 @@ const Shop = ({
 
                 <div className={clsx(style['分頁器框'], "分頁器框")}>
                     <Paginator
-                        totalRecords={cache?.[element?.uuid]?.count||0}
+                        totalRecords={effectiveCache?.count||0}
                         pageLimit={pageSize}
                         pageNeighbours={2}
                         currentPage={page}

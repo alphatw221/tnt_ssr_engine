@@ -25,19 +25,22 @@ const BlogGrid = ({
 
     const {cache} = useAppSelector((state) => state.blog);
 
+    // SSR fallback: use element.data.cache when Redux cache is not yet populated
+    const effectiveCache = cache?.[element?.uuid] ?? element?.data?.cache;
+
     const defaultPageSize = 25
     const defaultPage = 1
     const defaultOrderBy = 'priority,updated_at'
     const defaultKeyword = ''
 
 
-    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
-    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
+    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
+    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
 
-    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):(cache?.[element?.uuid]?.categoryUUIDs||'').split(',')||[]);
-    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[element?.uuid]?.pageSize||defaultPageSize);
-    const [page, setPage] = useState(searchParams.get('page')||cache?.[element?.uuid]?.page||defaultPage);
-    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[element?.uuid]?.orderBy||defaultOrderBy);
+    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):cache?.[element?.uuid]?.categoryUUIDs??((element?.data?.filter_categories??'').split(',')||[]));
+    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[element?.uuid]?.pageSize||element?.data?.page_size||defaultPageSize);
+    const [page, setPage] = useState(searchParams.get('page')||cache?.[element?.uuid]?.page||element?.data?.page||defaultPage);
+    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[element?.uuid]?.orderBy||element?.data?.order_by||defaultOrderBy);
     const [layoutOption, setLayoutOption] = useState(element?.data?.default_layout||'大格子');
 
 
@@ -45,7 +48,39 @@ const BlogGrid = ({
 
 
     useEffect(()=>{
-        console.log(cache?.[element?.uuid])
+        // If Redux cache is empty but SSR cache exists, seed Redux cache and skip fetch
+        if (!cache?.[element?.uuid] && element?.data?.cache?.results) {
+            const ssrCount = element.data.cache.count
+            const ssrResults = element.data.cache.results
+            const ssrCategories = element?.data?.cache?.categories
+            const ssrKeyword = element.data?.keyword ?? defaultKeyword
+            const ssrCategoryUUIDs = (element?.data?.filter_categories??'').split(',')||[]
+            const ssrPage = element?.data?.page||defaultPage
+            const ssrPageSize = element?.data?.page_size||defaultPageSize
+            const ssrOrderBy = element?.data?.order_by||defaultOrderBy
+
+            if (
+                ssrKeyword == keyword &&
+                ssrCategoryUUIDs?.join(',') == categoryUUIDs?.join(',') &&
+                ssrPage == page &&
+                ssrPageSize == pageSize &&
+                ssrOrderBy == orderBy
+            ) {
+                dispatch(setCacheKey({
+                    key: element?.uuid,
+                    keyword: ssrKeyword,
+                    page: ssrPage,
+                    pageSize: ssrPageSize,
+                    orderBy: ssrOrderBy,
+                    categoryUUIDs: ssrCategoryUUIDs,
+                    results: ssrResults || [],
+                    count: ssrCount || 0,
+                    categories: ssrCategories || [],
+                }))
+                return
+            }
+        }
+
         if(
             !cache?.[element?.uuid]||
             (cache?.[element?.uuid]?.keyword||defaultKeyword)!=keyword||
@@ -56,13 +91,13 @@ const BlogGrid = ({
         ){
             var _filter_uuids, _filter_categories, _filter_tags, _exclude_uuids, _exclude_categories, _exclude_tags, _keyword, _page, _page_size, _order_by, _with_categories
             customer_search_blog_post(
-                _filter_uuids='', 
-                _filter_categories=categoryUUIDs?.join(','), 
-                _filter_tags='', 
+                _filter_uuids='',
+                _filter_categories=categoryUUIDs?.join(','),
+                _filter_tags='',
                 _exclude_uuids='',
                 _exclude_categories='',
                 _exclude_tags='',
-                _keyword=keyword, 
+                _keyword=keyword,
                 _page=page,
                 _page_size=pageSize,
                 _order_by=orderBy,
@@ -112,13 +147,13 @@ const BlogGrid = ({
                 <div className={clsx(style['文章類別框'], "文章類別框")}>
                     <label className={clsx(style['文章類別-標籤'], "文章類別-標籤")}>文章類別</label>
                     {
-                        (cache?.[element?.uuid]?.categories||[]).length == 0 &&
+                        (effectiveCache?.categories||[]).length == 0 &&
                         <div className={clsx(style['無文章類別框'], "無文章類別框")}>
                             <span className={clsx(style['無文章類別文字'], "無文章類別文字")}>無文章類別</span>
                         </div>
                     }
                     {
-                        (cache?.[element?.uuid]?.categories||[]).map((category,key)=>(
+                        (effectiveCache?.categories||[]).map((category,key)=>(
                             <div key={key} className={clsx(style['單文章類別框'], "單文章類別框")}>
                                 <input className={clsx(style['單文章類別-勾選'], "單文章類別-勾選")}
                                     type="checkbox"
@@ -155,7 +190,7 @@ const BlogGrid = ({
                 </div>
                 <div className={clsx(style['文章框-網格'], "文章框-網格", style[layoutOption], layoutOption)}>
                     {
-                        (cache?.[element?.uuid]?.results||[]).map((blogPost,key)=>(
+                        (effectiveCache?.results||[]).map((blogPost,key)=>(
                             <BlogPostSingle
                                 key={key}
                                 blogPost={blogPost}
@@ -167,7 +202,7 @@ const BlogGrid = ({
 
                 <div className={clsx(style['分頁器框'], "分頁器框")}>
                     <Paginator
-                        totalRecords={cache?.[element?.uuid]?.count||0}
+                        totalRecords={effectiveCache?.count||0}
                         pageLimit={pageSize}
                         pageNeighbours={2}
                         currentPage={page}
@@ -179,7 +214,6 @@ const BlogGrid = ({
                 </div>
 
             </div>
-
 
 
 

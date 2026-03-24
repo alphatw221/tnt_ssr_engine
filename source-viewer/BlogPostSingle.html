@@ -18,7 +18,7 @@ const BlogPostSingle = ({blogPost, routingTable})=&gt;{
       &lt;div className={clsx(style[&quot;部落格文章框&quot;], '部落格文章框')}&gt;
         &lt;div className={clsx(style[&quot;部落格文章卡片&quot;], '部落格文章卡片')}&gt;
           &lt;div className={clsx(style[&quot;文章圖片框&quot;], '文章圖片框')}&gt;
-            &lt;a className={clsx(style[&quot;文章圖片連結&quot;], '文章圖片連結')} href={`/blog_post/${blogPost?.id}`}&gt;
+            &lt;a className={clsx(style[&quot;文章圖片連結&quot;], '文章圖片連結')} href={`/blog_post/${blogPost?.uuid}`}&gt;
               &lt;img
                 className={clsx(style[&quot;文章圖片&quot;], '文章圖片')}
                 src={blogPost?.image}

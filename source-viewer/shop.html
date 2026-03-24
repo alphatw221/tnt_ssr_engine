@@ -57,6 +57,8 @@ const Shop = ({
 
     const {cache} = useAppSelector((state) =&gt; state.shop);
 
+    // SSR fallback: use element.data.cache when Redux cache is not yet populated
+    const effectiveCache = cache?.[element?.uuid] ?? element?.data?.cache;
 
     // const [offset, setOffset] = useState(0);
     useEffect(() =&gt; {
@@ -73,13 +75,14 @@ const Shop = ({
     const defaultKeyword = ''
 
 
-    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
-    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
-    
-    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):(cache?.[element?.uuid]?.categoryUUIDs||'').split(',')||[]);
-    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[element?.uuid]?.pageSize||defaultPageSize);
-    const [page, setPage] = useState(searchParams.get('page')||cache?.[element?.uuid]?.page||defaultPage);
-    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[element?.uuid]?.orderBy||defaultOrderBy);
+    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
+    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
+
+    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):cache?.[element?.uuid]?.categoryUUIDs??((element?.data?.filter_categories??'').split(',')||[]));
+    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[element?.uuid]?.pageSize||element?.data?.page_size||defaultPageSize);
+    const [page, setPage] = useState(searchParams.get('page')||cache?.[element?.uuid]?.page||element?.data?.page||defaultPage);
+    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[element?.uuid]?.orderBy||element?.data?.order_by||defaultOrderBy);
+
     const [layoutOption, setLayoutOption] = useState(element?.data?.default_layout||'大格子');
 
 
@@ -87,7 +90,40 @@ const Shop = ({
     
 
     useEffect(()=&gt;{
-        console.log(cache?.[element?.uuid])
+        // If Redux cache is empty but SSR cache exists, seed Redux cache and skip fetch
+        if (!cache?.[element?.uuid] &amp;&amp; element?.data?.cache?.results) {
+            const ssrCount = element.data.cache.count
+            const ssrResults = element.data.cache.results
+            const ssrCategories = element?.data?.cache?.categories
+            const ssrKeyword = element.data?.keyword ?? defaultKeyword
+            const ssrCategoryUUIDs = (element?.data?.filter_categories??'').split(',')||[]
+            const ssrPage = element?.data?.page||defaultPage
+            const ssrPageSize = element?.data?.page_size||defaultPageSize
+            const ssrOrderBy = element?.data?.order_by||defaultOrderBy
+            
+
+            if (
+                ssrKeyword == keyword &amp;&amp;
+                ssrCategoryUUIDs?.join(',') == categoryUUIDs?.join(',') &amp;&amp;
+                ssrPage == page &amp;&amp;
+                ssrPageSize == pageSize &amp;&amp;
+                ssrOrderBy == orderBy
+            ) {
+                dispatch(setCacheKey({
+                    key: element?.uuid,
+                    keyword:ssrKeyword,
+                    page:ssrPage,
+                    pageSize:ssrPageSize,
+                    orderBy:ssrOrderBy,
+                    categoryUUIDs: ssrCategoryUUIDs,
+                    results: ssrResults || [],
+                    count: ssrCount || 0,
+                    categories: ssrCategories || [],
+                }))
+                return
+            }
+        }
+
         if(
             !cache?.[element?.uuid]||
             (cache?.[element?.uuid]?.keyword||defaultKeyword)!=keyword||
@@ -151,13 +187,13 @@ const Shop = ({
                 &lt;div className={clsx(style['商品類別框'], &quot;商品類別框&quot;)}&gt;
                     &lt;label className={clsx(style['商品類別-標籤'], &quot;商品類別-標籤&quot;)}&gt;商品類別&lt;/label&gt;
                     {
-                        (cache?.[element?.uuid]?.categories||[]).length == 0 &amp;&amp;
+                        (effectiveCache?.categories||[]).length == 0 &amp;&amp;
                         &lt;div className={clsx(style['無商品類別框'], &quot;無商品類別框&quot;)}&gt;
                             &lt;span className={clsx(style['無商品類別文字'], &quot;無商品類別文字&quot;)}&gt;無商品類別&lt;/span&gt;
                         &lt;/div&gt;
                     }
                     {
-                        (cache?.[element?.uuid]?.categories||[]).map((category,key)=&gt;(                            
+                        (effectiveCache?.categories||[]).map((category,key)=&gt;(                            
                             &lt;div key={key} className={clsx(style['單商品類別框'], &quot;單商品類別框&quot;)}&gt;
                                 &lt;input className={clsx(style['單商品類別-勾選'], &quot;單商品類別-勾選&quot;)} 
                                     type=&quot;checkbox&quot; 
@@ -194,7 +230,7 @@ const Shop = ({
                 &lt;/div&gt;
                 &lt;div className={clsx(style['商品框-網格'], &quot;商品框-網格&quot;, style[layoutOption], layoutOption)}&gt;
                     {
-                        (cache?.[element?.uuid]?.results||[]).map((product,key)=&gt;(                            
+                        (effectiveCache?.results||[]).map((product,key)=&gt;(                            
                             &lt;SingleProduct 
                                 key={key} 
                                 product={product} 
@@ -209,7 +245,7 @@ const Shop = ({
 
                 &lt;div className={clsx(style['分頁器框'], &quot;分頁器框&quot;)}&gt;
                     &lt;Paginator
-                        totalRecords={cache?.[element?.uuid]?.count||0}
+                        totalRecords={effectiveCache?.count||0}
                         pageLimit={pageSize}
                         pageNeighbours={2}
                         currentPage={page}

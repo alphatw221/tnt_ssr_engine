@@ -12,32 +12,28 @@ function findElement(currentElement, target_parent_relation_uuid){
         if((currentElement?.children[i]?.parent_relation_uuid||'')===target_parent_relation_uuid){
             return currentElement.children[i]
         }
-        return findElement(currentElement?.children[i], target_parent_relation_uuid)
-
+        const found = findElement(currentElement?.children[i], target_parent_relation_uuid)
+        if(found) return found
     }
-    
+
 }
 
 export function websiteFindElement(website, target_parent_relation_uuid){
     for(let k=0;k<(website?.webpages||[]).length;k++){
         const webpage = website?.webpages[k]
         for(let i=0;i<(webpage?.head_elements||[]).length;i++){
-
             if((webpage?.head_elements[i]?.parent_relation_uuid||'')===target_parent_relation_uuid){
                 return webpage.head_elements[i]
             }
-            return findElement(webpage.head_elements[i], target_parent_relation_uuid)
-
-
+            const found = findElement(webpage.head_elements[i], target_parent_relation_uuid)
+            if(found) return found
         }
         for(let j=0;j<(webpage?.body_elements||[]).length;j++){
-
             if((webpage?.body_elements[j]?.parent_relation_uuid||'')===target_parent_relation_uuid){
                 return webpage.body_elements[j]
             }
-            return findElement(webpage.body_elements[j], target_parent_relation_uuid)
-
-
+            const found = findElement(webpage.body_elements[j], target_parent_relation_uuid)
+            if(found) return found
         }
     }
 
@@ -219,9 +215,9 @@ function findAndInsertChildElement(currentElement, target_parent_relation_uuid, 
 
         if(currentElement?.parent_relation_uuid===target_parent_relation_uuid){
             if(sequence === -1){
-                currentElement.children?.push(childElement)
+                (currentElement.children ||= []).push(childElement)
             }else{
-                currentElement.children?.splice(sequence+after, 0, childElement)
+                (currentElement.children ||= []).splice(sequence+after, 0, childElement)
             }
         }else{
             for(let i=0;i<(currentElement?.children||[]).length;i++){

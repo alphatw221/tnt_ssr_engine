@@ -24,6 +24,7 @@ import ProductDetailCSR from "@/components/component-instance/product-detail/Pro
 import BlogPostDetailCSR from '../component-instance/blog-post-detail/BlogPostDetailCSR'
 import ResetPasswordForm from "../component-instance/ResetPasswordForm";
 import BlogGrid from "../component-instance/BlogGrid";
+import DynamicRouteElement from "../component-instance/DynamicRouteElement";
 
 
 
@@ -86,8 +87,11 @@ const TypeElementCSR = ({
             return (<BlogGrid 
                  element={element}  {...props}/>)  
         case 'customer_reset_password_form':
-            return (<ResetPasswordForm 
-                 element={element}  {...props}/>)  
+            return (<ResetPasswordForm
+                 element={element}  {...props}/>)
+        case 'dynamic_route_element':
+            return (<DynamicRouteElement
+                    element={element}  {...props}/>)
         default:
             return (<div>{element?.type}</div>)
 

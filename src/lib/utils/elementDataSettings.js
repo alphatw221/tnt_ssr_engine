@@ -136,20 +136,42 @@ export function getElementDataSettings(type, store_uuid){
 
 
             ]
-        case 'shop_grid':
+        
+        case 'shop':
 
             return [
-
-                    {"key": "default_layout", "name": "預設佈局", "type": "select", "options": [{"name": "列", "value": "列"}, {"name": "大格子", "value": "大格子"}, {"name": "小格子", "value": "小格子"}], "name_key": "name", "value_key": "value"} ,
-                    {"key": "filter_tags", "name": "篩選標籤(使用,隔開)", "type": "input",  "inputType": "text"}, 
-                    {"key": "exclude_tags", "name": "去除標籤(使用,隔開)", "type": "input",  "inputType": "text"}, 
-  
-
+                    {"type":"accordion",  "key":`expand_shop_accordion`, "name":'商城', "accordion_items":[
+                        {"key": "default_layout", "name": "預設佈局", "type": "select", "options": [{"name": "列", "value": "列"}, {"name": "大格子", "value": "大格子"}, {"name": "小格子", "value": "小格子"}], "name_key": "name", "value_key": "value"} ,
+                        {"key": "filter_uuids", "name": "篩選UUID(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "filter_categories", "name": "篩選類別UUID(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "filter_tags", "name": "篩選標籤(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "exclude_uuids", "name": "剔除UUID(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "exclude_categories", "name": "剔除類別UUID(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "exclude_tags", "name": "剔除標籤(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "keyword", "name": "搜尋關鍵字(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "order_by", "name": "按照排列(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "limit_count", "name": "限制個數", "type": "input",  "inputType": "number"}, 
+                    ]}
+                    
 
 
             ]
         
-       
+        case 'blog_grid':
+
+        return [
+                {"type":"accordion",  "key":`expand_shop_accordion`, "name":'部落格', "accordion_items":[
+                        {"key": "filter_uuids", "name": "篩選UUID(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "filter_categories", "name": "篩選類別UUID(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "filter_tags", "name": "篩選標籤(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "exclude_uuids", "name": "剔除UUID(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "exclude_categories", "name": "剔除類別UUID(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "exclude_tags", "name": "剔除標籤(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "keyword", "name": "搜尋關鍵字(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "order_by", "name": "按照排列(使用,隔開)", "type": "input",  "inputType": "text"}, 
+                        {"key": "limit_count", "name": "限制個數", "type": "input",  "inputType": "number"}, 
+                ]}
+        ]
 
         case 'shop_side_bar':
 
@@ -193,10 +215,17 @@ export function getElementDataSettings(type, store_uuid){
 
 
 
+        case 'object_template':
+            return [
+                {"type":"accordion", "key":"expand_object_template_accordion", "name":"物件模板", "accordion_items":[
+                    {"key":"object_type", "name":"物件類型 (product / blog_post / ...)", "type":"input", "inputType":"text"},
+                ]}
+            ]
+
         default:
             return [
-    
-            
+
+
             ]
 
 

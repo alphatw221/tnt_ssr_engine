@@ -62,6 +62,8 @@ export function getElementBaseSettingsB(){
                 {"name": "聯絡我們表單", "value": "contact_us_form"}, 
                 {"name": "文章內容", "value": "blog_post_detail"}, 
                 {"name": "文章網格", "value": "blog_grid"}, 
+                {"name": "動態路由元素", "value":"dynamic_route_element"},
+                
             ], "name_key": "name", "value_key": "value"},      
             {"key": "props", "name": "屬性", "type": "json", "rows":10}, 
         ]},
