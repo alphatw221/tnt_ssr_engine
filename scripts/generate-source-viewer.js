@@ -41,6 +41,11 @@ const components = [
     scss: ["src/components/component-instance/product-detail/ProductDetail.module.scss"] },
   { name: "blog_post_detail", file: "src/components/component-instance/blog-post-detail/BlogPostDetailSSR.jsx",
     scss: ["src/components/component-instance/blog-post-detail/BlogPostDetail.module.scss"] },
+  { name: "blog_grid", file: "src/components/component-instance/BlogGrid.jsx",
+    scss: ["src/components/component-instance/BlogGrid.module.scss"] },
+  { name: "BlogPostSingle", file: "src/components/blog/BlogPostSingle.jsx",
+    scss: ["src/components/blog/BlogPostSingle.module.scss"] },
+
   { name: "ResetPasswordForm", file: "src/components/component-instance/ResetPasswordForm.jsx",
     scss: ["src/components/component-instance/ResetPasswordForm.module.scss"] },
   { name: "ComposeProductModal", file: "src/components/product/ComposeProductModal.jsx",

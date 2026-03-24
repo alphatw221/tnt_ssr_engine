@@ -1,77 +1,55 @@
 import React, { Fragment } from "react";
-import Link from 'next/link'
-const BlogPostSingle = ({blogPost, component, props})=>{
+import clsx from "clsx";
+import style from './BlogPostSingle.module.scss';
 
+const BlogPostSingle = ({blogPost, routingTable})=>{
 
-
-
-    return (
+  return (
     <Fragment>
-        <div className={true?"col-lg-4 col-md-6 col-sm-12":"col-lg-6 col-md-6 col-sm-12"}>
-        <div className="blog-wrap-2 mb-30">
-          <div className="blog-img-2">
-            <Link href={ `/blog_post/${blogPost?.id}`}>
+      <div className={clsx(style["部落格文章框"], '部落格文章框')}>
+        <div className={clsx(style["部落格文章卡片"], '部落格文章卡片')}>
+          <div className={clsx(style["文章圖片框"], '文章圖片框')}>
+            <a className={clsx(style["文章圖片連結"], '文章圖片連結')} href={`/blog_post/${blogPost?.uuid}`}>
               <img
-                src={ blogPost?.image}
+                className={clsx(style["文章圖片"], '文章圖片')}
+                src={blogPost?.image}
                 alt=""
               />
-            </Link>
+            </a>
           </div>
-          <div className="blog-content-2">
-            <div className="blog-meta-2">
-              <ul>
-                <li>
+          <div className={clsx(style["文章內容框"], '文章內容框')}>
+            <div className={clsx(style["文章資訊框"], '文章資訊框')}>
+              <ul className={clsx(style["文章資訊列表"], '文章資訊列表')}>
+                <li className={clsx(style["文章日期"], '文章日期')}>
                   {new Date(blogPost?.created_at).toLocaleDateString()}
                 </li>
-                <li>
-                  <Link href={ `/blog_post/${blogPost?.id}`}>
-                    {(blogPost?.comments||[]).length} <i className="fa fa-comments-o" />
-                  </Link>
+                <li className={clsx(style["文章留言數"], '文章留言數')}>
+                  <a className={clsx(style["文章留言連結"], '文章留言連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}>
+                    {(blogPost?.comments||[]).length} <i className={clsx(style["留言圖標"], '留言圖標', 'fa fa-comments-o')} />
+                  </a>
                 </li>
               </ul>
             </div>
-            <h4>
-              <Link href={ `/blog_post/${blogPost?.id}`}>
+            <h4 className={clsx(style["文章標題"], '文章標題')}>
+              <a className={clsx(style["文章標題連結"], '文章標題連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}>
                 {blogPost?.title}
-              </Link>
+              </a>
             </h4>
-            <p>
+            <p className={clsx(style["文章摘要"], '文章摘要')}>
               {blogPost?.description}
             </p>
-            <div className="blog-share-comment">
-              <div className="blog-btn-2">
-                <Link href={ `/blog_post/${blogPost?.id}`}>
+            <div className={clsx(style["文章底部操作框"], '文章底部操作框')}>
+              <div className={clsx(style["閱讀更多按鈕框"], '閱讀更多按鈕框')}>
+                <a className={clsx(style["閱讀更多連結"], '閱讀更多連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}>
                   更多 read more
-                </Link>
+                </a>
               </div>
-              {/* <div className="blog-share">
-                <span>share :</span>
-                <div className="share-social">
-                  <ul>
-                    <li>
-                      <a className="facebook" href="//facebook.com">
-                        <i className="fa fa-facebook" />
-                      </a>
-                    </li>
-                    <li>
-                      <a className="twitter" href="//twitter.com">
-                        <i className="fa fa-twitter" />
-                      </a>
-                    </li>
-                    <li>
-                      <a className="instagram" href="//instagram.com">
-                        <i className="fa fa-instagram" />
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div> */}
             </div>
           </div>
         </div>
       </div>
     </Fragment>
-    )
+  )
 }
 
 

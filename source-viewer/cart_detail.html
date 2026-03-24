@@ -160,7 +160,7 @@ const CartDetail = ({
   // console.log(cartProducts)
 const minusOneDisabled = (cartProduct)=&gt;{
     if(cartProduct?.compose_base) return true
-    return (cartProduct?.quantity||0)&gt;1
+    return (cartProduct?.quantity||0)&lt;=1
 }
 const plusOneDisabled = (cartProduct)=&gt;{
     if(cartProduct?.compose_base) return true

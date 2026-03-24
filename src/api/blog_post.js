@@ -2,8 +2,8 @@ import { createCustomerAxios, createCustomerAxiosWithoutInterceptor, createUserA
 
 //-----------------------customer----------------------------------
 
-export const customer_search_blog_post = (filter_categories, filter_tags, keyword, order_by, page) => {
-    return createCustomerAxios().get(`/api/v1/store/blog_post/search/?filter_categories=${filter_categories}&filter_tags=${filter_tags}&keyword=${keyword}&order_by=${order_by}&page=${page}`);
+export const customer_search_blog_post = (filter_uuids, filter_categories, filter_tags, exclude_uuids, exclude_categories, exclude_tags, keyword, page, page_size, order_by, with_categories) => {
+    return createCustomerAxios().get(`/api/v1/store/blog_post/search/?filter_uuids=${filter_uuids}&filter_categories=${filter_categories}&filter_tags=${filter_tags}&exclude_uuids=${exclude_uuids}&exclude_categories=${exclude_categories}&exclude_tags=${exclude_tags}&keyword=${keyword}&page=${page}&page_size=${page_size}&order_by=${order_by}&with_categories=${with_categories}`);
 }
 
 

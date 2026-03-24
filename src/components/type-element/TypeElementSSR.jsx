@@ -26,6 +26,7 @@ import ProductDetailSSR from "@/components/component-instance/product-detail/Pro
 import BlogPostDetailSSR from '../component-instance/blog-post-detail/BlogPostDetailSSR'
 
 import ResetPasswordForm from "../component-instance/ResetPasswordForm";
+import BlogGrid from "../component-instance/BlogGrid";
 
 
 const TypeElementSSR = ({ 
@@ -87,6 +88,11 @@ const TypeElementSSR = ({
         case 'blog_post_detail': 
             return (
                 <BlogPostDetailSSR 
+                    element={element}  {...props}/>
+                )  
+        case 'blog_grid': 
+            return (
+                <BlogGrid 
                     element={element}  {...props}/>
                 )  
         case 'customer_reset_password_form':

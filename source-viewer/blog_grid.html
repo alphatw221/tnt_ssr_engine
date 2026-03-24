@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>blog_grid</title>
+</head>
+<body>
+<h1>blog_grid</h1>
+<h2>src/components/component-instance/BlogGrid.jsx</h2>
+<pre>import React, { Fragment, useState, useEffect } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './BlogGrid.module.scss'
+
+import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;
+
+import { customer_search_blog_post } from &quot;../../api/blog_post&quot;
+
+import Paginator from '@/components/paginator/MyPaginator.jsx';
+
+import { setCacheKey } from &quot;@/redux/slices/blog-slice&quot;
+
+import BlogPostSingle from '@/components/blog/BlogPostSingle.jsx'
+
+const BlogGrid = ({
+    routingTable,
+
+    element,
+    elementProps,
+    mode,
+    ...props}) =&gt; {
+
+
+    const searchParams = new URLSearchParams();
+
+    const {cache} = useAppSelector((state) =&gt; state.blog);
+
+    const defaultPageSize = 25
+    const defaultPage = 1
+    const defaultOrderBy = 'priority,updated_at'
+    const defaultKeyword = ''
+
+
+    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
+    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||defaultKeyword);
+
+    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):(cache?.[element?.uuid]?.categoryUUIDs||'').split(',')||[]);
+    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[element?.uuid]?.pageSize||defaultPageSize);
+    const [page, setPage] = useState(searchParams.get('page')||cache?.[element?.uuid]?.page||defaultPage);
+    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[element?.uuid]?.orderBy||defaultOrderBy);
+    const [layoutOption, setLayoutOption] = useState(element?.data?.default_layout||'大格子');
+
+
+    const dispatch = useAppDispatch()
+
+
+    useEffect(()=&gt;{
+        console.log(cache?.[element?.uuid])
+        if(
+            !cache?.[element?.uuid]||
+            (cache?.[element?.uuid]?.keyword||defaultKeyword)!=keyword||
+            (cache?.[element?.uuid]?.categoryUUIDs||'')!=categoryUUIDs?.join(',')||
+            (cache?.[element?.uuid]?.page||defaultPage)!=page||
+            (cache?.[element?.uuid]?.pageSize||defaultPageSize)!=pageSize||
+            (cache?.[element?.uuid]?.orderBy||defaultOrderBy)!=orderBy
+        ){
+            customer_search_blog_post(categoryUUIDs?.join(','), '', keyword, orderBy, page, pageSize).then(res=&gt;{
+
+                console.log(res.data)
+                dispatch(setCacheKey({
+                    'key':element?.uuid,
+                    keyword,
+                    page,
+                    pageSize,
+                    orderBy,
+                    'categoryUUIDs':categoryUUIDs?.join(','),
+                    'results':res.data?.results||[],
+                    'count':res.data?.count||0,
+                    'categories':res.data?.categories||[],
+                }))
+
+            })
+        }
+    },[element?.uuid, keyword, categoryUUIDs, page, pageSize, orderBy, cache])
+
+
+
+
+    return (
+
+        &lt;div
+            {...elementProps}
+            &gt;
+
+            &lt;div className={clsx(style['篩選器框'], &quot;篩選器框&quot;)}&gt;
+                &lt;div className={clsx(style['搜尋框'], &quot;搜尋框&quot;)}&gt;
+                    &lt;label className={clsx(style['搜尋-標籤'], &quot;搜尋-標籤&quot;)}&gt;搜尋&lt;/label&gt;
+                    &lt;input type=&quot;text&quot; className={clsx(style['搜尋-輸入'], &quot;搜尋-輸入&quot;)}
+                        placeholder=&quot;搜尋...&quot;
+                        value={_keyword}
+                        onKeyUp={(e)=&gt;{if(e.keyCode===13){e.target.blur();setKeyword(_keyword)}}}
+                        onChange={(e)=&gt;{_setKeyword(e.target.value)}}
+                    /&gt;
+                    &lt;button className={clsx(style['搜尋-按鈕'], &quot;搜尋-按鈕&quot;)} onClick={(e)=&gt;{setKeyword(_keyword)}}&gt;
+                        &lt;i className={clsx(style['搜尋-按鈕圖標'], &quot;搜尋-按鈕圖標&quot;, &quot;pe-7s-search&quot;)}/&gt;
+                    &lt;/button&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['文章類別框'], &quot;文章類別框&quot;)}&gt;
+                    &lt;label className={clsx(style['文章類別-標籤'], &quot;文章類別-標籤&quot;)}&gt;文章類別&lt;/label&gt;
+                    {
+                        (cache?.[element?.uuid]?.categories||[]).length == 0 &amp;&amp;
+                        &lt;div className={clsx(style['無文章類別框'], &quot;無文章類別框&quot;)}&gt;
+                            &lt;span className={clsx(style['無文章類別文字'], &quot;無文章類別文字&quot;)}&gt;無文章類別&lt;/span&gt;
+                        &lt;/div&gt;
+                    }
+                    {
+                        (cache?.[element?.uuid]?.categories||[]).map((category,key)=&gt;(
+                            &lt;div key={key} className={clsx(style['單文章類別框'], &quot;單文章類別框&quot;)}&gt;
+                                &lt;input className={clsx(style['單文章類別-勾選'], &quot;單文章類別-勾選&quot;)}
+                                    type=&quot;checkbox&quot;
+                                    checked={categoryUUIDs?.includes(category?.uuid)}
+                                    onChange={(e)=&gt;{
+                                        if(e.target.checked){
+                                            setCategoryUUIDs([...categoryUUIDs, category?.uuid])
+                                        }else{
+                                            setCategoryUUIDs(categoryUUIDs?.filter(_category_uuid=&gt;_category_uuid!=category?.uuid))
+                                        }}}/&gt;
+                                &lt;span className={clsx(style['單文章類別'], &quot;單文章類別&quot;)}&gt;{category?.name}&lt;/span&gt;
+                            &lt;/div&gt;
+                        ))
+                    }
+
+
+
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;div className={clsx(style['文章框'], &quot;文章框&quot;)}&gt;
+                &lt;div className={clsx(style['文章框-頭段'], &quot;文章框-頭段&quot;)}&gt;
+                    &lt;div className={clsx(style['網格佈局按鈕框'], &quot;網格佈局按鈕框&quot;)}&gt;
+                        &lt;button className={clsx(style['網格佈局按鈕'], &quot;網格佈局按鈕&quot;, layoutOption=='列'?`${style['選取']} 選取`:'')} onClick={e =&gt; {setLayoutOption('列')}}&gt;
+                            &lt;i className={clsx(style['網格佈局按鈕-圖標'], &quot;網格佈局按鈕-圖標&quot;, &quot;fa fa-list-ul&quot;)}  /&gt;
+                        &lt;/button&gt;
+                        &lt;button className={clsx(style['網格佈局按鈕'], &quot;網格佈局按鈕&quot;, layoutOption=='大格子'?`${style['選取']} 選取`:'')} onClick={e =&gt; {setLayoutOption('大格子')}}&gt;
+                            &lt;i className={clsx(style['網格佈局按鈕-圖標'], &quot;網格佈局按鈕-圖標&quot;, &quot;fa fa-th-large&quot;)} /&gt;
+                        &lt;/button&gt;
+                        &lt;button className={clsx(style['網格佈局按鈕'], &quot;網格佈局按鈕&quot;, layoutOption=='小格子'?`${style['選取']} 選取`:'')} onClick={e =&gt; {setLayoutOption('小格子')}}&gt;
+                            &lt;i className={clsx(style['網格佈局按鈕-圖標'], &quot;網格佈局按鈕-圖標&quot;, &quot;fa fa-th&quot;)} /&gt;
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style['文章框-網格'], &quot;文章框-網格&quot;, style[layoutOption], layoutOption)}&gt;
+                    {
+                        (cache?.[element?.uuid]?.results||[]).map((blogPost,key)=&gt;(
+                            &lt;BlogPostSingle
+                                key={key}
+                                blogPost={blogPost}
+                                routingTable={routingTable}/&gt;
+                        ))
+                    }
+                &lt;/div&gt;
+
+
+                &lt;div className={clsx(style['分頁器框'], &quot;分頁器框&quot;)}&gt;
+                    &lt;Paginator
+                        totalRecords={cache?.[element?.uuid]?.count||0}
+                        pageLimit={pageSize}
+                        pageNeighbours={2}
+                        currentPage={page}
+                        setCurrentPage={(page)=&gt;{setPage(page)}}
+                        pagePrevText=&quot;«&quot;
+                        pageNextText=&quot;»&quot;
+                        setOffset={()=&gt;{}}
+                    /&gt;
+                &lt;/div&gt;
+
+            &lt;/div&gt;
+
+
+
+
+
+        &lt;/div&gt;)
+};
+
+BlogGrid.propTypes = {
+};
+
+export default BlogGrid;
+</pre>
+<h2>src/components/component-instance/BlogGrid.module.scss</h2>
+<pre>@import &quot;../../assets/scss/variables&quot;;
+
+.blog-grid{
+    min-width: 10vw;
+    min-height: 5vh;
+    width: 80vw;
+
+    padding-top: 20px;
+    padding-bottom: 20px;
+
+    @media #{$md-layout} {
+        width: 95vw;
+    }
+    @media #{$xs-layout} {
+        width: 95vw;
+    }
+}
+
+
+
+</pre>
+</body>
+</html>

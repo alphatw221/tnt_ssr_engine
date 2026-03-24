@@ -6,12 +6,18 @@ const blogSlice = createSlice({
         blogPosts: null,
         blogPostTotalRecords:0,
 
-        categories:null,
+        categories:[],
         categoryTotalRecords:0,
 
         blogPost:null,
+
+        cache:{}
     },
     reducers: {
+        setCacheKey(state, action){
+            const {key} = action?.payload
+            state.cache[key] = {...action?.payload}
+        },
         setBlogPosts(state, action) {
             state.blogPosts = action?.payload?.blogPosts||[];
             state.blogPostTotalRecords = action?.payload?.totalRecords||0;
@@ -26,5 +32,5 @@ const blogSlice = createSlice({
     },
 });
 
-export const { setBlogPosts, setCategories, setBlogPost } = blogSlice.actions;
+export const { setBlogPosts, setCategories, setBlogPost, setCacheKey } = blogSlice.actions;
 export default blogSlice.reducer;

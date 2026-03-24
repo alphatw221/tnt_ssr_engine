@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>BlogPostSingle</title>
+</head>
+<body>
+<h1>BlogPostSingle</h1>
+<h2>src/components/blog/BlogPostSingle.jsx</h2>
+<pre>import React, { Fragment } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './BlogPostSingle.module.scss';
+
+const BlogPostSingle = ({blogPost, routingTable})=&gt;{
+
+  return (
+    &lt;Fragment&gt;
+      &lt;div className={clsx(style[&quot;部落格文章框&quot;], '部落格文章框')}&gt;
+        &lt;div className={clsx(style[&quot;部落格文章卡片&quot;], '部落格文章卡片')}&gt;
+          &lt;div className={clsx(style[&quot;文章圖片框&quot;], '文章圖片框')}&gt;
+            &lt;a className={clsx(style[&quot;文章圖片連結&quot;], '文章圖片連結')} href={`/blog_post/${blogPost?.id}`}&gt;
+              &lt;img
+                className={clsx(style[&quot;文章圖片&quot;], '文章圖片')}
+                src={blogPost?.image}
+                alt=&quot;&quot;
+              /&gt;
+            &lt;/a&gt;
+          &lt;/div&gt;
+          &lt;div className={clsx(style[&quot;文章內容框&quot;], '文章內容框')}&gt;
+            &lt;div className={clsx(style[&quot;文章資訊框&quot;], '文章資訊框')}&gt;
+              &lt;ul className={clsx(style[&quot;文章資訊列表&quot;], '文章資訊列表')}&gt;
+                &lt;li className={clsx(style[&quot;文章日期&quot;], '文章日期')}&gt;
+                  {new Date(blogPost?.created_at).toLocaleDateString()}
+                &lt;/li&gt;
+                &lt;li className={clsx(style[&quot;文章留言數&quot;], '文章留言數')}&gt;
+                  &lt;a className={clsx(style[&quot;文章留言連結&quot;], '文章留言連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;
+                    {(blogPost?.comments||[]).length} &lt;i className={clsx(style[&quot;留言圖標&quot;], '留言圖標', 'fa fa-comments-o')} /&gt;
+                  &lt;/a&gt;
+                &lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/div&gt;
+            &lt;h4 className={clsx(style[&quot;文章標題&quot;], '文章標題')}&gt;
+              &lt;a className={clsx(style[&quot;文章標題連結&quot;], '文章標題連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;
+                {blogPost?.title}
+              &lt;/a&gt;
+            &lt;/h4&gt;
+            &lt;p className={clsx(style[&quot;文章摘要&quot;], '文章摘要')}&gt;
+              {blogPost?.description}
+            &lt;/p&gt;
+            &lt;div className={clsx(style[&quot;文章底部操作框&quot;], '文章底部操作框')}&gt;
+              &lt;div className={clsx(style[&quot;閱讀更多按鈕框&quot;], '閱讀更多按鈕框')}&gt;
+                &lt;a className={clsx(style[&quot;閱讀更多連結&quot;], '閱讀更多連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;
+                  更多 read more
+                &lt;/a&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/Fragment&gt;
+  )
+}
+
+
+export default BlogPostSingle;
+</pre>
+<h2>src/components/blog/BlogPostSingle.module.scss</h2>
+<pre>.部落格文章框 {}
+.部落格文章卡片 {}
+.文章圖片框 {}
+.文章圖片連結 {}
+.文章圖片 {}
+.文章內容框 {}
+.文章資訊框 {}
+.文章資訊列表 {}
+.文章日期 {}
+.文章留言數 {}
+.文章留言連結 {}
+.留言圖標 {}
+.文章標題 {}
+.文章標題連結 {}
+.文章摘要 {}
+.文章底部操作框 {}
+.閱讀更多按鈕框 {}
+.閱讀更多連結 {}
+</pre>
+</body>
+</html>

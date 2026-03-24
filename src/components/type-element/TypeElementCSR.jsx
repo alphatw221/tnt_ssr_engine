@@ -23,6 +23,7 @@ import CKEditor from '../component-instance/my-ckeditor/CKEditor'
 import ProductDetailCSR from "@/components/component-instance/product-detail/ProductDetailCSR"
 import BlogPostDetailCSR from '../component-instance/blog-post-detail/BlogPostDetailCSR'
 import ResetPasswordForm from "../component-instance/ResetPasswordForm";
+import BlogGrid from "../component-instance/BlogGrid";
 
 
 
@@ -80,6 +81,9 @@ const TypeElementCSR = ({
                   element={element}  {...props}/>)  
         case 'blog_post_detail': 
             return (<BlogPostDetailCSR 
+                 element={element}  {...props}/>)  
+        case 'blog_grid': 
+            return (<BlogGrid 
                  element={element}  {...props}/>)  
         case 'customer_reset_password_form':
             return (<ResetPasswordForm 

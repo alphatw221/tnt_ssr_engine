@@ -96,13 +96,6 @@ const Shop = ({
             (cache?.[element?.uuid]?.pageSize||defaultPageSize)!=pageSize||
             (cache?.[element?.uuid]?.orderBy||defaultOrderBy)!=orderBy
         ){
-            // dispatch(setCacheKey({
-            //     'key':element?.uuid,
-            //     keyword,
-            //     page,
-            //     pageSize,
-            //     orderBy
-            // }))
 
             var _filter_uuids, _filter_categories, _filter_tags, _exclude_uuids, _exclude_categories, _exclude_tags, _keyword, _page, _page_size, _order_by, _with_categories
             customer_search_product(

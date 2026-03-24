@@ -61,6 +61,7 @@ export function getElementBaseSettingsB(){
                 {"name": "Google地圖", "value": "google_map"}, 
                 {"name": "聯絡我們表單", "value": "contact_us_form"}, 
                 {"name": "文章內容", "value": "blog_post_detail"}, 
+                {"name": "文章網格", "value": "blog_grid"}, 
             ], "name_key": "name", "value_key": "value"},      
             {"key": "props", "name": "屬性", "type": "json", "rows":10}, 
         ]},
