@@ -247,6 +247,10 @@ const ElementListItem =({
       
       drag(drop(menuItemRef))
 
+    useEffect(()=>{
+        if(!isDragOverCurrent) setDragOverPosition(null)
+    },[isDragOverCurrent])
+
 
 const removeElement = ()=>{
     if(confirm('刪除元素')){

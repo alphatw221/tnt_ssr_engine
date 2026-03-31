@@ -176,40 +176,41 @@ const WebsiteEditor = () => {
     }
     const collaboratorDoElementAction = ( json_data, sender_socket_id)=>{
       if(socket?.id!=sender_socket_id){
-        // shallow copy 最外層
-        const _website = { ...website };
         const {
-          action, 
-          source_element_relation_uuid, 
-          new_parent_relation_uuid, 
-          target_webpage_uuid, 
-          target_webpage_position, 
-          target_element_relation_uuid, 
+          action,
+          element_relation_uuid,
+          new_parent_relation_uuid,
+          target_webpage_uuid,
+          target_webpage_position,
+          target_element_relation_uuid,
           target_relative_position,
           event
         } = JSON.parse(json_data)
-        const sourceElement = websiteFindElement(_website, source_element_relation_uuid)
-        const newElement = {...sourceElement, parent_relation_uuid:new_parent_relation_uuid}
 
+        setWebsite(prev => {
+          const _website = { ...prev };
+          const sourceElement = websiteFindElement(_website, element_relation_uuid)
+          const newElement = {...sourceElement, parent_relation_uuid:new_parent_relation_uuid}
 
-        if(action=='move'){
-          websiteFindAndRemoveElementRelation(_website, source_element_relation_uuid)
-        }
-
-        if(![null, undefined, '', 'null', 'undefined'].includes(target_webpage_uuid)){
-          _addWebpageElement(_website, target_webpage_uuid, target_webpage_position, newElement)
-        }else{
-          if(target_relative_position=='before'){
-            websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 0)
-          }else if(target_relative_position=='after'){
-            websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 1)
-          }else if(target_relative_position=='in'){
-            websiteFindAndInsertChildElement(_website, target_element_relation_uuid, -1, 0, newElement)
+          if(action=='move'){
+            websiteFindAndRemoveElementRelation(_website, element_relation_uuid)
           }
-        }
-        setWebsite(_website)
+
+          if(![null, undefined, '', 'null', 'undefined'].includes(target_webpage_uuid)){
+            _addWebpageElement(_website, target_webpage_uuid, target_webpage_position, newElement)
+          }else{
+            if(target_relative_position=='before'){
+              websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 0)
+            }else if(target_relative_position=='after'){
+              websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 1)
+            }else if(target_relative_position=='in'){
+              websiteFindAndInsertChildElement(_website, target_element_relation_uuid, -1, 0, newElement)
+            }
+          }
+          return _website
+        })
         dispatch(appendEditEvents([event]))
-       
+
       }
     }
 
@@ -243,15 +244,17 @@ const WebsiteEditor = () => {
             return newWebsite;
           });
         }else{
-          const _website = { ...website };
-          if(target_relative_position=='before'){
-            websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 0)
-          }else if(target_relative_position=='after'){
-            websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 1)
-          }else if(target_relative_position=='in'){
-            websiteFindAndInsertChildElement(_website, target_element_relation_uuid, -1, 0, newElement)
-          }
-          setWebsite(_website)
+          setWebsite(prev => {
+            const _website = { ...prev };
+            if(target_relative_position=='before'){
+              websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 0)
+            }else if(target_relative_position=='after'){
+              websiteFindAndInsertElement(_website, target_element_relation_uuid, newElement, 1)
+            }else if(target_relative_position=='in'){
+              websiteFindAndInsertChildElement(_website, target_element_relation_uuid, -1, 0, newElement)
+            }
+            return _website;
+          })
         }
         dispatch(appendEditEvents([event]))
       }

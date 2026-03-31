@@ -1,8 +1,16 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import clsx from "clsx";
 import style from './BlogPostSingle.module.scss';
 
 const BlogPostSingle = ({blogPost, routingTable})=>{
+
+  const [dateLocale, setDateLocale] = useState('en-CA')
+
+  useEffect(() => {
+    // intentional: SSR uses 'en-CA' to stabilize output; client switches to browser locale
+    // suppressHydrationWarning is set on the date <li> to silence this known mismatch
+    setDateLocale(undefined)
+  }, [])
 
   return (
     <Fragment>
@@ -20,8 +28,8 @@ const BlogPostSingle = ({blogPost, routingTable})=>{
           <div className={clsx(style["文章內容框"], '文章內容框')}>
             <div className={clsx(style["文章資訊框"], '文章資訊框')}>
               <ul className={clsx(style["文章資訊列表"], '文章資訊列表')}>
-                <li className={clsx(style["文章日期"], '文章日期')}>
-                  {new Date(blogPost?.created_at).toLocaleDateString()}
+                <li className={clsx(style["文章日期"], '文章日期')} suppressHydrationWarning>
+                  {new Date(blogPost?.created_at).toLocaleDateString(dateLocale)}
                 </li>
                 <li className={clsx(style["文章留言數"], '文章留言數')}>
                   <a className={clsx(style["文章留言連結"], '文章留言連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}>

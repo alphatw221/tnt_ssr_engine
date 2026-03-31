@@ -48,7 +48,14 @@ if (isSSR) {
       <WebpageBody website={res.data} webpage={res.data.webpage} object={res.data?.object} now={new Date(window.__SSR_PARAMS__?.now)} mode='prod'/>
       <HydrationComplete />
       {/* </PersistGate> */}
-  </Provider>);
+  </Provider>, {
+    onRecoverableError(error, errorInfo) {
+      if (error?.message?.toLowerCase().includes('hydrat') || error?.message?.toLowerCase().includes('text content')) {
+        console.error('[Hydration Mismatch]', error.message);
+        console.error('[Component Stack]', errorInfo?.componentStack);
+      }
+    }
+  });
   })
 
 } else {  //csr

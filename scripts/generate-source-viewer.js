@@ -46,7 +46,7 @@ const components = [
   { name: "BlogPostSingle", file: "src/components/blog/BlogPostSingle.jsx",
     scss: ["src/components/blog/BlogPostSingle.module.scss"] },
 
-  { name: "ResetPasswordForm", file: "src/components/component-instance/ResetPasswordForm.jsx",
+  { name: "customer_reset_password_form", file: "src/components/component-instance/ResetPasswordForm.jsx",
     scss: ["src/components/component-instance/ResetPasswordForm.module.scss"] },
   { name: "ComposeProductModal", file: "src/components/product/ComposeProductModal.jsx",
     scss: ["src/components/product/ComposeProductModal.module.scss"] },

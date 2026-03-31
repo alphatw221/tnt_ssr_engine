@@ -332,7 +332,7 @@ const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
                         <select className={style.select} value={data?.[item.key]||''} 
                             onChange={(e)=>{
                                 console.log(e.target.value)
-                                if(e.target.value==''|| e.target.value==null){
+                                if((e.target.value==''|| e.target.value==null) && !item?.allow_blank){
                                     removeDataKey()
                                 }
                                 else if(item?.valueType=='integer'){
@@ -364,7 +364,7 @@ const ParameterizeFormItem = ({ identifier, item, data, setData, actions }) => {
                         data?.[`select_${item.key}`]?
                         <select className={style.select} value={data?.[item.key]||''} 
                             onChange={(e)=>{
-                                if(e.target.value==''|| e.target.value==null){
+                                if((e.target.value==''|| e.target.value==null) && !item?.allow_blank){
                                     removeDataKey()
                                 }
                                 else if(item?.valueType=='integer'){

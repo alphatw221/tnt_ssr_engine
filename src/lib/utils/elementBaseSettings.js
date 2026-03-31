@@ -42,7 +42,7 @@ export function getElementBaseSettingsB(){
     
         {"type":"accordion", "key":`expand_element_accordion`, "name":'元素', "accordion_items":[
             {"key": "tag_name", "name": "標籤名稱", "type": "input",  "inputType": "text"}, 
-            {"key": "type", "name": "使用組件", "type": "select", "options": [
+            {"key": "type", "name": "使用組件", "type": "select", "allow_blank":true, "options": [
                 {"name": "輪播牆", "value": "custom_slider"}, 
                 {"name": "文字編輯器", "value": "ck_editor"}, 
                 {"name": "顧客登入表單", "value": "customer_login_form"}, 
@@ -63,7 +63,7 @@ export function getElementBaseSettingsB(){
                 {"name": "文章內容", "value": "blog_post_detail"}, 
                 {"name": "文章網格", "value": "blog_grid"}, 
                 {"name": "動態路由元素", "value":"dynamic_route_element"},
-                
+
             ], "name_key": "name", "value_key": "value"},      
             {"key": "props", "name": "屬性", "type": "json", "rows":10}, 
         ]},

@@ -7,11 +7,19 @@
 <body>
 <h1>BlogPostSingle</h1>
 <h2>src/components/blog/BlogPostSingle.jsx</h2>
-<pre>import React, { Fragment } from &quot;react&quot;;
+<pre>import React, { Fragment, useState, useEffect } from &quot;react&quot;;
 import clsx from &quot;clsx&quot;;
 import style from './BlogPostSingle.module.scss';
 
 const BlogPostSingle = ({blogPost, routingTable})=&gt;{
+
+  const [dateLocale, setDateLocale] = useState('en-CA')
+
+  useEffect(() =&gt; {
+    // intentional: SSR uses 'en-CA' to stabilize output; client switches to browser locale
+    // suppressHydrationWarning is set on the date &lt;li&gt; to silence this known mismatch
+    setDateLocale(undefined)
+  }, [])
 
   return (
     &lt;Fragment&gt;
@@ -29,8 +37,8 @@ const BlogPostSingle = ({blogPost, routingTable})=&gt;{
           &lt;div className={clsx(style[&quot;文章內容框&quot;], '文章內容框')}&gt;
             &lt;div className={clsx(style[&quot;文章資訊框&quot;], '文章資訊框')}&gt;
               &lt;ul className={clsx(style[&quot;文章資訊列表&quot;], '文章資訊列表')}&gt;
-                &lt;li className={clsx(style[&quot;文章日期&quot;], '文章日期')}&gt;
-                  {new Date(blogPost?.created_at).toLocaleDateString()}
+                &lt;li className={clsx(style[&quot;文章日期&quot;], '文章日期')} suppressHydrationWarning&gt;
+                  {new Date(blogPost?.created_at).toLocaleDateString(dateLocale)}
                 &lt;/li&gt;
                 &lt;li className={clsx(style[&quot;文章留言數&quot;], '文章留言數')}&gt;
                   &lt;a className={clsx(style[&quot;文章留言連結&quot;], '文章留言連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;

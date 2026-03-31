@@ -94,6 +94,10 @@ const MyOrders = ({
 
     const [selectedFilter, setSelectedFilter]=useState(cache?.[element?.uuid]?.selectedFilter||'全部')
 
+    const [dateLocale, setDateLocale] = useState('en-CA')
+
+    useEffect(() => { setDateLocale(undefined) }, [])
+
     const defaultStatus = ''
     const defaultPage = 1
     const defaultPageSize = 20
@@ -335,7 +339,7 @@ const MyOrders = ({
 
 
                               <td className={clsx(style['表格-訂單日期框'], "表格-訂單日期框")}>
-                                <span className={clsx(style['訂單日期'], "訂單日期")}>{new Date(order.created_at).toLocaleDateString()}</span>
+                                <span className={clsx(style['訂單日期'], "訂單日期")}>{new Date(order.created_at).toLocaleDateString(dateLocale)}</span>
                               </td>
 
                               <td className={clsx(style['表格-訂單動作框'], "表格-訂單動作框")}>
