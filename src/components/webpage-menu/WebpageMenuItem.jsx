@@ -266,7 +266,7 @@ const WebpageMenuItem =({
         ]},
         {"key": "uuid", "name": "節點UUID", "type": "text"}, 
         {"key": "name", "name": "名稱", "type": "input",  "inputType": "text"}, 
-
+        {"key": "route", "name": "路徑", "type": "input",  "inputType": "text"},
         {"type":"accordion", "key":`expand_visibility_accordion`, "name":'發布狀態', "accordion_items":[
 
 

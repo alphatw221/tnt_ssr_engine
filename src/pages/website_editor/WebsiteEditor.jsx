@@ -785,18 +785,19 @@ const WebsiteEditor = () => {
     socket
   ]);
 
+  const _route = (v) => v?.split(',')?.[0]
   const routingTable = {
-        'customer_login_route':website?.data?.customer_login_route,
-        'customer_register_route':website?.data?.customer_register_route,
-        'cart_route':website?.data?.cart_route,
-        'checkout_route':website?.data?.checkout_route,
-        'order_route':website?.data?.order_route,
-        'my_orders_route':website?.data?.my_orders_route,
-        'order_payment_route':website?.data?.order_payment_route,
-        'shop_route':website?.data?.shop_route,
-        'product_route':website?.data?.product_route,
-        'blog_route':website?.data?.blog_route,
-        'blog_post_route':website?.data?.blog_post_route,
+        'customer_login_route':_route(website?.data?.customer_login_route),
+        'customer_register_route':_route(website?.data?.customer_register_route),
+        'cart_route':_route(website?.data?.cart_route),
+        'checkout_route':_route(website?.data?.checkout_route),
+        'order_route':_route(website?.data?.order_route),
+        'my_orders_route':_route(website?.data?.my_orders_route),
+        'order_payment_route':_route(website?.data?.order_payment_route),
+        'shop_route':_route(website?.data?.shop_route),
+        'product_route':_route(website?.data?.product_route),
+        'blog_route':_route(website?.data?.blog_route),
+        'blog_post_route':_route(website?.data?.blog_post_route),
       }
 
   

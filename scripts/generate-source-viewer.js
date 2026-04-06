@@ -60,6 +60,12 @@ const components = [
     scss: ["src/components/component-instance/order/payment-method/BankTransfer.module.scss"] },
   { name: "GuestCheckoutNotification", file: "src/components/guest-checkout-notification/GuestCheckoutNotification.jsx",
     scss: ["src/components/guest-checkout-notification/order/GuestCheckoutNotification.module.scss"] },
+  { name: "dynamic_route_element", file: "src/components/component-instance/DynamicRouteElement.jsx" },
+
+
+
+
+    
 
 ];
 

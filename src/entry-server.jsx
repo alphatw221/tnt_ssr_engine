@@ -27,7 +27,7 @@ export async function getWebpageHtml(host, webpage_name, object_uuid, now, conte
     const body =  renderToString(<Provider store={store}>
                           <WebpageBody website={res.data} webpage={res.data.webpage} object={res.data?.object} now={now} mode='prod'/>
                     </Provider>);
-    const head = renderToString(<WebpageHead website={res.data} webpage={res.data.webpage} mode='prod'/>);
+    const head = renderToString(<WebpageHead website={res.data} webpage={res.data.webpage} object={res.data?.object} now={now} mode='prod'/>);
     const reduxState = store.getState();
     return { head, body, context, reduxState, websiteUUID };
 }

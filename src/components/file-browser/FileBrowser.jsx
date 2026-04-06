@@ -241,7 +241,7 @@ export default function FileManager({actions, ...props}) {
         setShowUploadForm(false)
         user_upload_store_files({
             'store_uuid':actions?.getStoreUUID(),
-            'store_file_uuid':path?.[path.length-1]||null,
+            'store_file_uuid':path?.[path.length-1]?.uuid||null,
             'formData':formData
         }).then(res=>{
             console.log(res.data)
@@ -496,9 +496,13 @@ export default function FileManager({actions, ...props}) {
                     onClick={() => setSortOrder((o) => (o === "asc" ? "desc" : "asc"))}
                     title="排序"
                 >
-                    <FontAwesomeIcon icon={sortOrder === "asc" ? faSortAlphaDown : faSortAlphaUp} /> 
+                    <FontAwesomeIcon icon={sortOrder === "asc" ? faSortAlphaDown : faSortAlphaUp} />
                 </button>
             </div>
+
+            <button type="button" onClick={open} title="上傳檔案">
+                📄 上傳
+            </button>
            
         </div>
 

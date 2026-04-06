@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>dynamic_route_element</title>
+</head>
+<body>
+<h1>dynamic_route_element</h1>
+<h2>src/components/component-instance/DynamicRouteElement.jsx</h2>
+<pre>import React from &quot;react&quot;;
+
+function resolvePath(obj, path) {
+    if (!obj || !path) return '';
+    return path.split('.').reduce((acc, key) =&gt; {
+        if (acc == null) return '';
+        return acc[key] ?? '';
+    }, obj);
+}
+
+function interpolate(template, obj) {
+    if (!template || !obj) return template || '';
+    return template.replace(/\{\{([\w.]+)\}\}/g, (_, path) =&gt; {
+        const value = resolvePath(obj, path);
+        return value !== '' ? String(value) : '';
+    });
+}
+
+const DynamicRouteElement = ({
+    element,
+    elementProps,
+    object,
+    ...props
+}) =&gt; {
+    const template = element?.inner_html ?? element?.template?.inner_html ?? '';
+    const rendered = interpolate(template, object);
+
+    if (!rendered) return null;
+
+    const TagName = element?.tag_name || element?.template?.tag_name || &quot;div&quot;;
+
+    return (
+        &lt;TagName {...elementProps} dangerouslySetInnerHTML={{ __html: rendered }} /&gt;
+    );
+};
+
+export default DynamicRouteElement;
+</pre>
+
+</body>
+</html>

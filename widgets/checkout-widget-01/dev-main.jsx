@@ -1,5 +1,6 @@
 import { store } from '@/redux/store';
 import './index.jsx';
+import CartProductPreloader from './CartProductsPreloader';
 
 // 將真實的 store 掛到 window，供 widget 讀取
 window.__APP_REDUX_STORE__ = store;

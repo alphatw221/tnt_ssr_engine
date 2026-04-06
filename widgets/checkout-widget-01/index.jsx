@@ -30,8 +30,8 @@ import { deleteAllCartProduct, setCartProducts } from "@/redux/slices/cart-slice
 import { setCustomerAndLocalStorage} from "@/redux/slices/customer-slice";
 import ComposeProductModal from "@/components/product/ComposeProductModal"
 import CartProductPreloader from './CartProductsPreloader';
-import { 
-    guest_request_cellphone_verification, 
+import {
+    // guest_request_cellphone_verification,
     guest_request_email_verification,
     guest_verify_otp_code,
  } from "@/api/customer";
@@ -256,8 +256,8 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
             return
         }
 
-        if(!customer?.uuid && !otpVerified){
-            setSubmitMessage({ type: 'error', text: '請先完成手機驗證' })
+        if(!customer?.uuid && !emailOtpVerified){
+            setSubmitMessage({ type: 'error', text: '請先完成Email驗證' })
             return
         }
 
@@ -282,13 +282,15 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
     }
 
 
-    const [otpVerified, setOtpVerified] = useState(false)
+    const [emailOtpVerified, setEmailOtpVerified] = useState(false)
+    const [cellphoneOtpVerified, setCellphoneOtpVerified] = useState(false)
     const [countDown, setCountDown] = useState(0)
     const [otpCode, setOtpCode] = useState('')
     const [awaitSubmitOTPButton, setAwaitSubmitOTPButton] = useState(false)
 
     const resetOTP = () => {
-        setOtpVerified(false)
+        setEmailOtpVerified(false)
+        setCellphoneOtpVerified(false)
         Cookies.remove('guest_access_token')
         setOtpCode('')
         setSubmitOTPMessage({ type: '', text: '' })
@@ -297,13 +299,12 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
 
     const ref = useRef()
 
-    const sendSMS = ()=>{
-        setCountDown(60)
-        guest_request_cellphone_verification({country, cellphone:purchaserData.purchaser_cellphone}).then(res=>{
-            showGeneralToast('驗證簡訊已發送')
-        })
-
-    }
+    // const sendSMS = ()=>{
+    //     setCountDown(60)
+    //     guest_request_cellphone_verification({country, cellphone:purchaserData.purchaser_cellphone}).then(res=>{
+    //         showGeneralToast('驗證簡訊已發送')
+    //     })
+    // }
 
     const sendEmail = ()=>{
         setCountDown(60)
@@ -319,7 +320,7 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
             var inSevenDays = new Date(new Date().getTime() + 7 * 24 * 60 * 60 *1000)
             Cookies.set('guest_access_token', res?.data?.guest_access_token, {expires: inSevenDays})
             setAwaitSubmitOTPButton(false)
-            setOtpVerified(true)
+            setEmailOtpVerified(true)
 
         }).catch(err=>{
             setAwaitSubmitOTPButton(false)
@@ -504,6 +505,7 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
                                         <p className={clsx(style['驗證訊息'], '驗證訊息')}>訪客購買需完成驗證</p>
                                     </div>
                                     
+                                    {/* 手機驗證框（已停用，改為Email驗證）
                                     <div className={clsx(style['手機驗證框'], "手機驗證框")}>
                                         <label className={clsx(style['購買人電話-標籤'], '購買人電話-標籤')}>購買人電話：</label>
 
@@ -535,8 +537,41 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
                                             </Fragment>
                                         )}
                                     </div>
+                                    */}
 
-                                    {!otpVerified && (
+                                    <div className={clsx(style['Email驗證框'], "Email驗證框")}>
+                                        <label className={clsx(style['購買人Email-標籤'], '購買人Email-標籤')}>購買人Email：</label>
+
+                                        {emailOtpVerified ? (
+                                            <Fragment>
+                                                <span className={clsx(style['購買人Email-已驗證'], '購買人Email-已驗證')}>
+                                                    {purchaserData.purchaser_email}
+                                                </span>
+                                                <button
+                                                    className={clsx(style['Email-修改按鈕'], 'Email-修改按鈕')}
+                                                    onClick={resetOTP}
+                                                >
+                                                    修改
+                                                </button>
+                                            </Fragment>
+                                        ) : (
+                                            <Fragment>
+                                                <input
+                                                    className={clsx(style['購買人Email-輸入'], '購買人Email-輸入')}
+                                                    type="email"
+                                                    name="purchaser_email"
+                                                    placeholder="購買人Email"
+                                                    value={purchaserData.purchaser_email}
+                                                    onChange={(e) => { setPurchaserData({...purchaserData, purchaser_email: e.target.value}) }}
+                                                />
+                                                <button className={clsx(style['Email-發送按鈕'], "Email-發送按鈕")} onClick={sendEmail} disabled={countDown>0}>
+                                                    {countDown>0?`${countDown}秒後可重新發送`:'取得Email驗證碼'}
+                                                </button>
+                                            </Fragment>
+                                        )}
+                                    </div>
+
+                                    {!emailOtpVerified && (
                                         <Fragment>
                                             <div className={clsx(style['驗證碼輸入框'], "驗證碼輸入框")}>
                                                 <label className={clsx(style['驗證碼-標籤'], "驗證碼-標籤")}>驗證碼:</label>
@@ -597,12 +632,12 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
                               <div className={clsx(style['購買人電話框'], '購買人電話框')}>
                                   <label className={clsx(style['購買人電話-標籤'], '購買人電話-標籤')}>購買人電話：</label>
                                   <input
-                                      className={clsx(style['購買人電話-輸入'], '購買人電話-輸入', otpVerified && !customer?.uuid ? `${style['已驗證鎖定']} 已驗證鎖定` : '')}
+                                      className={clsx(style['購買人電話-輸入'], '購買人電話-輸入', cellphoneOtpVerified && !customer?.uuid ? `${style['已驗證鎖定']} 已驗證鎖定` : '')}
                                       type="tel"
                                       name="purchaser_cellphone"
                                       placeholder="購買人電話"
                                       value={purchaserData.purchaser_cellphone}
-                                      readOnly={otpVerified && !customer?.uuid}
+                                      readOnly={cellphoneOtpVerified && !customer?.uuid}
                                       onChange={(e) => { setPurchaserData({...purchaserData, purchaser_cellphone: e.target.value}) }}
                                       onBlur={() => {
                                           purchaserInfoValidator.current.showMessageFor("purchaser_cellphone")
@@ -1075,7 +1110,7 @@ window.CheckoutWidget01 = {
     const root = ReactDOM.createRoot(containerEl);
     root.render(
       <Provider store={window.__APP_REDUX_STORE__}>
-        {/* <CartProductPreloader/> */}
+        <CartProductPreloader/>
         <CheckoutWidget01 {...props} />
         
       </Provider>
