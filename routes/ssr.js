@@ -38,7 +38,7 @@ router.get([
         const cachedHtml = await redis.get(htmlCacheKey);
         if (cachedHtml) {
           console.log(`[Cache] 命中 ${req.get('host')} ${htmlCacheKey}`);
-          res.status(200).set({ 'Content-Type': 'text/html' }).end(cachedHtml);
+          res.status(200).set({ 'Content-Type': 'text/html; charset=utf-8' }).end(cachedHtml);
           return 
         }
       }
@@ -110,7 +110,7 @@ router.get([
     }
     
 
-    res.status(200).set({ 'Content-Type': 'text/html' }).end(finalHTML);
+    res.status(200).set({ 'Content-Type': 'text/html; charset=utf-8' }).end(finalHTML);
   } catch (err) {
     req.vite?.ssrFixStacktrace(err);
     next(err);

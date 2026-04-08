@@ -24,6 +24,13 @@ export function createInternalAxios(){
     })
 }
 
+export function createSSRInternalAxios(){
+    return axios.create({
+        baseURL:internalURL,
+        responseEncoding: 'utf8',
+    })
+}
+
 export function createCustomerAxiosWithoutInterceptor(){
 
     const headers = {}
