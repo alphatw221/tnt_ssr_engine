@@ -35,7 +35,8 @@ router.get([
       const websiteUUID = await redis.get(websiteUUIDCacheKey);
       if(websiteUUID){
         const htmlCacheKey = getWebsiteUUIDCacheKey(websiteUUID, webpageName, objectUUID)
-        const cachedHtml = await redis.get(htmlCacheKey);
+        const cachedBuf = await redis.getBuffer(htmlCacheKey);
+        const cachedHtml = cachedBuf ? cachedBuf.toString('utf-8') : null;
         if (cachedHtml) {
           console.log(`[Cache] 命中 ${req.get('host')} ${htmlCacheKey}`);
           res.status(200).set({ 'Content-Type': 'text/html; charset=utf-8' }).end(cachedHtml);
