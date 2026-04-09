@@ -148,6 +148,13 @@ const EditorMemorySlice = createSlice({
             state.editEventsHasMore = true;
             state.editEventsError = null;
         },
+        updateEditEvent(state, action) {
+            // action.payload: { uuid, changes }
+            const index = state.editEvents.findIndex(e => e.uuid === action.payload.uuid);
+            if (index !== -1) {
+                state.editEvents[index] = { ...state.editEvents[index], ...action.payload.changes };
+            }
+        },
 
         setSelectedTool(state, action) {
             return {...state, selectedTool:action.payload}
@@ -188,6 +195,7 @@ export const {
 
     setSelectedTool,
     setShowComponentSettings,
+    updateEditEvent,
 
 } = EditorMemorySlice.actions;
 

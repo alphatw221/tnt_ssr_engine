@@ -19,6 +19,7 @@
 
 .event-icon-wrapper {
   flex-shrink: 0;
+  align-self: center;
   width: 40px;
   height: 40px;
   display: flex;
@@ -27,11 +28,12 @@
   border-radius: 50%;
   background-color: var(--event-color);
   opacity: 0.9;
-}
 
-.event-icon {
-  font-size: 16px;
-  color: white;
+  svg {
+    width: 18px;
+    height: 18px;
+    color: white;
+  }
 }
 
 .event-content {
@@ -48,11 +50,14 @@
 
 .event-type {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 2px 7px;
+  border-radius: 0;
+  border: 1px solid var(--event-color);
   font-size: 12px;
   font-weight: 600;
-  color: white;
+  color: var(--event-color);
+  background: white;
+  letter-spacing: 0.02em;
 }
 
 .event-time {
@@ -101,6 +106,13 @@
   gap: 6px;
   font-size: 13px;
   color: #6b7280;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    color: #d1d5db;
+  }
 }
 
 .target-type {

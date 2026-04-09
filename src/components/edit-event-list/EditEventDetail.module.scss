@@ -42,17 +42,19 @@
 .event-icon-wrapper {
   width: 48px;
   height: 48px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background-color: var(--event-color);
   opacity: 0.9;
-}
 
-.event-icon {
-  font-size: 20px;
-  color: white;
+  svg {
+    width: 22px;
+    height: 22px;
+    color: white;
+  }
 }
 
 .header-info {
@@ -73,11 +75,14 @@
 
 .event-type {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 6px;
+  padding: 3px 10px;
+  border-radius: 0;
+  border: 1px solid var(--event-color);
   font-size: 14px;
   font-weight: 600;
-  color: white;
+  color: var(--event-color);
+  background: white;
+  letter-spacing: 0.02em;
 }
 
 .event-time {
@@ -88,6 +93,7 @@
 .close-button {
   width: 36px;
   height: 36px;
+  flex-shrink: 0;
   border: none;
   background: #f3f4f6;
   border-radius: 8px;
@@ -96,8 +102,12 @@
   align-items: center;
   justify-content: center;
   color: #6b7280;
-  font-size: 18px;
   transition: all 0.2s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
 
   &:hover {
     background: #e5e7eb;
@@ -262,6 +272,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
 }
 
 .json-content {
@@ -293,4 +309,68 @@
       background: #6b7280;
     }
   }
+}
+
+.undo-section {
+  margin-bottom: 32px;
+}
+
+.undo-conflict {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background: #fef3c7;
+  border: 1px solid #b45309;
+  border-left: 4px solid #b45309;
+  border-radius: 8px;
+  color: #78350f;
+  font-size: 14px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+}
+
+.undo-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #1e3f82;
+  color: white;
+  transition: background 0.2s ease, opacity 0.2s ease;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  &:hover:not(:disabled) {
+    background: #163066;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #6b7280;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
 }

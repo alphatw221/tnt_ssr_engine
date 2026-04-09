@@ -1,30 +1,66 @@
 import PropTypes from "prop-types";
-import React, { useState, Fragment } from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faPlus,
-  faPencil,
-  faTrash,
-  faArrowsAlt,
-  faChevronRight,
-  faUser
-} from '@fortawesome/free-solid-svg-icons';
+import { Fragment } from "react";
 import style from './EditEventListItem.module.scss';
 import { EVENT_TYPES, EVENT_TYPE_LABELS, EVENT_TYPE_COLORS } from '@/types/editEvent';
+
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
+
+const IconPlus = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
+const IconPencil = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+const IconTrash = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6" /><path d="M14 11v6" />
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+  </svg>
+);
+
+const IconMove = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="5 9 2 12 5 15" /><polyline points="9 5 12 2 15 5" />
+    <polyline points="15 19 12 22 9 19" /><polyline points="19 9 22 12 19 15" />
+    <line x1="2" y1="12" x2="22" y2="12" /><line x1="12" y1="2" x2="12" y2="22" />
+  </svg>
+);
+
+const IconUser = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const IconChevronRight = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
+// ──────────────────────────────────────────────────────────────────────────────
 
 const EditEventListItem = ({ event, onClick }) => {
   const getEventIcon = (type) => {
     switch (type) {
       case EVENT_TYPES.CREATE:
-        return faPlus;
-      case EVENT_TYPES.UPDATE:
-        return faPencil;
+      case EVENT_TYPES.CLONE:   return <IconPlus />;
+      case EVENT_TYPES.UPDATE:  return <IconPencil />;
       case EVENT_TYPES.DELETE:
-        return faTrash;
+      case EVENT_TYPES.DELETE_RELATION: return <IconTrash />;
       case EVENT_TYPES.MOVE:
-        return faArrowsAlt;
-      default:
-        return faUser;
+      case EVENT_TYPES.MIRROR:  return <IconMove />;
+      default:                  return <IconUser />;
     }
   };
 
@@ -57,18 +93,12 @@ const EditEventListItem = ({ event, onClick }) => {
       style={{ '--event-color': EVENT_TYPE_COLORS[event?.action] }}
     >
       <div className={style['event-icon-wrapper']}>
-        <FontAwesomeIcon
-          icon={getEventIcon(event?.action)}
-          className={style['event-icon']}
-        />
+        {getEventIcon(event?.action)}
       </div>
 
       <div className={style['event-content']}>
         <div className={style['event-header']}>
-          <span
-            className={style['event-type']}
-            style={{ backgroundColor: EVENT_TYPE_COLORS[event?.action] }}
-          >
+          <span className={style['event-type']}>
             {EVENT_TYPE_LABELS[event?.action]}
           </span>
           <span className={style['event-time']}>
@@ -78,67 +108,25 @@ const EditEventListItem = ({ event, onClick }) => {
 
         <div className={style['event-body']}>
           <div className={style['event-editor']}>
-
-            {
-            // event?.user?.avatar ? (
-            //   <img
-            //     src={event?.user?.avatar}
-            //     alt={event?.user?.name}
-            //     className={style['editor-avatar']}
-            //   />
-            // ) : (
-            //   <div className={style['editor-avatar-placeholder']}>
-            //     <FontAwesomeIcon icon={faUser} />
-            //   </div>
-            // )
-            }
-
-            <span className={style['editor-name']}>{`${event?.user?.first_name||''}${event?.user?.last_name||''}`}</span>
-
+            <span className={style['editor-name']}>{`${event?.user?.first_name || ''}${event?.user?.last_name || ''}`}</span>
           </div>
 
-          {
-            //target
-            <div className={style['event-target']}>
-
-
-              {
-                event?.webpage_uuid &&
-                <Fragment>
-                  <span className={style['target-type']}>網站</span>
-                  <FontAwesomeIcon icon={faChevronRight} className={style['target-separator']} />
-                  <span className={style['target-name']}>{event?.updated_data?.name || event?.original_data?.name || '?'}</span>
-                </Fragment>
-                
-              }
-
-              {
-                event?.element_uuid &&
-                <Fragment>
-                  <span className={style['target-type']}>元素</span>
-                  <FontAwesomeIcon icon={faChevronRight} className={style['target-separator']} />
-                  <span className={style['target-name']}>{event?.updated_data?.name || event?.original_data?.name || '?'}</span>
-                </Fragment>
-                
-              }
-              
-            </div>
-
-          }
-
-          {
-            //changes
-            //   event.changes && event.changes.fields && event.changes.fields.length > 0 && (
-            //   <div className={style['event-changes']}>
-            //     修改了：{event.changes.fields.join(', ')}
-            //   </div>
-            // )
-          }
-          
-
-          
-
-
+          <div className={style['event-target']}>
+            {event?.webpage_uuid && (
+              <Fragment>
+                <span className={style['target-type']}>網站</span>
+                <IconChevronRight />
+                <span className={style['target-name']}>{event?.updated_data?.name || event?.original_data?.name || '?'}</span>
+              </Fragment>
+            )}
+            {event?.element_uuid && (
+              <Fragment>
+                <span className={style['target-type']}>元素</span>
+                <IconChevronRight />
+                <span className={style['target-name']}>{event?.updated_data?.name || event?.original_data?.name || '?'}</span>
+              </Fragment>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -147,26 +135,9 @@ const EditEventListItem = ({ event, onClick }) => {
 
 EditEventListItem.propTypes = {
   event: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    type: PropTypes.oneOf(Object.values(EVENT_TYPES)).isRequired,
-    timestamp: PropTypes.number.isRequired,
-    editor: PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      avatar: PropTypes.string
-    }).isRequired,
-    target: PropTypes.shape({
-      type: PropTypes.string.isRequired,
-      uuid: PropTypes.string.isRequired,
-      name: PropTypes.string
-    }).isRequired,
-    changes: PropTypes.shape({
-      before: PropTypes.any,
-      after: PropTypes.any,
-      fields: PropTypes.arrayOf(PropTypes.string)
-    }),
-    metadata: PropTypes.any
-  }).isRequired,
+    uuid: PropTypes.string,
+    action: PropTypes.string,
+  }),
   onClick: PropTypes.func
 };
 

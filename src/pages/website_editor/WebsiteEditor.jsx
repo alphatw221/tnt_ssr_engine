@@ -141,34 +141,43 @@ const WebsiteEditor = () => {
     }
 
     const collaboratorUpdateElement = (json_data, sender_socket_id)=>{
-      
-      
+      const {element, event} = JSON.parse(json_data)
+      console.log('[socket] collaborator_update_element', {
+        my_socket_id: socket?.id, sender_socket_id,
+        is_self: socket?.id===sender_socket_id,
+        element_uuid: element?.uuid,
+      })
       if(socket?.id!=sender_socket_id){
-        // shallow copy 最外層
         const _website = { ...website };
-        console.log('websiteFindAndReplaceElement')
-        const {element, event} = JSON.parse(json_data)
         websiteFindAndReplaceElement(_website, element?.uuid, element)
         setWebsite(_website)
         dispatch(appendEditEvents([event]))
       }
     }
-  
+
     const collaboratorRemoveElement = (json_data, sender_socket_id)=>{
+      const {element_uuid, event} = JSON.parse(json_data)
+      console.log('[socket] collaborator_remove_element', {
+        my_socket_id: socket?.id, sender_socket_id,
+        is_self: socket?.id===sender_socket_id,
+        element_uuid,
+      })
       if(socket?.id!=sender_socket_id){
-        // shallow copy 最外層
         const _website = { ...website };
-        const {element_uuid, event} = JSON.parse(json_data)
         websiteFindAndRemoveElement(_website, element_uuid)
         setWebsite(_website)
         dispatch(appendEditEvents([event]))
       }
     }
     const collaboratorRemoveElementRelation = (json_data, sender_socket_id)=>{
+      const {parent_relation_uuid, event} = JSON.parse(json_data)
+      console.log('[socket] collaborator_remove_element_relation', {
+        my_socket_id: socket?.id, sender_socket_id,
+        is_self: socket?.id===sender_socket_id,
+        parent_relation_uuid,
+      })
       if(socket?.id!=sender_socket_id){
-        // shallow copy 最外層
         const _website = { ...website };
-        const {parent_relation_uuid, event} = JSON.parse(json_data)
         websiteFindAndRemoveElementRelation(_website, parent_relation_uuid)
         setWebsite(_website)
         dispatch(appendEditEvents([event]))
@@ -178,7 +187,7 @@ const WebsiteEditor = () => {
         const {
           action,
           element_relation_uuid,
-          new_parent_relation_uuid,
+          new_element_relation_uuid,
           target_webpage_uuid,
           target_webpage_position,
           target_element_relation_uuid,
@@ -186,14 +195,22 @@ const WebsiteEditor = () => {
           event
         } = JSON.parse(json_data)
 
+      console.log('[socket] collaborator_do_element_action received', {
+        my_socket_id: socket?.id,
+        sender_socket_id,
+        is_self: socket?.id===sender_socket_id,
+        element_relation_uuid,
+        new_element_relation_uuid,
+      })
       if(socket?.id===sender_socket_id){
         // 自己發的 action：位置已由 globleMoveNextTo/globleMoveInto 樂觀更新過
-        // 只需把後端產生的 new_parent_relation_uuid 同步回 state
+        // 只需把後端產生的 new_element_relation_uuid 同步回 state
         setWebsite(prev => {
           const _website = { ...prev };
           const sourceElement = websiteFindElement(_website, element_relation_uuid)
+          console.log('[socket sender branch] sourceElement found:', sourceElement)
           if(sourceElement){
-            const newElement = {...sourceElement, parent_relation_uuid:new_parent_relation_uuid}
+            const newElement = {...sourceElement, parent_relation_uuid:new_element_relation_uuid}
             websiteFindAndReplaceElement(_website, sourceElement.uuid, newElement)
           }
           return _website
@@ -203,7 +220,7 @@ const WebsiteEditor = () => {
         setWebsite(prev => {
           const _website = { ...prev };
           const sourceElement = websiteFindElement(_website, element_relation_uuid)
-          const newElement = {...sourceElement, parent_relation_uuid:new_parent_relation_uuid}
+          const newElement = {...sourceElement, parent_relation_uuid:new_element_relation_uuid}
 
           if(action=='move'){
             websiteFindAndRemoveElementRelation(_website, element_relation_uuid)
@@ -227,16 +244,23 @@ const WebsiteEditor = () => {
     }
 
     const collaboratorCreateElement = (json_data, sender_socket_id)=>{
+      const {
+        element,
+        new_parent_relation_uuid,
+        target_webpage_uuid,
+        target_webpage_position,
+        target_element_relation_uuid,
+        target_relative_position,
+        event
+      } = JSON.parse(json_data)
+      console.log('[socket] collaborator_create_element', {
+        my_socket_id: socket?.id, sender_socket_id,
+        is_self: socket?.id===sender_socket_id,
+        element_uuid: element?.uuid,
+        new_parent_relation_uuid,
+        target_webpage_uuid, target_element_relation_uuid, target_relative_position,
+      })
       if(socket?.id!=sender_socket_id){
-        const {
-          element,
-          new_parent_relation_uuid,
-          target_webpage_uuid,
-          target_webpage_position,
-          target_element_relation_uuid,
-          target_relative_position,
-          event
-        } = JSON.parse(json_data)
 
         const newElement = {...element, parent_relation_uuid:new_parent_relation_uuid}
 
@@ -273,13 +297,12 @@ const WebsiteEditor = () => {
     }
 
     const collaboratorUpdateWebsite = (json_data, sender_socket_id)=>{
+      const { _website, event } = JSON.parse(json_data)
+      console.log('[socket] collaborator_update_website', {
+        my_socket_id: socket?.id, sender_socket_id,
+        is_self: socket?.id===sender_socket_id,
+      })
       if(socket?.id!=sender_socket_id){
-
-        const {
-          _website, 
-          event
-        } = JSON.parse(json_data)
-
         setWebsite(_website)
         dispatch(appendEditEvents([event]))
       }
