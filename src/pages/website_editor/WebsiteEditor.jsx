@@ -175,7 +175,6 @@ const WebsiteEditor = () => {
       }
     }
     const collaboratorDoElementAction = ( json_data, sender_socket_id)=>{
-      if(socket?.id!=sender_socket_id){
         const {
           action,
           element_relation_uuid,
@@ -187,6 +186,20 @@ const WebsiteEditor = () => {
           event
         } = JSON.parse(json_data)
 
+      if(socket?.id===sender_socket_id){
+        // 自己發的 action：位置已由 globleMoveNextTo/globleMoveInto 樂觀更新過
+        // 只需把後端產生的 new_parent_relation_uuid 同步回 state
+        setWebsite(prev => {
+          const _website = { ...prev };
+          const sourceElement = websiteFindElement(_website, element_relation_uuid)
+          if(sourceElement){
+            const newElement = {...sourceElement, parent_relation_uuid:new_parent_relation_uuid}
+            websiteFindAndReplaceElement(_website, sourceElement.uuid, newElement)
+          }
+          return _website
+        })
+      }else{
+        // 其他協作者的 action：完整 remove + insert
         setWebsite(prev => {
           const _website = { ...prev };
           const sourceElement = websiteFindElement(_website, element_relation_uuid)
@@ -210,7 +223,6 @@ const WebsiteEditor = () => {
           return _website
         })
         dispatch(appendEditEvents([event]))
-
       }
     }
 

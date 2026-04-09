@@ -8,8 +8,10 @@
     "build:website_editor": "vite build --mode production --config vite.config.website_editor.js",
     "build:express": "vite build --mode production --config vite.config.express.js",
     "dev:checkout_widget_01": "dotenvx run --env-file=.env.prod.local -- vite --config vite.config.checkout_widget_01.dev.js",
-    "build:checkout_widget_01": "vite build --mode production --config vite.config.checkout_widget_01.js"
-    
+    "build:checkout_widget_01": "vite build --mode production --config vite.config.checkout_widget_01.js",
+    "test": "vitest run --config vitest.config.js",
+    "test:watch": "vitest --config vitest.config.js",
+    "test:ui": "vitest --ui --config vitest.config.js"
   },
   "main": "server.js",
   "license": "MIT",
@@ -62,6 +64,7 @@
     "@rollup/plugin-replace": "^6.0.3",
     "@vitejs/plugin-react": "^4.4.1",
     "nodemon": "^3.1.10",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "2.0.0"
   }
 }

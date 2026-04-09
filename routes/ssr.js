@@ -35,8 +35,8 @@ router.get([
       const websiteUUID = await redis.get(websiteUUIDCacheKey);
       if(websiteUUID){
         const htmlCacheKey = getWebsiteUUIDCacheKey(websiteUUID, webpageName, objectUUID)
-        const cachedBuf = await redis.getBuffer(htmlCacheKey);
-        const cachedHtml = cachedBuf ? cachedBuf.toString('utf-8') : null;
+        const cachedB64 = await redis.get(htmlCacheKey);
+        const cachedHtml = cachedB64 ? Buffer.from(cachedB64, 'base64').toString('utf-8') : null;
         if (cachedHtml) {
           console.log(`[Cache] 命中 ${req.get('host')} ${htmlCacheKey}`);
           res.status(200).set({ 'Content-Type': 'text/html; charset=utf-8' }).end(cachedHtml);
@@ -106,7 +106,7 @@ router.get([
       // 開發模式 不 cache
       console.log('開發模式 不cache2')
     }else{
-      await redis.set(htmlCacheKey, finalHTML)
+      await redis.set(htmlCacheKey, Buffer.from(finalHTML, 'utf-8').toString('base64'))
       await redis.set(websiteUUIDCacheKey, uncachedWebsiteUUID)
     }
     
