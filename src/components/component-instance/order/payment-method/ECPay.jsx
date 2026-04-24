@@ -127,6 +127,7 @@ const ECPay = ({orderUUID, paymentServiceUUID, routingTable, ecpayMerchantID, pr
 
                         }).catch(err=>{
                             console.log(err)
+                            alert(`付款失敗\n${JSON.stringify(err?.response?.data ?? err?.message ?? err)}`)
                             setWait(false)
                         })
 
