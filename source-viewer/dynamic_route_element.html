@@ -11,18 +11,60 @@
 
 function resolvePath(obj, path) {
     if (!obj || !path) return '';
-    return path.split('.').reduce((acc, key) =&gt; {
+    const value = path.split('.').reduce((acc, key) =&gt; {
         if (acc == null) return '';
+        const index = parseInt(key);
+        if (!isNaN(index) &amp;&amp; Array.isArray(acc)) {
+            return acc[index &lt; 0 ? acc.length + index : index] ?? '';
+        }
         return acc[key] ?? '';
     }, obj);
+    return typeof value === 'string' ? value.trim() : value;
+}
+
+function resolveExpr(expr, obj) {
+    expr = expr.trim();
+    if ((expr.startsWith('&quot;') &amp;&amp; expr.endsWith('&quot;')) ||
+        (expr.startsWith(&quot;'&quot;) &amp;&amp; expr.endsWith(&quot;'&quot;))) {
+        return expr.slice(1, -1);
+    }
+    if (/^-?\d+(\.\d+)?$/.test(expr)) {
+        return expr;
+    }
+    // nested ternary: condition ? true_expr : false_expr
+    const ternaryMatch = expr.match(/^([^?|]+)\?([^:]+):(.+)$/);
+    if (ternaryMatch) {
+        const [, cond, truePart, falsePart] = ternaryMatch;
+        const condValue = resolvePath(obj, cond.trim());
+        const isTruthy = condValue !== '' &amp;&amp; condValue != null &amp;&amp; condValue !== '0' &amp;&amp; condValue !== false &amp;&amp; condValue !== 0;
+        return resolveExpr(isTruthy ? truePart : falsePart, obj);
+    }
+    const paths = expr.split('|');
+    for (const path of paths) {
+        const value = resolvePath(obj, path.trim());
+        if (value !== '' &amp;&amp; value != null) return String(value);
+    }
+    return '';
 }
 
 function interpolate(template, obj) {
     if (!template || !obj) return template || '';
-    return template.replace(/\{\{([\w.]+)\}\}/g, (_, path) =&gt; {
-        const value = resolvePath(obj, path);
-        return value !== '' ? String(value) : '';
+    // {{condition ? true_expr : false_expr}}
+    let result = template.replace(/\{\{([^?{}]+)\?([^:{}]+):([^{}]+)\}\}/g, (_, cond, truePart, falsePart) =&gt; {
+        const condValue = resolvePath(obj, cond.trim());
+        const isTruthy = condValue !== '' &amp;&amp; condValue != null &amp;&amp; condValue !== '0' &amp;&amp; condValue !== false &amp;&amp; condValue !== 0;
+        return resolveExpr(isTruthy ? truePart : falsePart, obj);
     });
+    // {{path1|path2|path3}}
+    result = result.replace(/\{\{([\w.|]+)\}\}/g, (_, expr) =&gt; {
+        const paths = expr.split('|');
+        for (const path of paths) {
+            const value = resolvePath(obj, path.trim());
+            if (value !== '' &amp;&amp; value != null) return String(value);
+        }
+        return '';
+    });
+    return result;
 }
 
 const DynamicRouteElement = ({
