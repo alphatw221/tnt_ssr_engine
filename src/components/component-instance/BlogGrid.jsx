@@ -21,31 +21,44 @@ const BlogGrid = ({
     ...props}) => {
 
 
-    const searchParams = new URLSearchParams();
-
     const {cache} = useAppSelector((state) => state.blog);
 
     // SSR fallback: use element.data.cache when Redux cache is not yet populated
     const effectiveCache = cache?.[element?.uuid] ?? element?.data?.cache;
 
-    const defaultPageSize = 25
+    const defaultPageSize = element?.data?.limit_count || 25
     const defaultPage = 1
     const defaultOrderBy = 'priority,updated_at'
     const defaultKeyword = ''
+    const defaultCategoryUUIDs = []
 
+    const [_keyword, _setKeyword] = useState(cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
+    const [keyword, setKeyword] = useState(cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
 
-    const [_keyword, _setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
-    const [keyword, setKeyword] = useState(searchParams.get('keyword')||cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
-
-    const [categoryUUIDs, setCategoryUUIDs] = useState(searchParams.get('category_uuids')?searchParams.get('category_uuids')?.split(','):cache?.[element?.uuid]?.categoryUUIDs??((element?.data?.filter_categories??'').split(',')||[]));
-    const [pageSize, setPageSize] = useState(searchParams.get('page_size')||cache?.[element?.uuid]?.pageSize||element?.data?.page_size||defaultPageSize);
-    const [page, setPage] = useState(searchParams.get('page')||cache?.[element?.uuid]?.page||element?.data?.page||defaultPage);
-    const [orderBy, setOrderBy] = useState(searchParams.get('order_by')||cache?.[element?.uuid]?.orderBy||element?.data?.order_by||defaultOrderBy);
+    const [categoryUUIDs, setCategoryUUIDs] = useState(cache?.[element?.uuid]?.categoryUUIDs?cache?.[element?.uuid]?.categoryUUIDs.split(','):((element?.data?.filter_categories??'').split(',')||defaultCategoryUUIDs));
+    const [pageSize, setPageSize] = useState(cache?.[element?.uuid]?.pageSize||element?.data?.page_size||defaultPageSize);
+    const [page, setPage] = useState(cache?.[element?.uuid]?.page||element?.data?.page||defaultPage);
+    const [orderBy, setOrderBy] = useState(cache?.[element?.uuid]?.orderBy||element?.data?.order_by||defaultOrderBy);
     const [layoutOption, setLayoutOption] = useState(element?.data?.default_layout||'大格子');
 
 
     const dispatch = useAppDispatch()
 
+    // 只在 client mount 後讀取 URL params，SSR 階段不執行
+    useEffect(() => {
+        const p = new URLSearchParams(window.location.search)
+        if (p.get('keyword'))        { _setKeyword(p.get('keyword')); setKeyword(p.get('keyword')) }
+        if (p.get('category_uuids')) setCategoryUUIDs(p.get('category_uuids').split(','))
+        if (p.get('page'))           setPage(p.get('page'))
+        if (p.get('page_size'))      setPageSize(p.get('page_size'))
+        if (p.get('order_by'))       setOrderBy(p.get('order_by'))
+    }, [])
+
+    const filterUUIDs = element?.data?.filter_uuids||''
+    const filterTags = element?.data?.filter_tags||''
+    const excludeUUIDs = element?.data?.exclude_uuids||''
+    const excludeCategories = element?.data?.exclude_categories||''
+    const excludeTags = element?.data?.exclude_tags||''
 
     useEffect(()=>{
         // If Redux cache is empty but SSR cache exists, seed Redux cache and skip fetch
@@ -58,13 +71,23 @@ const BlogGrid = ({
             const ssrPage = element?.data?.page||defaultPage
             const ssrPageSize = element?.data?.page_size||defaultPageSize
             const ssrOrderBy = element?.data?.order_by||defaultOrderBy
+            const ssrFilterUUIDs = element?.data?.filter_uuids||''
+            const ssrFilterTags = element?.data?.filter_tags||''
+            const ssrExcludeUUIDs = element?.data?.exclude_uuids||''
+            const ssrExcludeCategories = element?.data?.exclude_categories||''
+            const ssrExcludeTags = element?.data?.exclude_tags||''
 
             if (
                 ssrKeyword == keyword &&
                 ssrCategoryUUIDs?.join(',') == categoryUUIDs?.join(',') &&
                 ssrPage == page &&
                 ssrPageSize == pageSize &&
-                ssrOrderBy == orderBy
+                ssrOrderBy == orderBy &&
+                ssrFilterUUIDs == filterUUIDs &&
+                ssrFilterTags == filterTags &&
+                ssrExcludeUUIDs == excludeUUIDs &&
+                ssrExcludeCategories == excludeCategories &&
+                ssrExcludeTags == excludeTags
             ) {
                 dispatch(setCacheKey({
                     key: element?.uuid,
@@ -73,6 +96,11 @@ const BlogGrid = ({
                     pageSize: ssrPageSize,
                     orderBy: ssrOrderBy,
                     categoryUUIDs: ssrCategoryUUIDs,
+                    filterUUIDs: ssrFilterUUIDs,
+                    filterTags: ssrFilterTags,
+                    excludeUUIDs: ssrExcludeUUIDs,
+                    excludeCategories: ssrExcludeCategories,
+                    excludeTags: ssrExcludeTags,
                     results: ssrResults || [],
                     count: ssrCount || 0,
                     categories: ssrCategories || [],
@@ -87,21 +115,25 @@ const BlogGrid = ({
             (cache?.[element?.uuid]?.categoryUUIDs||'')!=categoryUUIDs?.join(',')||
             (cache?.[element?.uuid]?.page||defaultPage)!=page||
             (cache?.[element?.uuid]?.pageSize||defaultPageSize)!=pageSize||
-            (cache?.[element?.uuid]?.orderBy||defaultOrderBy)!=orderBy
+            (cache?.[element?.uuid]?.orderBy||defaultOrderBy)!=orderBy||
+            (cache?.[element?.uuid]?.filterUUIDs||'')!=filterUUIDs||
+            (cache?.[element?.uuid]?.filterTags||'')!=filterTags||
+            (cache?.[element?.uuid]?.excludeUUIDs||'')!=excludeUUIDs||
+            (cache?.[element?.uuid]?.excludeCategories||'')!=excludeCategories||
+            (cache?.[element?.uuid]?.excludeTags||'')!=excludeTags
         ){
-            var _filter_uuids, _filter_categories, _filter_tags, _exclude_uuids, _exclude_categories, _exclude_tags, _keyword, _page, _page_size, _order_by, _with_categories
             customer_search_blog_post(
-                _filter_uuids='',
-                _filter_categories=categoryUUIDs?.join(','),
-                _filter_tags='',
-                _exclude_uuids='',
-                _exclude_categories='',
-                _exclude_tags='',
-                _keyword=keyword,
-                _page=page,
-                _page_size=pageSize,
-                _order_by=orderBy,
-                _with_categories=true
+                filterUUIDs,
+                categoryUUIDs?.join(','),
+                filterTags,
+                excludeUUIDs,
+                excludeCategories,
+                excludeTags,
+                keyword,
+                page,
+                pageSize,
+                orderBy,
+                true
             ).then(res=>{
 
                 console.log(res.data)
@@ -112,6 +144,11 @@ const BlogGrid = ({
                     pageSize,
                     orderBy,
                     'categoryUUIDs':categoryUUIDs?.join(','),
+                    filterUUIDs,
+                    filterTags,
+                    excludeUUIDs,
+                    excludeCategories,
+                    excludeTags,
                     'results':res.data?.results||[],
                     'count':res.data?.count||0,
                     'categories':res.data?.categories||[],
@@ -119,7 +156,8 @@ const BlogGrid = ({
 
             })
         }
-    },[element?.uuid, keyword, categoryUUIDs, page, pageSize, orderBy, cache])
+    },[element?.uuid, keyword, categoryUUIDs, page, pageSize, orderBy, cache?.[element?.uuid],
+       filterUUIDs, filterTags, excludeUUIDs, excludeCategories, excludeTags])
 
 
 
