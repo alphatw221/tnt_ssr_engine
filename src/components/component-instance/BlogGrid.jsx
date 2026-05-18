@@ -44,6 +44,11 @@ const BlogGrid = ({
 
     const dispatch = useAppDispatch()
 
+    // 當 element?.data?.filter_categories 變動時，同步更新 categoryUUIDs state
+    useEffect(() => {
+        setCategoryUUIDs((element?.data?.filter_categories ?? '').split(','));
+    }, [element?.data?.filter_categories]);
+
     // 只在 client mount 後讀取 URL params，SSR 階段不執行
     useEffect(() => {
         const p = new URLSearchParams(window.location.search)
