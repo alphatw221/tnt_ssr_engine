@@ -35,7 +35,12 @@ const BlogGrid = ({
     const [_keyword, _setKeyword] = useState(cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
     const [keyword, setKeyword] = useState(cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
 
-    const [categoryUUIDs, setCategoryUUIDs] = useState(cache?.[element?.uuid]?.categoryUUIDs?cache?.[element?.uuid]?.categoryUUIDs?.split(','):((element?.data?.filter_categories??'').split(',')||defaultCategoryUUIDs));
+    const _cachedCategoryUUIDs = cache?.[element?.uuid]?.categoryUUIDs;
+    const [categoryUUIDs, setCategoryUUIDs] = useState(
+        _cachedCategoryUUIDs
+            ? (Array.isArray(_cachedCategoryUUIDs) ? _cachedCategoryUUIDs : _cachedCategoryUUIDs?.split(','))
+            : ((element?.data?.filter_categories ?? '').split(',') || defaultCategoryUUIDs)
+    );
     const [pageSize, setPageSize] = useState(cache?.[element?.uuid]?.pageSize||element?.data?.page_size||defaultPageSize);
     const [page, setPage] = useState(cache?.[element?.uuid]?.page||element?.data?.page||defaultPage);
     const [orderBy, setOrderBy] = useState(cache?.[element?.uuid]?.orderBy||element?.data?.order_by||defaultOrderBy);
@@ -46,14 +51,14 @@ const BlogGrid = ({
 
     // 當 element?.data?.filter_categories 變動時，同步更新 categoryUUIDs state
     useEffect(() => {
-        setCategoryUUIDs((element?.data?.filter_categories ?? '').split(','));
+        setCategoryUUIDs((element?.data?.filter_categories ?? '')?.split(','));
     }, [element?.data?.filter_categories]);
 
     // 只在 client mount 後讀取 URL params，SSR 階段不執行
     useEffect(() => {
         const p = new URLSearchParams(window.location.search)
         if (p.get('keyword'))        { _setKeyword(p.get('keyword')); setKeyword(p.get('keyword')) }
-        if (p.get('category_uuids')) setCategoryUUIDs(p.get('category_uuids').split(','))
+        if (p.get('category_uuids')) setCategoryUUIDs(p.get('category_uuids')?.split(','))
         if (p.get('page'))           setPage(p.get('page'))
         if (p.get('page_size'))      setPageSize(p.get('page_size'))
         if (p.get('order_by'))       setOrderBy(p.get('order_by'))
@@ -72,7 +77,7 @@ const BlogGrid = ({
             const ssrResults = element.data.cache.results
             const ssrCategories = element?.data?.cache?.categories
             const ssrKeyword = element.data?.keyword ?? defaultKeyword
-            const ssrCategoryUUIDs = (element?.data?.filter_categories??'').split(',')||[]
+            const ssrCategoryUUIDs = (element?.data?.filter_categories??'')?.split(',')||[]
             const ssrPage = element?.data?.page||defaultPage
             const ssrPageSize = element?.data?.page_size||defaultPageSize
             const ssrOrderBy = element?.data?.order_by||defaultOrderBy
@@ -100,7 +105,7 @@ const BlogGrid = ({
                     page: ssrPage,
                     pageSize: ssrPageSize,
                     orderBy: ssrOrderBy,
-                    categoryUUIDs: ssrCategoryUUIDs,
+                    categoryUUIDs: ssrCategoryUUIDs?.join(','),
                     filterUUIDs: ssrFilterUUIDs,
                     filterTags: ssrFilterTags,
                     excludeUUIDs: ssrExcludeUUIDs,

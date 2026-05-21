@@ -97,6 +97,7 @@ export function getElementDataSettings(type, store_uuid){
     
                 return [
                     {"key": 'preview_data', "name": "預覽文章", "type": "search_select", "multiple":false, "name_keys":['title'], "value_key":'uuid', "search_request":searchBlogPostRequest},
+                    {"key": "pre_next_route", "name": "相關文章路徑", "type": "input",  "inputType": "text"}, 
 
                 ]
 
