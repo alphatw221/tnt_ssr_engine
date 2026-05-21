@@ -35,7 +35,7 @@ const BlogGrid = ({
     const [_keyword, _setKeyword] = useState(cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
     const [keyword, setKeyword] = useState(cache?.[element?.uuid]?.keyword||element?.data?.keyword||defaultKeyword);
 
-    const [categoryUUIDs, setCategoryUUIDs] = useState(cache?.[element?.uuid]?.categoryUUIDs?cache?.[element?.uuid]?.categoryUUIDs.split(','):((element?.data?.filter_categories??'').split(',')||defaultCategoryUUIDs));
+    const [categoryUUIDs, setCategoryUUIDs] = useState(cache?.[element?.uuid]?.categoryUUIDs?cache?.[element?.uuid]?.categoryUUIDs?.split(','):((element?.data?.filter_categories??'').split(',')||defaultCategoryUUIDs));
     const [pageSize, setPageSize] = useState(cache?.[element?.uuid]?.pageSize||element?.data?.page_size||defaultPageSize);
     const [page, setPage] = useState(cache?.[element?.uuid]?.page||element?.data?.page||defaultPage);
     const [orderBy, setOrderBy] = useState(cache?.[element?.uuid]?.orderBy||element?.data?.order_by||defaultOrderBy);
