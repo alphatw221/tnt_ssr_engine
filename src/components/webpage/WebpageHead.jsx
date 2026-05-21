@@ -8,13 +8,13 @@ const WebpageHead =  ({ website, webpage, mode, ...props})=>{
 
 
 
-    const title = webpage?.object?.title||webpage?.object?.name ? `${website?.name||''} | ${webpage?.name||''} | ${webpage?.object?.title||webpage?.object?.name}` : `${website?.name||''} | ${webpage?.name||''}`
-    const description = webpage?.object?.description ? webpage?.object?.description : webpage?.data?.description||''
-    const keywords = webpage?.object?.keywords ? webpage?.object?.keywords : webpage?.data?.keywords||''
-    const og_title = webpage?.object?.title ? webpage?.object?.title : webpage?.data?.og_title||''
-    const og_description = webpage?.object?.description ? webpage?.object?.description : webpage?.data?.og_description||''
+    const title = website?.object?.title||website?.object?.name ? `${website?.name||''} | ${webpage?.name||''} | ${website?.object?.title||website?.object?.name}` : `${website?.name||''} | ${webpage?.name||''}`
+    const description = website?.object?.description ? website?.object?.description : webpage?.data?.description||''
+    const keywords = website?.object?.keywords ? website?.object?.keywords : webpage?.data?.keywords||''
+    const og_title = website?.object?.title ? website?.object?.title : webpage?.data?.og_title||''
+    const og_description = website?.object?.description ? website?.object?.description : webpage?.data?.og_description||''
 
-    const og_image1 = webpage?.object?.image ? webpage?.object?.image : webpage?.data?.og_image1
+    const og_image1 = website?.object?.image ? website?.object?.image : webpage?.data?.og_image1
     const og_image2 = webpage?.data?.og_image2
 
     const allowedTags = new Set(['meta', 'title', 'link', 'style', 'script', 'base']);

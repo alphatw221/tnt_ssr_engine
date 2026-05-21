@@ -96,8 +96,10 @@ export function getElementDataSettings(type, store_uuid){
                 }
     
                 return [
-                    {"key": 'preview_data', "name": "預覽文章", "type": "search_select", "multiple":false, "name_keys":['title'], "value_key":'uuid', "search_request":searchBlogPostRequest},
-                    {"key": "pre_next_route", "name": "相關文章路徑", "type": "input",  "inputType": "text"}, 
+                    {"type":"accordion",  "key":`expand_blog_post_detail_accordion`, "name":'文章', "accordion_items":[
+                        {"key": 'preview_data', "name": "預覽文章", "type": "search_select", "multiple":false, "name_keys":['title'], "value_key":'uuid', "search_request":searchBlogPostRequest},
+                        {"key": "pre_next_route", "name": "相關文章路徑", "type": "input",  "inputType": "text"}, 
+                    ]}
 
                 ]
 
@@ -161,7 +163,7 @@ export function getElementDataSettings(type, store_uuid){
         case 'blog_grid':
 
         return [
-                {"type":"accordion",  "key":`expand_shop_accordion`, "name":'部落格', "accordion_items":[
+                {"type":"accordion",  "key":`expand_blog_grid_accordion`, "name":'部落格', "accordion_items":[
                         {"key": "filter_uuids", "name": "篩選UUID(使用,隔開)", "type": "input",  "inputType": "text"}, 
                         {"key": "filter_categories", "name": "篩選類別UUID(使用,隔開)", "type": "input",  "inputType": "text"}, 
                         {"key": "filter_tags", "name": "篩選標籤(使用,隔開)", "type": "input",  "inputType": "text"}, 
@@ -171,6 +173,8 @@ export function getElementDataSettings(type, store_uuid){
                         {"key": "keyword", "name": "搜尋關鍵字(使用,隔開)", "type": "input",  "inputType": "text"}, 
                         {"key": "order_by", "name": "按照排列(使用,隔開)", "type": "input",  "inputType": "text"}, 
                         {"key": "limit_count", "name": "限制個數", "type": "input",  "inputType": "number"}, 
+
+                        {"key": "blog_post_route", "name": "文章路徑", "type": "input",  "inputType": "text"}, 
                 ]}
         ]
 

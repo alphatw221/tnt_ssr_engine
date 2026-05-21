@@ -242,7 +242,8 @@ const BlogGrid = ({
                             <BlogPostSingle
                                 key={key}
                                 blogPost={blogPost}
-                                routingTable={routingTable}/>
+                                routingTable={routingTable}
+                                blogPostRoute={element?.data?.blog_post_route}/>
                         ))
                     }
                 </div>
