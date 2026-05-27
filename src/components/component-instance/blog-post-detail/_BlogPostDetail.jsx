@@ -1,4 +1,5 @@
 import React, { Fragment, useState, useEffect } from "react";
+import 'ckeditor5/ckeditor5-content.css';
 
 import clsx from "clsx";
 import style from './BlogPostDetail.module.scss'
@@ -106,10 +107,12 @@ const _BlogPostDetail = ({
                     </div>
                     
                     {
-                        blogPost?.auther_name||true &&
+                        (blogPost?.author_relations?.length > 0) &&
                         <div className={clsx('作者框',style['作者框'])}>
                             <label className={clsx('作者-標題',style['作者-標題'])}>作者：</label>
-                            <span className={clsx('作者',style['作者'])}>{`${blogPost?.auther_name||''}`}</span>
+                            <span className={clsx('作者',style['作者'])}>
+                                {blogPost.author_relations.map(r => r.blog_post_author_nick_name).join('、')}
+                            </span>
                         </div>
                     }
                     

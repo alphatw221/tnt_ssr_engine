@@ -1,6 +1,7 @@
 
 import PropTypes from "prop-types";
 import React, { Fragment, useState, useEffect, useRef, useCallback, useMemo } from "react";
+import 'ckeditor5/ckeditor5-content.css';
 import clsx from "clsx";
 import style from './ProductDetail.module.scss'
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";

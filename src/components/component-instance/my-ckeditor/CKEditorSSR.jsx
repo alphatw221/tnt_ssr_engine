@@ -1,39 +1,21 @@
-import PropTypes from "prop-types";
-import React, { Fragment, } from "react";
-// import clsx from "clsx";
-import style from './CKEditor.module.scss'
+import React from "react";
+import 'ckeditor5/ckeditor5-content.css';
 
-
-
-
-const KPCKEditorSSR = ({  
-
-    
-    element, 
+const KPCKEditorSSR = ({
+    element,
     elementProps,
     mode,
     ...props
-
-
 }) => {
-    
-
-        return ( <p 
-           {...elementProps}
-            dangerouslySetInnerHTML={{ __html: node?.data?.context }}
-        ></p>)
-
-        
-
-
-   
+    return (
+        <div
+            {...elementProps}
+            className={`ck-content${elementProps?.className ? ' ' + elementProps.className : ''}`}
+            dangerouslySetInnerHTML={{ __html: element?.data?.context }}
+        />
+    );
 };
 
-KPCKEditorSSR.propTypes = {
-};
+KPCKEditorSSR.propTypes = {};
 
 export default KPCKEditorSSR;
-
-
-
-

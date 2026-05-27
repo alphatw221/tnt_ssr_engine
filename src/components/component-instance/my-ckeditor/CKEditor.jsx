@@ -1,190 +1,196 @@
 import PropTypes from "prop-types";
-import React, { Fragment, useRef } from "react";
-import clsx from "clsx";
-import style from './CKEditor.module.scss'
-
-// import {dragItems, dragItemTypes} from '../../lib/dragItems'
-
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-// import { faHouse, faGear, faBars, faTrash } from '@fortawesome/free-solid-svg-icons'
-
-// import { useSelector, useDispatch } from "react-redux";    
-// import { useAppSelector } from "@/redux/hooks";        
-// import { setSideMenuActive, setComponentMenuActive} from '../../redux/slices/website-editor-slice'
+import React, { useRef, useState, useEffect, useMemo } from "react";
 
 import { CKEditor } from '@ckeditor/ckeditor5-react';
-// import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import ClassicEditor from '@ckeditor/ckeditor5-build-customize';
-// import { Bold, Italic } from '@ckeditor/ckeditor5-basic-styles';
-// import { Essentials } from '@ckeditor/ckeditor5-essentials';
-// import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
+import {
+    ClassicEditor,
+    Alignment,
+    Autoformat,
+    AutoImage,
+    Autosave,
+    BlockQuote,
+    Bold,
+    CloudServices,
+    Code,
+    CodeBlock,
+    Essentials,
+    FontBackgroundColor,
+    FontColor,
+    FontFamily,
+    FontSize,
+    Heading,
+    Highlight,
+    HorizontalLine,
+    ImageBlock,
+    ImageCaption,
+    ImageInline,
+    ImageInsert,
+    ImageInsertViaUrl,
+    ImageResize,
+    ImageStyle,
+    ImageTextAlternative,
+    ImageToolbar,
+    ImageUpload,
+    Indent,
+    IndentBlock,
+    Italic,
+    Link,
+    LinkImage,
+    List,
+    MediaEmbed,
+    Paragraph,
+    PasteFromOffice,
+    SimpleUploadAdapter,
+    Strikethrough,
+    Subscript,
+    Superscript,
+    Table,
+    TableCaption,
+    TableToolbar,
+    TextTransformation,
+    TodoList,
+    Underline
+} from 'ckeditor5';
+import translations from 'ckeditor5/translations/zh.js';
+
+import 'ckeditor5/ckeditor5.css';
+
 import Cookies from "js-cookie";
-// import { getRWDStyles } from "../../lib/utils/rwdHelper"
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
+import { user_update_element } from '@/api/element.js';
 
-// import {user_update_node} from '@/api/node.js'
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";   
-
-
-
-const KPCKEditor = ({  
-
-    // pageIndex, fragmentIndex, rowIndex, columnIndex, columnRowIndex, 
-    // node,  mode, actions, children, ...props,
-
-
-    element, 
+const KPCKEditor = ({
+    element,
     elementProps,
     mode,
+    actions,
     ...props
-
 }) => {
-    const dispatch = useAppDispatch()
-    const {showElementOutline} = useAppSelector((state) => state.editor_memory);
+    const dispatch = useAppDispatch();
+    const { selectedTool } = useAppSelector((state) => state.editor_memory);
 
+    const [isLayoutReady, setIsLayoutReady] = useState(false);
+    const editorRef = useRef(null);
 
+    useEffect(() => {
+        setIsLayoutReady(true);
+        return () => setIsLayoutReady(false);
+    }, []);
 
-    // const [isHover, setIsHover] = useState(false)
-    // const [isFocuse, setIsFocuse] = useState(false)
+    const editorConfig = useMemo(() => {
+        if (!isLayoutReady) return null;
 
-
-    // const [width, setWidth] = useState('')
-
-    // useEffect(()=>{
-
-    //     rwdHelper(
-    //         websiteEditorState.windowWidth, 
-    //         websiteEditorState.sideMenuActive, 
-    //         [
-    //             new RWDPropHandler(node?.data, 'rwd_width', 'width_unit', setWidth),
-    //         ]
-    //     )
-
-           
-
-    // },[ websiteEditorState.windowWidth, websiteEditorState.sideMenuActive, setWidth, node?.data])
-    // console.log(ClassicEditor.builtinPlugins.map( plugin => plugin.pluginName ))
-
-
-    //['Essentials', 'CKFinderUploadAdapter', 'Autoformat', 
-    // 'Bold', 'Italic', 'BlockQuote', 'CKBox', 'CKFinder', 
-    // 'CloudServices', 'EasyImage', 'Heading', 'Image', 'ImageCaption', 
-    // 'ImageStyle', 'ImageToolbar', 'ImageUpload', 'Indent', 'Link', 'List', 
-    // 'MediaEmbed', 'Paragraph', 'PasteFromOffice', 'PictureEditing', 'Table', 
-    // 'TableToolbar', 'TextTransformation']
-
-
-
-
-    // ['selectAll', 'undo', 'redo', 'bold', 'italic', 'blockQuote', 'link', 'ckfinder',
-    //  'uploadImage', 'imageUpload', 'heading', 
-    // 'imageTextAlternative', 
-    //  'toggleImageCaption', 'imageStyle:inline', 'imageStyle:alignLeft', 
-    //  'imageStyle:alignRight', 'imageStyle:alignCenter', 'imageStyle:alignBlockLeft',
-    //   'imageStyle:alignBlockRight', 'imageStyle:block', 'imageStyle:side',
-    //    'imageStyle:wrapText', 'imageStyle:breakText',
-    //  'indent', 'outdent',
-    //     'numberedList', 'bulletedList', 'mediaEmbed', 'insertTable', 'tableColumn',
-    //      'tableRow', 'mergeTableCells']
-
-    // let editorReference
-    const editorRef = useRef(null)
-    // console.log('123')
-
-    if(mode==='dev' && showElementOutline){
-        return (
-        
-            
-            
-                <CKEditor
-                {...elementProps}
-                editor={ ClassicEditor }
-                config={ {
-                    // plugins: [ Paragraph, Bold, Italic, Essentials ],
-                    // toolbar: [ 'bold', 'italic' ]
-                    // toolbar: {
-                    //     items: [
-                    //         'undo', 'redo',
-                    //         '|', 'heading',
-                    //         '|', 'fontfamily', 'fontsize', 'fontColor', 'fontBackgroundColor',
-                    //         '|', 'bold', 'italic', 'strikethrough', 'subscript', 'superscript', 'code',
-                    //         '-', // break point
-                    //         '|', 'alignment',
-                    //         'link', 'uploadImage', 'blockQuote', 'codeBlock',
-                    //         '|', 'bulletedList', 'numberedList', 'todoList', 'outdent', 'indent'
-                    //     ],
-                    //     shouldNotGroupWhenFull: true
-                    // }
-                    simpleUpload: {
-                        // The URL that the images are uploaded to.
-                        uploadUrl: `${process.env.NEXT_PUBLIC_API_PROTOCAL}://${location.hostname}${process.env.NEXT_PUBLIC_API_PORT?':'+process.env.NEXT_PUBLIC_API_PORT:''}/api/v1/store/image/ckeditor/upload/`,
-            
-                        // Enable the XMLHttpRequest.withCredentials property.
-                        withCredentials: false,
-            
-                        // Headers sent along with the XMLHttpRequest to the upload server.
-                        headers: {
-                            'HTTP_X_CSRFTOKEN': Cookies.get('csrftoken'),
-                            Authorization: `Bearer ${Cookies.get('user_access_token')}`
-                        }
-                    },
-                    mediaEmbed:{
-                        previewsInData: "true"
+        return {
+            plugins: [
+                Alignment, Autoformat, AutoImage, Autosave,
+                BlockQuote, Bold, CloudServices, Code, CodeBlock,
+                Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize,
+                Heading, Highlight, HorizontalLine,
+                ImageBlock, ImageCaption, ImageInline, ImageInsert, ImageInsertViaUrl,
+                ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload,
+                Indent, IndentBlock, Italic, Link, LinkImage, List,
+                MediaEmbed, Paragraph, PasteFromOffice, SimpleUploadAdapter,
+                Strikethrough, Subscript, Superscript,
+                Table, TableCaption, TableToolbar,
+                TextTransformation, TodoList, Underline
+            ],
+            toolbar: {
+                items: [
+                    'undo', 'redo', '|',
+                    'heading', '|',
+                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'code', '|',
+                    'horizontalLine', 'link', 'insertImage', 'mediaEmbed', 'insertTable', 'highlight', 'blockQuote', 'codeBlock', '|',
+                    'alignment', '|',
+                    'bulletedList', 'numberedList', 'todoList', 'outdent', 'indent'
+                ],
+                shouldNotGroupWhenFull: false
+            },
+            language: 'zh',
+            translations: [translations],
+            licenseKey: 'GPL',
+            fontFamily: { supportAllValues: true },
+            fontSize: {
+                options: [10, 12, 14, 'default', 18, 20, 22],
+                supportAllValues: true
+            },
+            heading: {
+                options: [
+                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                    { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                    { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' },
+                    { model: 'heading4', view: 'h4', title: 'Heading 4', class: 'ck-heading_heading4' },
+                    { model: 'heading5', view: 'h5', title: 'Heading 5', class: 'ck-heading_heading5' },
+                    { model: 'heading6', view: 'h6', title: 'Heading 6', class: 'ck-heading_heading6' }
+                ]
+            },
+            image: {
+                toolbar: [
+                    'toggleImageCaption', 'imageTextAlternative', '|',
+                    'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText', '|',
+                    'resizeImage'
+                ]
+            },
+            link: {
+                addTargetToExternalLinks: true,
+                defaultProtocol: 'https://',
+                decorators: {
+                    toggleDownloadable: {
+                        mode: 'manual',
+                        label: 'Downloadable',
+                        attributes: { download: 'file' }
                     }
-    
-                } }
-                
-                data={element?.data?.context||''}
-                onReady={ editor => {
-                    editorRef.current = editor
-                    // You can store the "editor" and use when it is needed.
-                    // console.log( 'Editor is ready to use!', editor );
-    
-    
-                } }
-                onChange={ ( event, editor ) => {
-                    // const data = editor.getData();
-                    // component.context = data
-                    // update(component)
-    
-    
-                } }
-                onBlur={ ( event, editor ) => {
+                }
+            },
+            table: {
+                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+            },
+            simpleUpload: {
+                uploadUrl: `${import.meta.env.VITE_APP_API_PROTOCAL}://${location.hostname}${import.meta.env.VITE_APP_API_PORT ? ':' + import.meta.env.VITE_APP_API_PORT : ''}/api/v1/store/image/ckeditor/upload/`,
+                withCredentials: false,
+                headers: {
+                    'HTTP_X_CSRFTOKEN': Cookies.get('csrftoken'),
+                    Authorization: `Bearer ${Cookies.get('user_access_token')}`
+                }
+            },
+            mediaEmbed: {
+                previewsInData: true
+            }
+        };
+    }, [isLayoutReady]);
+
+    if (mode === 'dev' && ['arrow', 'drag', 'iCursor'].includes(selectedTool)) {
+        return editorConfig && (
+            <CKEditor
+                {...elementProps}
+                editor={ClassicEditor}
+                config={editorConfig}
+                data={element?.data?.context || ''}
+                onReady={editor => {
+                    editorRef.current = editor;
+                }}
+                onChange={(event, editor) => {}}
+                onBlur={(event, editor) => {
                     const data = editor.getData();
-
-                    // actions?.globleUpdateNode({...node, data:{...node?.data||{}, context:data}})
-                    // user_update_node(node?.uuid, {...node, data:{...node?.data||{}, context:data}}, true).then(res=>{
-                    //     console.log(res.data)
-    
-                    //   }).catch(err=>{
-                    //     console.log(err)
-                    //   })
-
-                    // TODO
-
-
-                } }
-                onFocus={ ( event, editor ) => {
-                    // setIsFocuse(true)
-    
-                } }
+                    const updated = { ...element, data: { ...element?.data, context: data } };
+                    user_update_element({ element_uuid: updated?.uuid, data: { ...updated, children: null } })
+                        .then(res => { console.log(res.data) });
+                    actions?.globleUpdateElement(updated?.uuid, updated);
+                }}
+                onFocus={(event, editor) => {}}
             />
-            )
+        );
     }
 
-
-    return ( <p 
-        {...elementProps}
-        dangerouslySetInnerHTML={{ __html: element?.data?.context }}
-    ></p>)
-
-   
+    return (
+        <p
+            {...elementProps}
+            dangerouslySetInnerHTML={{ __html: element?.data?.context }}
+        />
+    );
 };
 
-KPCKEditor.propTypes = {
-};
+KPCKEditor.propTypes = {};
 
 export default KPCKEditor;
-
-
-
-

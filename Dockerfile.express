@@ -9,7 +9,7 @@ RUN corepack enable
 RUN yarn install --frozen-lockfile
 
 COPY . .
-COPY ./ckeditor5-build-customize ./node_modules/@ckeditor/ckeditor5-build-customize
+# COPY ./ckeditor5-build-customize ./node_modules/@ckeditor/ckeditor5-build-customize
 
 #目前這樣設置
 ENV NODE_ENV=production
