@@ -7,45 +7,27 @@
 <body>
 <h1>ck_editor</h1>
 <h2>src/components/component-instance/my-ckeditor/CKEditorSSR.jsx</h2>
-<pre>import PropTypes from &quot;prop-types&quot;;
-import React, { Fragment, } from &quot;react&quot;;
-// import clsx from &quot;clsx&quot;;
-import style from './CKEditor.module.scss'
+<pre>import React from &quot;react&quot;;
+import 'ckeditor5/ckeditor5-content.css';
 
-
-
-
-const KPCKEditorSSR = ({  
-
-    
-    element, 
+const KPCKEditorSSR = ({
+    element,
     elementProps,
     mode,
     ...props
-
-
 }) =&gt; {
-    
-
-        return ( &lt;p 
-           {...elementProps}
-            dangerouslySetInnerHTML={{ __html: node?.data?.context }}
-        &gt;&lt;/p&gt;)
-
-        
-
-
-   
+    return (
+        &lt;div
+            {...elementProps}
+            className={`ck-content${elementProps?.className ? ' ' + elementProps.className : ''}`}
+            dangerouslySetInnerHTML={{ __html: element?.data?.context }}
+        /&gt;
+    );
 };
 
-KPCKEditorSSR.propTypes = {
-};
+KPCKEditorSSR.propTypes = {};
 
 export default KPCKEditorSSR;
-
-
-
-
 </pre>
 <h2>src/components/component-instance/my-ckeditor/CKEditor.module.scss</h2>
 <pre>// @import &quot;@/assets/scss/my-variables&quot;;

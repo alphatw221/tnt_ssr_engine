@@ -11,7 +11,7 @@
 import clsx from &quot;clsx&quot;;
 import style from './BlogPostSingle.module.scss';
 
-const BlogPostSingle = ({blogPost, routingTable})=&gt;{
+const BlogPostSingle = ({blogPost, routingTable, blogPostRoute})=&gt;{
 
   const [dateLocale, setDateLocale] = useState('en-CA')
 
@@ -26,7 +26,7 @@ const BlogPostSingle = ({blogPost, routingTable})=&gt;{
       &lt;div className={clsx(style[&quot;部落格文章框&quot;], '部落格文章框')}&gt;
         &lt;div className={clsx(style[&quot;部落格文章卡片&quot;], '部落格文章卡片')}&gt;
           &lt;div className={clsx(style[&quot;文章圖片框&quot;], '文章圖片框')}&gt;
-            &lt;a className={clsx(style[&quot;文章圖片連結&quot;], '文章圖片連結')} href={`/blog_post/${blogPost?.uuid}`}&gt;
+            &lt;a className={clsx(style[&quot;文章圖片連結&quot;], '文章圖片連結')} href={`/${blogPostRoute ?? routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;
               &lt;img
                 className={clsx(style[&quot;文章圖片&quot;], '文章圖片')}
                 src={blogPost?.image}
@@ -41,14 +41,14 @@ const BlogPostSingle = ({blogPost, routingTable})=&gt;{
                   {new Date(blogPost?.created_at).toLocaleDateString(dateLocale)}
                 &lt;/li&gt;
                 &lt;li className={clsx(style[&quot;文章留言數&quot;], '文章留言數')}&gt;
-                  &lt;a className={clsx(style[&quot;文章留言連結&quot;], '文章留言連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;
+                  &lt;a className={clsx(style[&quot;文章留言連結&quot;], '文章留言連結')} href={`/${blogPostRoute ?? routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;
                     {(blogPost?.comments||[]).length} &lt;i className={clsx(style[&quot;留言圖標&quot;], '留言圖標', 'fa fa-comments-o')} /&gt;
                   &lt;/a&gt;
                 &lt;/li&gt;
               &lt;/ul&gt;
             &lt;/div&gt;
             &lt;h4 className={clsx(style[&quot;文章標題&quot;], '文章標題')}&gt;
-              &lt;a className={clsx(style[&quot;文章標題連結&quot;], '文章標題連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;
+              &lt;a className={clsx(style[&quot;文章標題連結&quot;], '文章標題連結')} href={`/${blogPostRoute ?? routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;
                 {blogPost?.title}
               &lt;/a&gt;
             &lt;/h4&gt;
@@ -57,7 +57,7 @@ const BlogPostSingle = ({blogPost, routingTable})=&gt;{
             &lt;/p&gt;
             &lt;div className={clsx(style[&quot;文章底部操作框&quot;], '文章底部操作框')}&gt;
               &lt;div className={clsx(style[&quot;閱讀更多按鈕框&quot;], '閱讀更多按鈕框')}&gt;
-                &lt;a className={clsx(style[&quot;閱讀更多連結&quot;], '閱讀更多連結')} href={`/${routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;
+                &lt;a className={clsx(style[&quot;閱讀更多連結&quot;], '閱讀更多連結')} href={`/${blogPostRoute ?? routingTable?.['blog_post_route']}/${blogPost?.uuid}`}&gt;
                   更多 read more
                 &lt;/a&gt;
               &lt;/div&gt;
