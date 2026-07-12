@@ -35,6 +35,8 @@ const components = [
     scss: ["src/components/component-instance/ContactUsForm.module.scss"] },
   { name: "shop", file: "src/components/component-instance/shop-product/Shop.jsx",
     scss: ["src/components/component-instance/shop-product/Shop.module.scss"] },
+  { name: "SingleProduct", file: "src/components/component-instance/shop-product/SingleProduct.jsx",
+    scss: ["src/components/component-instance/shop-product/SingleProduct.module.scss"] },
   { name: "ck_editor", file: "src/components/component-instance/my-ckeditor/CKEditorSSR.jsx",
     scss: ["src/components/component-instance/my-ckeditor/CKEditor.module.scss"] },
   { name: "product_detail", file: "src/components/component-instance/product-detail/ProductDetailClient.jsx",

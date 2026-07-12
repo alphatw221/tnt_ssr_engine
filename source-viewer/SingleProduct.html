@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>SingleProduct</title>
+</head>
+<body>
+<h1>SingleProduct</h1>
+<h2>src/components/component-instance/shop-product/SingleProduct.jsx</h2>
+<pre>import { Fragment, useState, useRef, useEffect } from &quot;react&quot;;
+import PropTypes from &quot;prop-types&quot;;
+import clsx from &quot;clsx&quot;;
+
+import { useAppDispatch } from &quot;@/redux/hooks&quot;;
+import style from './SingleProduct.module.scss'
+
+import cogoToast from 'cogo-toast';
+import { updateCartProduct, } from &quot;@/lib/utils/cartHelper&quot;;
+import { getProductPrice, isStockSufficient } from &quot;@/lib/utils/productHelper&quot;
+
+// import ProductModal from &quot;./ProductModal&quot;
+
+import ProductDetailClient from '@/components/component-instance/product-detail/ProductDetailClient'
+import { getToFixedNumber } from &quot;@/lib/utils/toFixedHelper&quot;;
+
+const SingleProduct = ({
+    product,
+    cartProduct,
+    routingTable,
+}) =&gt; {
+
+    const [modalShow, setModalShow] = useState(false);
+
+    const dispatch = useAppDispatch();
+    const now = new Date().toJSON().slice(0, 10);
+    const ref = useRef()
+    const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalMinimumPrice, originalMaximumPrice, discountMinimumPrice, discountMaximumPrice, discountMaximumPercent, discountMinimumPercent} = getProductPrice(now, product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
+    const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( product, 1, cartProduct?.quantity||0)
+
+    useEffect(()=&gt;{
+            const mouseEnterHandler = (e)=&gt;{
+                (document.querySelectorAll(`.單商品框.聚焦`)||[])?.forEach(el=&gt;{el?.classList?.remove(&quot;聚焦&quot;);el?.classList?.remove(style['聚焦']);})
+                e?.currentTarget?.classList?.add(&quot;聚焦&quot;)
+                e?.currentTarget?.classList?.add(style['聚焦'])
+            }
+            const mouseLeaveHandler = (e)=&gt;{
+                e?.currentTarget?.classList?.remove(&quot;聚焦&quot;)
+                e?.currentTarget?.classList?.remove(style['聚焦'])
+            }
+            if(ref?.current){
+                ref?.current?.addEventListener(&quot;mouseenter&quot;, mouseEnterHandler);
+                ref?.current?.addEventListener(&quot;mouseleave&quot;, mouseLeaveHandler);
+            }
+            return ()=&gt;{
+                if(ref?.current){
+                    ref?.current?.removeEventListener(&quot;mouseenter&quot;, mouseEnterHandler);
+                    ref?.current?.removeEventListener(&quot;mouseleave&quot;, mouseLeaveHandler);
+                }
+            }
+    },[ref])
+
+
+
+  return (
+    &lt;Fragment&gt;
+        &lt;div className={clsx(style[&quot;單商品框&quot;], '單商品框')} ref={ref}&gt;
+
+            &lt;div className={clsx(style[&quot;商品圖片框&quot;], '商品圖片框')}&gt;
+
+                &lt;a href={`/${routingTable?.['product_route']}/${product?.uuid}`}&gt;
+                    &lt;img
+
+                    className={clsx(style[&quot;商品主要圖片&quot;], '商品主要圖片')}
+                    src={product.images?.[0]?.image}
+                    alt=&quot;&quot;
+                
+                    /&gt;
+
+                    {
+                        product?.images?.[1] &amp;&amp;
+                        &lt;img
+                            className={clsx(style[&quot;商品次要圖片&quot;], '商品次要圖片')}
+                            src={product?.images?.[1]?.image}
+                            alt=&quot;&quot;
+                        /&gt;
+                    }
+                &lt;/a&gt;
+                
+
+                &lt;div className={clsx(style[&quot;特殊商品標章框&quot;], '特殊商品標章框')}&gt;
+                    { product?.new_product &amp;&amp; 
+                        &lt;span className={clsx(style[&quot;新品標章&quot;], '新品標章')}&gt;新品&lt;/span&gt; 
+                    }
+                    { isDiscountApplied &amp;&amp; 
+                        &lt;span className={clsx(style[&quot;特價標章&quot;], '特價標章')} &gt;
+                            {
+                                ['compose', 'variant'].includes(product.type) 
+                                ?
+                                `-${discountMinimumPercent}%~-${discountMaximumPercent}%`
+                                :
+                                `-${parseInt((((originalSinglePrice) - (discountSinglePrice))/(originalSinglePrice!=0?originalSinglePrice:999999999999999))*100)}%`
+
+                            }
+                        &lt;/span&gt;
+                    }
+                &lt;/div&gt;
+            &lt;/div&gt;
+            
+            &lt;div className={clsx(style[&quot;商品動作框&quot;], '商品動作框')}&gt;
+
+                &lt;div className={clsx(style[&quot;加入願望清單框&quot;], '加入願望清單框')}&gt;
+
+                &lt;/div&gt;
+                &lt;div className={clsx(style[&quot;加入購物車框&quot;], '加入購物車框')}&gt;
+                    {
+                        ['compose', 'variant'].includes(product.type) 
+                        ?
+                        &lt;a href={`/${routingTable?.['product_route']}/${product?.uuid}`}  className={clsx(style[&quot;加入購物車-超連結&quot;], '加入購物車-超連結')}&gt;
+                            &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;去逛逛&lt;/span&gt;
+                        &lt;/a&gt;
+                        :
+                        inventorySufficient ? 
+                        &lt;button
+                            className={clsx(style[&quot;加入購物車-按鈕&quot;], '加入購物車-按鈕')}
+                            onClick={() =&gt; {updateCartProduct(product, null, 1, dispatch)}}
+                            disabled={cartProduct !== undefined &amp;&amp; cartProduct.quantity &gt; 0}
+                        &gt;
+                            {
+                                (cartProduct?.quantity||0) &gt; 0
+                                ? 
+                                &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;已加入購物車&lt;/span&gt;
+                                : 
+                                &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;加入購物車&lt;/span&gt;
+                            }
+                        &lt;/button&gt;
+                        : 
+                        &lt;button disabled className={clsx(style[&quot;加入購物車-按鈕&quot;], '加入購物車-按鈕')}&gt;
+                        缺貨中
+                        &lt;/button&gt;
+                    }
+                &lt;/div&gt;
+                &lt;div className={clsx(style[&quot;快速瀏覽框&quot;], '快速瀏覽框')}&gt;
+                    &lt;button className={clsx(style[&quot;快速瀏覽-按鈕&quot;], '快速瀏覽-按鈕')}onClick={() =&gt; setModalShow(true)}&gt;
+                        &lt;i className={clsx(style[&quot;快速瀏覽-圖標&quot;], '快速瀏覽-圖標', 'pe-7s-look')}/&gt;
+                    &lt;/button&gt;
+                &lt;/div&gt;
+
+            &lt;/div&gt;
+
+            &lt;div className={clsx(style[&quot;商品資訊框&quot;], '商品資訊框')}&gt;
+
+                &lt;div className={clsx(style[&quot;商品名稱框&quot;], '商品名稱框')}&gt;
+                    &lt;a href={`/${routingTable?.['product_route']}/${product?.uuid}`}  &gt;
+                        &lt;h3 className={clsx(style[&quot;商品名稱&quot;], '商品名稱')}&gt;{product?.name||''}&lt;/h3&gt;
+                    &lt;/a&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style[&quot;商品價錢框&quot;], '商品價錢框')}&gt;
+                    {
+                        isDiscountApplied 
+                        ? 
+                        
+                            ['variant', 'compose'].includes(product.type)
+                            ?
+                                &lt;Fragment&gt;
+                                    &lt;span className={clsx('折扣後價格',style['折扣後價格'])}&gt;
+                                        {`${product?.currency_sign||'$'}${getToFixedNumber(discountMinimumPrice, product?.currency)} ~ ${product?.currency_sign||'$'}${getToFixedNumber(discountMaximumPrice, product?.currency) }`}
+                                    &lt;/span&gt;
+                                    &lt;span className={clsx('折扣前價格',style['折扣前價格'])} &gt;
+                                        {`${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) } ~ ${product?.currency_sign||'$'}${getToFixedNumber(originalMaximumPrice, product?.currency) }`}
+                                    &lt;/span&gt;
+                                &lt;/Fragment&gt;
+                            :
+                                &lt;Fragment&gt;
+                                    &lt;span className={clsx('折扣後價格',style['折扣後價格'])}&gt;
+                                        {`${product?.currency_sign||'$'}${getToFixedNumber(discountSinglePrice, product?.currency) }`}
+                                    &lt;/span&gt;
+                                    &lt;span className={clsx('折扣前價格',style['折扣前價格'])} &gt; 
+                                        {`${product?.currency_sign||'$'}${getToFixedNumber(originalSinglePrice, product?.currency) }`}
+                                    &lt;/span&gt;
+                                &lt;/Fragment&gt;
+                        :
+                            ['variant', 'compose'].includes(product.type)
+                            ?
+                            &lt;span className={clsx('商品價格',style['商品價格'])}&gt;{`${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) } ~ ${product?.currency_sign||'$'}${getToFixedNumber(originalMaximumPrice, product?.currency) }`}&lt;/span&gt;
+                            :
+                            &lt;span className={clsx('商品價格',style['商品價格'])}&gt;{`${product?.currency_sign||'$'}${getToFixedNumber(originalSinglePrice, product?.currency) }`} &lt;/span&gt;
+                    
+                    }
+                &lt;/div&gt;
+                
+                &lt;div className={clsx(style[&quot;商品敘述框&quot;], '商品敘述框')}&gt;
+                    &lt;p className={clsx(style[&quot;商品敘述&quot;], '商品敘述')}&gt;{product?.description||''}&lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+
+        {
+            modalShow &amp;&amp;
+            &lt;div className={clsx(style[&quot;快速瀏覽彈窗&quot;], '快速瀏覽彈窗')}&gt;
+                &lt;div className={clsx(style[&quot;快速瀏覽標頭&quot;], '快速瀏覽標頭')}&gt;
+                    &lt;button className={clsx(style[&quot;快速瀏覽關閉&quot;], '快速瀏覽關閉')} onClick={() =&gt; setModalShow(false)}&gt;✕&lt;/button&gt;
+                &lt;/div&gt;
+                &lt;div className={clsx(style[&quot;快速瀏覽內容&quot;], '快速瀏覽內容')}&gt;
+                    &lt;ProductDetailClient product={product}/&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        }
+    &lt;/Fragment&gt;
+  );
+};
+
+SingleProduct.propTypes = {
+
+
+};
+
+export default SingleProduct;
+</pre>
+<h2>src/components/component-instance/shop-product/SingleProduct.module.scss</h2>
+<pre>/* 商品框整體樣式 */
+.單商品框 {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    background-color: #fff;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.單商品框.聚焦 {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 商品圖片 */
+.商品圖片框 {
+    position: relative;
+    text-align: center;
+}
+
+.商品主要圖片{
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    transition: opacity 0.3s ease-in-out;
+}
+.商品次要圖片 {
+    position: absolute;
+    top:0;
+    left:0;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    transition: opacity 0.3s ease-in-out;
+    z-index: 1;
+    display:none;
+}
+
+.單商品框.聚焦 .商品次要圖片 {
+    display:block;
+}
+
+/* 商品標章 */
+.特殊商品標章框 {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.新品標章,
+.特價標章 {
+    background-color: red;
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.新品標章 {
+    background-color: green;
+}
+
+/* 商品動作按鈕 */
+.商品動作框 {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.加入購物車框 {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.加入購物車-按鈕 {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.加入購物車-按鈕:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* 商品資訊 */
+.商品資訊框 {
+    text-align: center;
+}
+
+.商品名稱 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.商品價錢框 {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.折扣後價格 {
+    color: red;
+}
+
+.折扣前價格 {
+    text-decoration: line-through;
+    color: gray;
+}
+
+.商品敘述 {
+    font-size: 14px;
+    color: #555;
+    margin-top: 8px;
+}
+
+
+.快速瀏覽彈窗 {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    width: 80%;
+    height: 80%;
+    max-width: 600px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}
+
+.快速瀏覽標頭 {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 1;
+}
+
+.快速瀏覽關閉 {
+    background: none;
+    border: none;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    color: #333;
+    padding: 4px 8px;
+    &amp;:hover {
+        color: #000;
+    }
+}
+
+.快速瀏覽內容 {
+    position: absolute;
+    inset: 0;
+    overflow: auto;
+    padding: 20px;
+}</pre>
+</body>
+</html>
