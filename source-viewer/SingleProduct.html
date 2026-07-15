@@ -23,6 +23,13 @@ import { getProductPrice, isStockSufficient } from &quot;@/lib/utils/productHelp
 import ProductDetailClient from '@/components/component-instance/product-detail/ProductDetailClient'
 import { getToFixedNumber } from &quot;@/lib/utils/toFixedHelper&quot;;
 
+const PRODUCT_TYPE_CLASS_NAME = {
+    'single': '單一商品',
+    'variant': '變體商品',
+    'compose': '任搭商品',
+    'assorted': '套組商品',
+}
+
 const SingleProduct = ({
     product,
     cartProduct,
@@ -63,7 +70,7 @@ const SingleProduct = ({
 
   return (
     &lt;Fragment&gt;
-        &lt;div className={clsx(style[&quot;單商品框&quot;], '單商品框')} ref={ref}&gt;
+        &lt;div className={clsx(style[&quot;單商品框&quot;], '單商品框', PRODUCT_TYPE_CLASS_NAME[product?.type] || PRODUCT_TYPE_CLASS_NAME['single'])} ref={ref}&gt;
 
             &lt;div className={clsx(style[&quot;商品圖片框&quot;], '商品圖片框')}&gt;
 
@@ -119,21 +126,36 @@ const SingleProduct = ({
                             &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;去逛逛&lt;/span&gt;
                         &lt;/a&gt;
                         :
-                        inventorySufficient ? 
-                        &lt;button
-                            className={clsx(style[&quot;加入購物車-按鈕&quot;], '加入購物車-按鈕')}
-                            onClick={() =&gt; {updateCartProduct(product, null, 1, dispatch)}}
-                            disabled={cartProduct !== undefined &amp;&amp; cartProduct.quantity &gt; 0}
-                        &gt;
+                        inventorySufficient ?
+                        &lt;Fragment&gt;
+                            &lt;button
+                                className={clsx(style[&quot;加入購物車-按鈕&quot;], '加入購物車-按鈕')}
+                                onClick={() =&gt; {updateCartProduct(product, null, 1, dispatch)}}
+                                disabled={cartProduct !== undefined &amp;&amp; cartProduct.quantity &gt; 0}
+                            &gt;
+                                {
+                                    (cartProduct?.quantity||0) &gt; 0
+                                    ?
+                                    &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;已加入購物車&lt;/span&gt;
+                                    :
+                                    &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;加入購物車&lt;/span&gt;
+                                }
+                            &lt;/button&gt;
                             {
-                                (cartProduct?.quantity||0) &gt; 0
-                                ? 
-                                &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;已加入購物車&lt;/span&gt;
-                                : 
-                                &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;加入購物車&lt;/span&gt;
+                                product?.enable_direct_buy &amp;&amp;
+                                &lt;button
+                                    className={clsx(style[&quot;直接購買-按鈕&quot;], '直接購買-按鈕')}
+                                    onClick={() =&gt; {
+                                        updateCartProduct(product, null, 1, dispatch).then(()=&gt;{
+                                            window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
+                                        })
+                                    }}
+                                &gt;
+                                    &lt;span className={clsx(style[&quot;直接購買-文字&quot;], '直接購買-文字')}&gt;直接購買&lt;/span&gt;
+                                &lt;/button&gt;
                             }
-                        &lt;/button&gt;
-                        : 
+                        &lt;/Fragment&gt;
+                        :
                         &lt;button disabled className={clsx(style[&quot;加入購物車-按鈕&quot;], '加入購物車-按鈕')}&gt;
                         缺貨中
                         &lt;/button&gt;
@@ -296,7 +318,8 @@ export default SingleProduct;
     gap: 8px;
 }
 
-.加入購物車-按鈕 {
+.加入購物車-按鈕,
+.直接購買-按鈕 {
     background-color: #007bff;
     color: white;
     border: none;
@@ -305,7 +328,8 @@ export default SingleProduct;
     border-radius: 4px;
 }
 
-.加入購物車-按鈕:disabled {
+.加入購物車-按鈕:disabled,
+.直接購買-按鈕:disabled {
     background-color: #ccc;
     cursor: not-allowed;
 }

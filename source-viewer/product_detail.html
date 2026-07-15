@@ -30,7 +30,14 @@ import { updateCartProduct, getCartProductsCount } from &quot;@/lib/utils/cartHe
 // import &quot;yet-another-react-lightbox/styles.css&quot;;
 import { getToFixedNumber } from &quot;@/lib/utils/toFixedHelper&quot;;
 
-const ProductDetailClient = ({  
+const PRODUCT_TYPE_CLASS_NAME = {
+    'single': '單一商品',
+    'variant': '變體商品',
+    'compose': '任搭商品',
+    'assorted': '套組商品',
+}
+
+const ProductDetailClient = ({
     // params, searchParams,
 
     product,
@@ -72,6 +79,7 @@ const ProductDetailClient = ({
     const [productCartQty, setProductCartQty] = useState(0);
     const [showComposeModal, setShowComposeModal] = useState(false)
     const [showAddonModal, setShowAddonModal] = useState(false)
+    const [directBuyIntent, setDirectBuyIntent] = useState(false)
 
     const [supportLogisticServices, setSupportLogisticServices] = useState([])
     const [supportPaymentServices, setSupportPaymentServices] = useState([])
@@ -166,6 +174,7 @@ const ProductDetailClient = ({
 
     const handleBuy = ()=&gt;{
         if(product?.type=='compose'){
+          setDirectBuyIntent(false)
           setShowComposeModal(true)
         }else{
           updateCartProduct(product, selectedVariantProduct, quantityCount, dispatch).then(()=&gt;{
@@ -176,6 +185,18 @@ const ProductDetailClient = ({
             if(product?.single_page_product){
               window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
             }
+          })
+        }
+    }
+    const handleDirectBuy = ()=&gt;{
+        if(product?.type=='compose'){
+          setDirectBuyIntent(true)
+          setShowComposeModal(true)
+        }else{
+          updateCartProduct(product, selectedVariantProduct, quantityCount, dispatch).then(()=&gt;{
+            setQuantityCount(1);
+          }).then(()=&gt;{
+            window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
           })
         }
     }
@@ -340,7 +361,7 @@ const ProductDetailClient = ({
             &gt;
              
 
-            &lt;div className={clsx(style['商品圖片選項框'], '商品圖片選項框',)}&gt;
+            &lt;div className={clsx(style['商品圖片選項框'], '商品圖片選項框', PRODUCT_TYPE_CLASS_NAME[product?.type] || PRODUCT_TYPE_CLASS_NAME['single'])}&gt;
 
                 &lt;div className={clsx(style['大小圖框'], '大小圖框',)}&gt;
                     &lt;div className={clsx(style['大圖框'], '大圖框',)} onClick={()=&gt;{showImageBrowsingModal()}}&gt;
@@ -582,6 +603,17 @@ const ProductDetailClient = ({
                                         getActionButtonText()
                                     }
                                 &lt;/button&gt;
+                                {
+                                    product?.enable_direct_buy &amp;&amp; !product?.single_page_product &amp;&amp;
+                                    &lt;button className={clsx('直接購買按鈕',style['直接購買按鈕'])}
+                                        onClick={()=&gt;{
+                                            handleDirectBuy();
+                                        }}
+                                        disabled={actionButtonDisabled()}
+                                    &gt;
+                                        直接購買
+                                    &lt;/button&gt;
+                                }
                             &lt;/div&gt;
                         &lt;/div&gt;
                        
@@ -644,7 +676,7 @@ const ProductDetailClient = ({
                                 quantityCount={quantityCount}
                                 updateCompose={false}
                                 setShowAddonModal = {setShowAddonModal}
-                                nextAction = {null}
+                                nextAction = {directBuyIntent ? ()=&gt;{window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`} : null}
                             /&gt;
                         }
 
@@ -1068,10 +1100,7 @@ export default ProductDetailClient;
 
 /* 購物動作 */
 .購物動作按鈕,
-
-
-
-
+.直接購買按鈕,
 .立即下單按鈕 {
     padding: 8px 16px;
     border: none;
@@ -1081,6 +1110,7 @@ export default ProductDetailClient;
 }
 
 .購物動作按鈕:disabled,
+.直接購買按鈕:disabled,
 .立即下單按鈕:disabled {
     background-color: gray;
     cursor: not-allowed;
