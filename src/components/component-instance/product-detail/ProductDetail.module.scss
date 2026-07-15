@@ -319,10 +319,7 @@
 
 /* 購物動作 */
 .購物動作按鈕,
-
-
-
-
+.直接購買按鈕,
 .立即下單按鈕 {
     padding: 8px 16px;
     border: none;
@@ -332,6 +329,7 @@
 }
 
 .購物動作按鈕:disabled,
+.直接購買按鈕:disabled,
 .立即下單按鈕:disabled {
     background-color: gray;
     cursor: not-allowed;

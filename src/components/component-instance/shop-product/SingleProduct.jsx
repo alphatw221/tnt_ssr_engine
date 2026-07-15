@@ -14,6 +14,13 @@ import { getProductPrice, isStockSufficient } from "@/lib/utils/productHelper"
 import ProductDetailClient from '@/components/component-instance/product-detail/ProductDetailClient'
 import { getToFixedNumber } from "@/lib/utils/toFixedHelper";
 
+const PRODUCT_TYPE_CLASS_NAME = {
+    'single': '單一商品',
+    'variant': '變體商品',
+    'compose': '任搭商品',
+    'assorted': '套組商品',
+}
+
 const SingleProduct = ({
     product,
     cartProduct,
@@ -54,7 +61,7 @@ const SingleProduct = ({
 
   return (
     <Fragment>
-        <div className={clsx(style["單商品框"], '單商品框')} ref={ref}>
+        <div className={clsx(style["單商品框"], '單商品框', PRODUCT_TYPE_CLASS_NAME[product?.type] || PRODUCT_TYPE_CLASS_NAME['single'])} ref={ref}>
 
             <div className={clsx(style["商品圖片框"], '商品圖片框')}>
 
@@ -110,21 +117,36 @@ const SingleProduct = ({
                             <span className={clsx(style["加入購物車-文字"], '加入購物車-文字')}>去逛逛</span>
                         </a>
                         :
-                        inventorySufficient ? 
-                        <button
-                            className={clsx(style["加入購物車-按鈕"], '加入購物車-按鈕')}
-                            onClick={() => {updateCartProduct(product, null, 1, dispatch)}}
-                            disabled={cartProduct !== undefined && cartProduct.quantity > 0}
-                        >
+                        inventorySufficient ?
+                        <Fragment>
+                            <button
+                                className={clsx(style["加入購物車-按鈕"], '加入購物車-按鈕')}
+                                onClick={() => {updateCartProduct(product, null, 1, dispatch)}}
+                                disabled={cartProduct !== undefined && cartProduct.quantity > 0}
+                            >
+                                {
+                                    (cartProduct?.quantity||0) > 0
+                                    ?
+                                    <span className={clsx(style["加入購物車-文字"], '加入購物車-文字')}>已加入購物車</span>
+                                    :
+                                    <span className={clsx(style["加入購物車-文字"], '加入購物車-文字')}>加入購物車</span>
+                                }
+                            </button>
                             {
-                                (cartProduct?.quantity||0) > 0
-                                ? 
-                                <span className={clsx(style["加入購物車-文字"], '加入購物車-文字')}>已加入購物車</span>
-                                : 
-                                <span className={clsx(style["加入購物車-文字"], '加入購物車-文字')}>加入購物車</span>
+                                product?.enable_direct_buy &&
+                                <button
+                                    className={clsx(style["直接購買-按鈕"], '直接購買-按鈕')}
+                                    onClick={() => {
+                                        updateCartProduct(product, null, 1, dispatch).then(()=>{
+                                            window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
+                                        })
+                                    }}
+                                >
+                                    <span className={clsx(style["直接購買-文字"], '直接購買-文字')}>直接購買</span>
+                                </button>
                             }
-                        </button>
-                        : 
+                        </Fragment>
+                        :
                         <button disabled className={clsx(style["加入購物車-按鈕"], '加入購物車-按鈕')}>
                         缺貨中
                         </button>

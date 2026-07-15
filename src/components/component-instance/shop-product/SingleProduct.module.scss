@@ -75,7 +75,8 @@
     gap: 8px;
 }
 
-.加入購物車-按鈕 {
+.加入購物車-按鈕,
+.直接購買-按鈕 {
     background-color: #007bff;
     color: white;
     border: none;
@@ -84,7 +85,8 @@
     border-radius: 4px;
 }
 
-.加入購物車-按鈕:disabled {
+.加入購物車-按鈕:disabled,
+.直接購買-按鈕:disabled {
     background-color: #ccc;
     cursor: not-allowed;
 }

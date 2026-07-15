@@ -21,7 +21,14 @@ import { updateCartProduct, getCartProductsCount } from "@/lib/utils/cartHelper"
 // import "yet-another-react-lightbox/styles.css";
 import { getToFixedNumber } from "@/lib/utils/toFixedHelper";
 
-const ProductDetailClient = ({  
+const PRODUCT_TYPE_CLASS_NAME = {
+    'single': '單一商品',
+    'variant': '變體商品',
+    'compose': '任搭商品',
+    'assorted': '套組商品',
+}
+
+const ProductDetailClient = ({
     // params, searchParams,
 
     product,
@@ -63,6 +70,7 @@ const ProductDetailClient = ({
     const [productCartQty, setProductCartQty] = useState(0);
     const [showComposeModal, setShowComposeModal] = useState(false)
     const [showAddonModal, setShowAddonModal] = useState(false)
+    const [directBuyIntent, setDirectBuyIntent] = useState(false)
 
     const [supportLogisticServices, setSupportLogisticServices] = useState([])
     const [supportPaymentServices, setSupportPaymentServices] = useState([])
@@ -157,6 +165,7 @@ const ProductDetailClient = ({
 
     const handleBuy = ()=>{
         if(product?.type=='compose'){
+          setDirectBuyIntent(false)
           setShowComposeModal(true)
         }else{
           updateCartProduct(product, selectedVariantProduct, quantityCount, dispatch).then(()=>{
@@ -167,6 +176,18 @@ const ProductDetailClient = ({
             if(product?.single_page_product){
               window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
             }
+          })
+        }
+    }
+    const handleDirectBuy = ()=>{
+        if(product?.type=='compose'){
+          setDirectBuyIntent(true)
+          setShowComposeModal(true)
+        }else{
+          updateCartProduct(product, selectedVariantProduct, quantityCount, dispatch).then(()=>{
+            setQuantityCount(1);
+          }).then(()=>{
+            window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
           })
         }
     }
@@ -331,7 +352,7 @@ const ProductDetailClient = ({
             >
              
 
-            <div className={clsx(style['商品圖片選項框'], '商品圖片選項框',)}>
+            <div className={clsx(style['商品圖片選項框'], '商品圖片選項框', PRODUCT_TYPE_CLASS_NAME[product?.type] || PRODUCT_TYPE_CLASS_NAME['single'])}>
 
                 <div className={clsx(style['大小圖框'], '大小圖框',)}>
                     <div className={clsx(style['大圖框'], '大圖框',)} onClick={()=>{showImageBrowsingModal()}}>
@@ -573,6 +594,17 @@ const ProductDetailClient = ({
                                         getActionButtonText()
                                     }
                                 </button>
+                                {
+                                    product?.enable_direct_buy && !product?.single_page_product &&
+                                    <button className={clsx('直接購買按鈕',style['直接購買按鈕'])}
+                                        onClick={()=>{
+                                            handleDirectBuy();
+                                        }}
+                                        disabled={actionButtonDisabled()}
+                                    >
+                                        直接購買
+                                    </button>
+                                }
                             </div>
                         </div>
                        
@@ -635,7 +667,7 @@ const ProductDetailClient = ({
                                 quantityCount={quantityCount}
                                 updateCompose={false}
                                 setShowAddonModal = {setShowAddonModal}
-                                nextAction = {null}
+                                nextAction = {directBuyIntent ? ()=>{window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`} : null}
                             />
                         }
 
