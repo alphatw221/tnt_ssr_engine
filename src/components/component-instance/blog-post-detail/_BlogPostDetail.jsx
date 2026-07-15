@@ -4,6 +4,7 @@ import 'ckeditor5/ckeditor5-content.css';
 import clsx from "clsx";
 import style from './BlogPostDetail.module.scss'
 import ShareButton from './ShareButton'
+import { customer_increment_blog_post_view } from '../../../api/blog_post'
 const _BlogPostDetail = ({  
 
     // template_nodes,
@@ -46,6 +47,12 @@ const _BlogPostDetail = ({
         setCreatedAt(new Date(blogPost?.created_at||null).toLocaleDateString())
         setUpdatedAt(new Date(blogPost?.updated_at||null).toLocaleDateString())
     },[])
+
+    useEffect(()=>{
+        if(mode!=='dev' && blogPost?.uuid){
+            customer_increment_blog_post_view(blogPost.uuid).catch(()=>{})
+        }
+    },[mode, blogPost?.uuid])
 
     const prePostNextPost = ()=>{
         return (
@@ -123,6 +130,12 @@ const _BlogPostDetail = ({
                             <span className={clsx('留言數',style['留言數'])}>{`${(blogPost?.comments||[]).length} `}</span>
                         </div>
                     }
+
+                    
+                    <div className={clsx('造訪數框',style['造訪數框'])}>
+                        <label className={clsx('造訪數-標題',style['造訪數-標題'])}>造訪數：</label>
+                        <span className={clsx('造訪數',style['造訪數'])}>{blogPost?.view_count||0}</span>
+                    </div>
 
                     <div className={clsx('文章類別框',style['文章類別框'])}>
                         <label className={clsx('文章類別-標題',style['文章類別-標題'])}>文章類別：</label>

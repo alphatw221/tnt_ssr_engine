@@ -132,7 +132,7 @@ const SingleProduct = ({
                 </div>
                 <div className={clsx(style["快速瀏覽框"], '快速瀏覽框')}>
                     <button className={clsx(style["快速瀏覽-按鈕"], '快速瀏覽-按鈕')}onClick={() => setModalShow(true)}>
-                        <i className={clsx(style["快速瀏覽-圖標"], '快速瀏覽-圖標', 'pe-7s-look')}/>
+                        <i className={clsx(style["快速瀏覽-圖標"], '快速瀏覽-圖標')}/>
                     </button>
                 </div>
 

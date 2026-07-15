@@ -33,9 +33,13 @@ const BlogPostSingle = ({blogPost, routingTable, blogPostRoute})=>{
                 </li>
                 <li className={clsx(style["文章留言數"], '文章留言數')}>
                   <a className={clsx(style["文章留言連結"], '文章留言連結')} href={`/${blogPostRoute ?? routingTable?.['blog_post_route']}/${blogPost?.uuid}`}>
-                    {(blogPost?.comments||[]).length} <i className={clsx(style["留言圖標"], '留言圖標', 'fa fa-comments-o')} />
+                    {(blogPost?.comments||[]).length} <i className={clsx(style["留言圖標"], '留言圖標')} />
                   </a>
                 </li>
+                <li className={clsx(style["文章造訪數"], '文章造訪數')}>
+                  {blogPost?.view_count||0} <i className={clsx(style["造訪圖標"], '造訪圖標')} />
+                </li>
+
               </ul>
             </div>
             <h4 className={clsx(style["文章標題"], '文章標題')}>

@@ -11,6 +11,10 @@ export const customer_retrieve_blog_post = (blog_post_uuid) => {
     return createCustomerAxios().get(`/api/v1/store/blog_post/${blog_post_uuid}/retrieve/`);
 }
 
+export const customer_increment_blog_post_view = (blog_post_uuid) => {
+    return createCustomerAxios().put(`/api/v1/store/blog_post/${blog_post_uuid}/increment_view/`);
+}
+
 
 
 //----user----
