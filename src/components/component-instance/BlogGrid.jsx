@@ -71,8 +71,9 @@ const BlogGrid = ({
     const excludeTags = element?.data?.exclude_tags||''
 
     useEffect(()=>{
+        // dev(編輯)模式下不沿用 SSR 快取，一律打 API 拿最新資料
         // If Redux cache is empty but SSR cache exists, seed Redux cache and skip fetch
-        if (!cache?.[element?.uuid] && element?.data?.cache?.results) {
+        if (mode!=='dev' && !cache?.[element?.uuid] && element?.data?.cache?.results) {
             const ssrCount = element.data.cache.count
             const ssrResults = element.data.cache.results
             const ssrCategories = element?.data?.cache?.categories
@@ -167,7 +168,7 @@ const BlogGrid = ({
             })
         }
     },[element?.uuid, keyword, categoryUUIDs, page, pageSize, orderBy, cache?.[element?.uuid],
-       filterUUIDs, filterTags, excludeUUIDs, excludeCategories, excludeTags])
+       filterUUIDs, filterTags, excludeUUIDs, excludeCategories, excludeTags, mode])
 
 
 
