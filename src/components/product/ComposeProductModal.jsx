@@ -75,7 +75,7 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                 </thead>
                 <tbody className={clsx(style['表格-身體'], '表格-身體')}>
                   {
-                    (product?.compose_products||[]).map((composeProduct,composeProductIndex)=>{
+                    (product?.compose_products||[]).filter(composeProduct=>composeProduct?.enable).map((composeProduct,composeProductIndex)=>{
                       const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( composeProduct.source_product, (composeBase?.base||1) * (quantityCount||1), cartProduct?.quantity||0)
 
                       return (<Fragment key={composeProductIndex}>
@@ -83,7 +83,7 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                             <td className={clsx(style['表格-圖片框'], "表格-圖片框")}>
                               <img
                                 className={clsx(style['表格-圖片'], "表格-圖片")}
-                                src={composeProduct?.source_product.images?.[0]?.image}
+                                src={composeProduct?.source_product?.images?.[0]?.image}
                               />
                             </td>
                             <td className={clsx(style['表格-名稱框'], "表格-名稱框")}>
