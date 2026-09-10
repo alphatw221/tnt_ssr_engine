@@ -27,10 +27,20 @@ export const customer_clear_cart_product = () => {
 export const customer_checkout_cart = ({checkout_data, exclude_uuids, cart_products_data, guest_access_token, country}) => {
     return createCustomerAxios().put(`/api/v1/store/cart/customer/checkout/?country=${country}`,
     {
-        checkout_data, 
-        exclude_uuids, 
+        checkout_data,
+        exclude_uuids,
         cart_products_data,
         guest_access_token
+    });
+}
+
+export const customer_preview_checkout = ({logistic_service_uuid, exclude_uuids, apply_points, cart_products_data}) => {
+    const query = logistic_service_uuid ? `?logistic_service_uuid=${logistic_service_uuid}` : ''
+    return createCustomerAxios().put(`/api/v1/store/cart/customer/preview_checkout/${query}`,
+    {
+        exclude_uuids,
+        apply_points,
+        cart_products_data,
     });
 }
 

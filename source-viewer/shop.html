@@ -99,8 +99,9 @@ const Shop = ({
     }, [])
 
     useEffect(()=&gt;{
+        // dev(編輯)模式下不沿用 SSR 快取，一律打 API 拿最新資料
         // If Redux cache is empty but SSR cache exists, seed Redux cache and skip fetch
-        if (!cache?.[element?.uuid] &amp;&amp; element?.data?.cache?.results) {
+        if (mode!=='dev' &amp;&amp; !cache?.[element?.uuid] &amp;&amp; element?.data?.cache?.results) {
             const ssrCount = element.data.cache.count
             const ssrResults = element.data.cache.results
             const ssrCategories = element?.data?.cache?.categories
@@ -193,7 +194,7 @@ const Shop = ({
         }
 
     },[element?.uuid, keyword, categoryUUIDs, page, pageSize, orderBy, cache?.[element?.uuid],
-       filterUUIDs, filterTags, excludeUUIDs, excludeCategories, excludeTags])
+       filterUUIDs, filterTags, excludeUUIDs, excludeCategories, excludeTags, mode])
 
     return (
         &lt;div 

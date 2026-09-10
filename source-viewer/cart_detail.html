@@ -24,14 +24,13 @@ import { setCartProducts } from &quot;@/redux/slices/cart-slice&quot;;
 // import { customer_delete_cart_product, customer_update_cart_product, customer_clear_cart_product } from &quot;../../api/cart&quot;;
 
 import { get_exchange_rates } from &quot;@/api/exchange_rates&quot;;
-import { 
-  isComposeValid, 
-  getCartSummarize, 
-  deleteAllCartProductV1, 
+import { customer_preview_checkout } from &quot;@/api/cart&quot;;
+import {
+  getCartSummarize,
+  deleteAllCartProductV1,
 //   getProductPrice ,
-  getCartProductName, 
+  getCartProductName,
 
-  isInventorySufficient,
   updateCartProduct,
   deleteCartProductV1,
   getCartProductsCount
@@ -94,6 +93,7 @@ const CartDetail = ({
 
     const [excludeUUIDs, setExcludeUUIDs] = useState({})
     const [finalExcludeUUIDs, setFinalExcludeUUIDs] = useState({})
+    const [checkoutPreview, setCheckoutPreview] = useState(null)
 
 
 
@@ -137,6 +137,22 @@ const CartDetail = ({
         setTotalItems(items)
         setFinalExcludeUUIDs(final_exclude_uuids)
     }, [now, targetCartProducts, exchangeRates, excludeUUIDs])
+
+    useEffect(()=&gt;{
+        const timeoutId = setTimeout(()=&gt;{
+            customer_preview_checkout({
+                exclude_uuids: excludeUUIDs,
+                apply_points: 0,
+                cart_products_data: customer?.uuid ? undefined : targetCartProducts,
+            }).then(res=&gt;{
+                setCheckoutPreview(res?.data||null)
+            }).catch(err=&gt;{
+                console.log(err)
+            })
+        }, 300)
+
+        return ()=&gt;clearTimeout(timeoutId)
+    }, [targetCartProducts, excludeUUIDs, customer?.uuid])
 
 
 //   useEffect(()=&gt;{
@@ -219,22 +235,20 @@ const plusOneDisabled = (cartProduct)=&gt;{
                         {
                           (targetCartProducts||[]).map((cartProduct, key) =&gt; {
 
-                            // const targetProduct = getTargetProduct(cartProduct)
-                            // const {sufficientStock, left} = isStockSufficient(cartProduct?.quantity, targetProduct)
-                            const {composeValid} = isComposeValid(cartProduct)
-
+                            const cartProductExclude = (checkoutPreview?.excludes||[]).find(excludeItem=&gt;excludeItem?.cart_product_uuid==cartProduct?.uuid)
+                            const insufficientInventory = cartProductExclude?.reason=='insufficient_inventory'
+                            const invalidCompose = cartProductExclude?.reason=='invalid_compose'
 
                             const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalTotalPrice, discountTotalPrice} = getProductPrice(now, cartProduct?.product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
-                            const {inventoryControl, inventorySufficient, inventory} = isInventorySufficient(cartProduct)
                             const [productName, variantName, composeName] = getCartProductName(cartProduct)
-                            
+
                             return (
-                                &lt;tr className={clsx(style['表格-列'], '表格-列', !inventorySufficient?`${style['缺貨']} 缺貨`:'',excludeUUIDs?.[cartProduct?.uuid]?`${style['未選取']} 未選取`:'',!composeValid?`${style['組合不合規']} 組合不合規`:'')} key={key}&gt;
+                                &lt;tr className={clsx(style['表格-列'], '表格-列', insufficientInventory?`${style['缺貨']} 缺貨`:'',excludeUUIDs?.[cartProduct?.uuid]?`${style['未選取']} 未選取`:'',invalidCompose?`${style['組合不合規']} 組合不合規`:'')} key={key}&gt;
 
 
                                     &lt;td className={clsx(style['表格-勾選框'], &quot;表格-勾選框&quot;)}&gt;
                                         {
-                                        inventorySufficient &amp;&amp; composeValid &amp;&amp;
+                                        !insufficientInventory &amp;&amp; !invalidCompose &amp;&amp;
                                         &lt;input className={clsx(style['購物車商品-勾選'], &quot;購物車商品-勾選&quot;)} type=&quot;checkbox&quot; checked={excludeUUIDs?.[cartProduct?.uuid]?false:true} onChange={
                                             (event)=&gt;{
                                                 const _excludeUUIDS = JSON.parse(JSON.stringify(excludeUUIDs))
@@ -247,13 +261,13 @@ const plusOneDisabled = (cartProduct)=&gt;{
 
                                         }}/&gt;
                                         }
-                                        
+
                                         {
-                                            !composeValid &amp;&amp;
+                                            invalidCompose &amp;&amp;
                                             &lt;span className={clsx(style['重新搭配-文字'], &quot;重新搭配-文字&quot;)}&gt;
                                                 請重新搭選商品
                                             &lt;/span&gt;
-                                        
+
                                         }
                                     &lt;/td&gt;
 
@@ -350,12 +364,12 @@ const plusOneDisabled = (cartProduct)=&gt;{
 
                                     &lt;td className={clsx('表格-小計框',style['表格-小計框'])}&gt;
                                         &lt;span className={clsx('小計',style['小計'])}&gt;
-                                            { inventorySufficient?`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(isDiscountApplied?discountTotalPrice:originalTotalPrice, baseCurrency)}`:''}
+                                            { !insufficientInventory?`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(isDiscountApplied?discountTotalPrice:originalTotalPrice, baseCurrency)}`:''}
                                         &lt;/span&gt;
                                     &lt;/td&gt;
 
                                     &lt;td className={clsx('表格-動作框',style['表格-動作框'])}&gt;
-                                        {!inventorySufficient &amp;&amp;
+                                        {insufficientInventory &amp;&amp;
                                             &lt;div className={clsx('缺貨文字框',style['缺貨文字框'])}&gt;
                                                 &lt;span className={clsx('缺貨文字',style['缺貨文字'])}&gt;缺貨中&lt;/span&gt;
                                             &lt;/div&gt;
@@ -613,21 +627,21 @@ const plusOneDisabled = (cartProduct)=&gt;{
                             商品件數:
                         &lt;/h5&gt;
                         &lt;span className={clsx('商品件數',style['商品件數'])}&gt;
-                            {totalItems}
+                            {checkoutPreview?.total_items||0}
                         &lt;/span&gt;
                     &lt;/div&gt;
-                      
+
                     &lt;div className={clsx('總金額框',style['總金額框'])}&gt;
                         &lt;h5 className={clsx('總金額-文字',style['總金額-文字'])}&gt;
                             金額:
                         &lt;/h5&gt;
                         &lt;span className={clsx('總金額',style['總金額'])}&gt;
-                            {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(subtotal, baseCurrency)}`}
+                            {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(checkoutPreview?.subtotal||0, baseCurrency)}`}
                         &lt;/span&gt;
                     &lt;/div&gt;
-                    
+
                     &lt;div className={clsx('結帳連結框',style['結帳連結框'])}&gt;
-                        &lt;a href={`/${routingTable?.['checkout_route']}?exclude_uuids=${Object.keys(finalExcludeUUIDs).join(',')}`} className={clsx('結帳連結',style['結帳連結'])}&gt;
+                        &lt;a href={`/${routingTable?.['checkout_route']}?exclude_uuids=${(checkoutPreview?.excludes||[]).map(excludeItem=&gt;excludeItem?.cart_product_uuid).join(',')}`} className={clsx('結帳連結',style['結帳連結'])}&gt;
                             前往結帳
                         &lt;/a&gt;
                     &lt;/div&gt;

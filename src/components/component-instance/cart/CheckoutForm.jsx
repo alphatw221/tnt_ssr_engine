@@ -18,12 +18,12 @@ import {getProductPrice} from "@/lib/utils/productHelper"
 import { createValidator } from "@/lib/validator"
 import style from './CheckoutForm.module.scss'
 
-import {getLogisticServiceInfo} from '@/lib/utils/logisticHelper.js'
+import {getLogisticServiceInfo, FREE_SHIPPING_WEIGHT_UNIT_LABEL} from '@/lib/utils/logisticHelper.js'
 import {getClientIPCountryCode} from '@/fetch/ipapi'
 
 
 import { getToFixedNumber } from "@/lib/utils/toFixedHelper";
-import { customer_checkout_cart } from "@/api/cart";
+import { customer_checkout_cart, customer_preview_checkout } from "@/api/cart";
 import GuestCheckoutNotification from '@/components/guest-checkout-notification/GuestCheckoutNotification'
 import Cookies from "js-cookie";
 import { deleteAllCartProduct, setCartProducts } from "@/redux/slices/cart-slice";
@@ -58,6 +58,8 @@ const CheckoutForm = ({
     const [tax, setTax] = useState(0)
     const [freeShipping, setFreeShipping] = useState(0)
     const [shippingFee, setShippingFee] = useState(0)
+    const [shippingFeeBreakdown, setShippingFeeBreakdown] = useState([])
+    const [checkoutPreview, setCheckoutPreview] = useState(null)
     const [applyPointsValid, setApplyPointsValid] = useState(true)
     const [applyPointsDiscount, setApplyPointsDiscount] = useState(0)
     const [total, setTotal] = useState(0)
@@ -192,7 +194,7 @@ const CheckoutForm = ({
     
     useEffect(()=>{
             const excludeUUIDs = Object.fromEntries((searchParams?.exclude_uuids||'').split(',').filter(v=>!['','null', 'undefined'].includes(v)).map(key => [key, true]))
-            const {items, final_exclude_uuids, subtotal, tax, free_shipping, shipping_fee, total, contain_product_tags, apply_points_valid, apply_points_discount} = getCartSummarize(
+            const {items, final_exclude_uuids, subtotal, tax, free_shipping, shipping_fee, shipping_fee_breakdown, total, contain_product_tags, apply_points_valid, apply_points_discount} = getCartSummarize(
                 {
                     'cartProducts':targetCartProducts,
                     'exchangeRates':exchangeRates,
@@ -212,19 +214,41 @@ const CheckoutForm = ({
             setTax(tax)
             setFreeShipping(free_shipping)
             setShippingFee(shipping_fee)
+            setShippingFeeBreakdown(shipping_fee_breakdown||[])
             setApplyPointsValid(apply_points_valid)
             setApplyPointsDiscount(apply_points_discount)
             setTotal(total)
             setContainProductTags(contain_product_tags)
     }, [now, targetCartProducts, exchangeRates, searchParams, checkoutData, logisticServices])
-    
+
+    useEffect(()=>{
+        const exclude_uuids = Object.fromEntries((searchParams?.exclude_uuids||'').split(',').filter(v=>!['','null', 'undefined'].includes(v)).map(key => [key, true]))
+
+        const timeoutId = setTimeout(()=>{
+            customer_preview_checkout({
+                logistic_service_uuid: checkoutData?.logistic_service_uuid,
+                exclude_uuids,
+                apply_points: Number(checkoutData?.apply_points||0),
+                cart_products_data: customer?.uuid ? undefined : targetCartProducts,
+            }).then(res=>{
+                setCheckoutPreview(res?.data||null)
+            }).catch(err=>{
+                console.log(err)
+            })
+        }, 500)
+
+        return ()=>clearTimeout(timeoutId)
+    }, [targetCartProducts, searchParams, checkoutData?.logistic_service_uuid, checkoutData?.apply_points, customer?.uuid])
+
+    const previewExcludeUUIDs = Object.fromEntries((checkoutPreview?.excludes||[]).map(excludeItem=>[excludeItem?.cart_product_uuid, true]))
+
     const nextAction = ()=>{
         setSubmitMessage({ type: '', text: '' })
         setAwaitSubmitButton(true)
         customer_checkout_cart(
             {
                 'checkout_data':checkoutData,
-                'exclude_uuids':finalExcludeUUIDs,
+                'exclude_uuids':previewExcludeUUIDs,
                 'cart_products_data':targetCartProducts,
                 'guest_access_token':Cookies.get('guest_access_token'),
                 'country':country,
@@ -239,7 +263,7 @@ const CheckoutForm = ({
                 console.log('checkout complete')
                 dispatch(setCustomerAndLocalStorage({
                     ...customer,
-                    cart_products:(customer.cart_products||[]).filter(_cart_product=>finalExcludeUUIDs?.[_cart_product?.uuid]),
+                    cart_products:(customer.cart_products||[]).filter(_cart_product=>previewExcludeUUIDs?.[_cart_product?.uuid]),
                     points:(customer?.points||0)-(checkoutData?.apply_points||0)
                 }))
             }
@@ -308,7 +332,7 @@ const CheckoutForm = ({
             </div>
                 
             {
-                (targetCartProducts||[]).filter(_cartProduct=>!finalExcludeUUIDs?.[_cartProduct?.uuid]).length <= 0 &&
+                (targetCartProducts||[]).filter(_cartProduct=>!previewExcludeUUIDs?.[_cartProduct?.uuid]).length <= 0 &&
                 <div className={clsx(style['無商品框'], '無商品框')}>
                     <div className={clsx(style['無商品-圖標框'], '無商品-圖標框')}>
                         <i className={clsx(style['無商品-圖標'], '無商品-圖標', 'pe-7s-cart')}></i>
@@ -332,7 +356,7 @@ const CheckoutForm = ({
 
 
             {
-                (targetCartProducts||[]).filter(_cartProduct=>!finalExcludeUUIDs?.[_cartProduct?.uuid]).length > 0 && 
+                (targetCartProducts||[]).filter(_cartProduct=>!previewExcludeUUIDs?.[_cartProduct?.uuid]).length > 0 && 
                 <Fragment>
                     <div className={clsx(style['購物車-表格框'], '購物車-表格框')}>
                         <table className={clsx(style['購物車-表格'], '購物車-表格')}>
@@ -347,7 +371,7 @@ const CheckoutForm = ({
                             </thead>
                             <tbody className={clsx(style['表格-身體'], '表格-身體')}>
                                 {
-                                (targetCartProducts||[]).filter(_cartProduct=>!finalExcludeUUIDs?.[_cartProduct?.uuid])?.map((cartProduct, key) => {
+                                (targetCartProducts||[]).filter(_cartProduct=>!previewExcludeUUIDs?.[_cartProduct?.uuid])?.map((cartProduct, key) => {
 
                                 
                                 const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalTotalPrice, discountTotalPrice} = getProductPrice(now, cartProduct?.product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
@@ -837,21 +861,21 @@ const CheckoutForm = ({
                                 小計:
                             </h5>
                             <span className={clsx('小計',style['小計'])}>
-                                {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(subtotal, baseCurrency)}`}
+                                {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(checkoutPreview?.subtotal||0, baseCurrency)}`}
                             </span>
                         </div>
-                        
+
                         <div className={clsx('稅金框',style['稅金框'])}>
                             <h5 className={clsx('稅金-文字',style['稅金-文字'])}>
                                 稅金:
                             </h5>
                             <span className={clsx('稅金',style['稅金'])}>
-                                {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(tax, baseCurrency)}`}
+                                {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(checkoutPreview?.tax||0, baseCurrency)}`}
                             </span>
                         </div>
 
                         {
-                            freeShipping?
+                            (checkoutPreview?.shipping_fee||0)<=0?
                             <div className={clsx('免運費框',style['免運費框'])}>
                                 <h5 className={clsx('免運費-文字',style['免運費-文字'])}>
                                     免運費
@@ -863,8 +887,91 @@ const CheckoutForm = ({
                                     運費:
                                 </h5>
                                 <span className={clsx('運費',style['運費'])}>
-                                    {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(shippingFee, baseCurrency)}`}
+                                    {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(checkoutPreview?.shipping_fee||0, baseCurrency)}`}
                                 </span>
+                            </div>
+                        }
+
+                        {
+                            (checkoutPreview?.shipping_fee_breakdown||[]).length>1 &&
+                            <div className={clsx('運費明細框',style['運費明細框'])}>
+                                {
+                                    (checkoutPreview?.shipping_fee_breakdown||[]).map((breakdownItem, key)=>(
+                                        <div key={key} className={clsx('運費明細項',style['運費明細項'])}>
+                                            <h5 className={clsx('運費明細項-名稱',style['運費明細項-名稱'])}>
+                                                {breakdownItem.shipping_group_name||'其他商品'}:
+                                            </h5>
+                                            <span className={clsx('運費明細項-費用',style['運費明細項-費用'])}>
+                                                {
+                                                    breakdownItem.free_shipping?
+                                                    '免運'
+                                                    :
+                                                    `${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(breakdownItem.fee), baseCurrency)}`
+                                                }
+                                            </span>
+                                            {
+                                                !breakdownItem.free_shipping && ![null, undefined].includes(breakdownItem.free_shipping_gap) &&
+                                                <span className={clsx('運費明細項-還差免運',style['運費明細項-還差免運'])}>
+                                                    {
+                                                        breakdownItem.free_shipping_threshold_type==='weight'?
+                                                        `還差 ${getToFixedNumber(Number(breakdownItem.free_shipping_gap), baseCurrency)} ${FREE_SHIPPING_WEIGHT_UNIT_LABEL} 即可免運`
+                                                        :
+                                                        `還差 ${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(breakdownItem.free_shipping_gap), baseCurrency)} 即可免運`
+                                                    }
+                                                </span>
+                                            }
+                                            {
+                                                (breakdownItem.lines||[]).length>0 &&
+                                                <div className={clsx('運費明細項-商品明細',style['運費明細項-商品明細'])}>
+                                                    {
+                                                        breakdownItem.lines.map((line, lineKey)=>(
+                                                            <div key={lineKey} className={clsx('運費明細項-商品',style['運費明細項-商品'])}>
+                                                                <span className={clsx('運費明細項-商品名稱',style['運費明細項-商品名稱'])}>
+                                                                    {line.product_name}
+                                                                </span>
+                                                                <span className={clsx('運費明細項-商品費用',style['運費明細項-商品費用'])}>
+                                                                    {
+                                                                        line.free_shipping?
+                                                                        '免運'
+                                                                        :
+                                                                        `${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(line.fee), baseCurrency)}`
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        ))
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        }
+
+                        {
+                            (checkoutPreview?.excludes||[]).length>0 &&
+                            <div className={clsx('排除商品框',style['排除商品框'])}>
+                                <h5 className={clsx('排除商品-文字',style['排除商品-文字'])}>
+                                    以下商品未計入本次結帳:
+                                </h5>
+                                {
+                                    checkoutPreview.excludes.map((excludeItem, key)=>(
+                                        <div key={key} className={clsx('排除商品項',style['排除商品項'])}>
+                                            <span className={clsx('排除商品項-名稱',style['排除商品項-名稱'])}>
+                                                {excludeItem.product_name}
+                                            </span>
+                                            <span className={clsx('排除商品項-原因',style['排除商品項-原因'])}>
+                                                {
+                                                    {
+                                                        'client_excluded':'不購買',
+                                                        'insufficient_inventory':'庫存不足',
+                                                        'invalid_compose':'組合內容有誤',
+                                                    }[excludeItem.reason]||excludeItem.reason
+                                                }
+                                            </span>
+                                        </div>
+                                    ))
+                                }
                             </div>
                         }
 
@@ -881,7 +988,7 @@ const CheckoutForm = ({
                                     placeholder="使用紅利"
                                     value={checkoutData?.apply_points}
                                     onChange={(e)=>{
-                                        setCheckoutData({...checkoutData, apply_points:e.target.value})
+                                        setCheckoutData({...checkoutData, apply_points:Number(e.target.value)})
                                     }}
                                 />
 
@@ -904,24 +1011,44 @@ const CheckoutForm = ({
 
 
 
-                        <div className={clsx('紅利折抵框',style['紅利折抵框'])}>
-                            <h5 className={clsx('紅利折抵-文字',style['紅利折抵-文字'])}>
-                                紅利折抵:
-                            </h5>
-                            <span className={clsx('紅利折抵',style['紅利折抵'])}>
-                            {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(applyPointsDiscount, baseCurrency) }`}
-                            </span>
-                        </div>
+                        {
+                            (checkoutPreview?.discounts||[]).map((discountItem, key)=>(
+                                <div key={key} className={clsx('紅利折抵框',style['紅利折抵框'])}>
+                                    <h5 className={clsx('紅利折抵-文字',style['紅利折抵-文字'])}>
+                                        {
+                                            {
+                                                'apply_points':'紅利折抵',
+                                                'coupon':'優惠券折抵',
+                                                'promo':'促銷折抵',
+                                            }[discountItem.type]||'折抵'
+                                        }:
+                                    </h5>
+                                    <span className={clsx('紅利折抵',style['紅利折抵'])}>
+                                        {`-${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.amount), baseCurrency)}`}
+                                    </span>
+                                </div>
+                            ))
+                        }
 
-
-
+                        {
+                            (checkoutPreview?.earn_points||0)>0 &&
+                            <div className={clsx('預計獲得紅利框',style['預計獲得紅利框'])}>
+                                <h5 className={clsx('預計獲得紅利-文字',style['預計獲得紅利-文字'])}>
+                                    此筆訂單預計獲得紅利:
+                                </h5>
+                                <span className={clsx('預計獲得紅利',style['預計獲得紅利'])}>
+                                    {`${checkoutPreview.earn_points} 點`}
+                                    {checkoutPreview?.earn_points_expire_at && ` (效期至 ${checkoutPreview.earn_points_expire_at})`}
+                                </span>
+                            </div>
+                        }
 
                         <div className={clsx('總金額框',style['總金額框'])}>
                             <h5 className={clsx('總金額-文字',style['總金額-文字'])}>
                                 總金額:
                             </h5>
                             <span className={clsx('總金額',style['總金額'])}>
-                                {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(total, baseCurrency)}`}
+                                {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(checkoutPreview?.total||0, baseCurrency)}`}
                             </span>
                         </div>
 

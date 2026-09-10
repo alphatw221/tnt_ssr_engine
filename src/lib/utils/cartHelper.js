@@ -10,7 +10,7 @@ import {
 import { setCustomerCartProduct, customerDeleteCartProduct , setCustomerCartProducts} from "@/redux/slices/customer-slice"
 import {getProductPrice} from "@/lib/utils/productHelper"
 
-import {getLogisticServiceInfo} from '@/lib/utils/logisticHelper'
+import {getLogisticServiceInfo, getShippingGroupFeeInfo} from '@/lib/utils/logisticHelper'
 // const _getTargetProduct = (cartProduct)=>{
 
 //     // if(cartProduct?.variant_product){
@@ -253,9 +253,24 @@ export const getCartSummarize = ({
 
     }
     const logisticService = (logisticServices||[]).find(_logisticService=>_logisticService?.uuid==checkoutData?.logistic_service_uuid)
-    const {optionFreeShipping, shippingFeeAfterConvertCurrency} = getLogisticServiceInfo(logisticService, exchangeRates, _subtotal)
-    _free_shipping = optionFreeShipping
-    _shipping_fee = shippingFeeAfterConvertCurrency
+    const {groupShippingFee, allGroupsFreeShipping, hasFallbackItem, breakdown} = getShippingGroupFeeInfo(logisticService, exchangeRates, cartProducts, _final_exclude_uuids)
+
+    _shipping_fee = groupShippingFee
+    _free_shipping = allGroupsFreeShipping
+    var _shipping_fee_breakdown = [...breakdown]
+
+    if(hasFallbackItem){
+        const {optionName, optionFreeShipping, shippingFeeAfterConvertCurrency, remainingToFreeShipping} = getLogisticServiceInfo(logisticService, exchangeRates, _subtotal)
+        _shipping_fee += shippingFeeAfterConvertCurrency
+        _free_shipping = _free_shipping && optionFreeShipping
+        _shipping_fee_breakdown.push({
+            shippingGroupId: null,
+            name: optionName||'其他商品',
+            fee: shippingFeeAfterConvertCurrency,
+            freeShipping: optionFreeShipping,
+            remainingToFreeShipping,
+        })
+    }
 
 
     const _total = _subtotal + _tax + _shipping_fee - _apply_points_discount;
@@ -266,8 +281,9 @@ export const getCartSummarize = ({
         items:_items, 
         subtotal:_subtotal, 
         tax:_tax, 
-        free_shipping:_free_shipping, 
-        shipping_fee:_shipping_fee, 
+        free_shipping:_free_shipping,
+        shipping_fee:_shipping_fee,
+        shipping_fee_breakdown:_shipping_fee_breakdown,
         apply_points_valid:_apply_points_valid,
         apply_points_discount:_apply_points_discount,
         total:_total}

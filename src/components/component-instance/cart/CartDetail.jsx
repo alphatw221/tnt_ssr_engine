@@ -15,14 +15,13 @@ import { setCartProducts } from "@/redux/slices/cart-slice";
 // import { customer_delete_cart_product, customer_update_cart_product, customer_clear_cart_product } from "../../api/cart";
 
 import { get_exchange_rates } from "@/api/exchange_rates";
-import { 
-  isComposeValid, 
-  getCartSummarize, 
-  deleteAllCartProductV1, 
+import { customer_preview_checkout } from "@/api/cart";
+import {
+  getCartSummarize,
+  deleteAllCartProductV1,
 //   getProductPrice ,
-  getCartProductName, 
+  getCartProductName,
 
-  isInventorySufficient,
   updateCartProduct,
   deleteCartProductV1,
   getCartProductsCount
@@ -85,6 +84,7 @@ const CartDetail = ({
 
     const [excludeUUIDs, setExcludeUUIDs] = useState({})
     const [finalExcludeUUIDs, setFinalExcludeUUIDs] = useState({})
+    const [checkoutPreview, setCheckoutPreview] = useState(null)
 
 
 
@@ -128,6 +128,22 @@ const CartDetail = ({
         setTotalItems(items)
         setFinalExcludeUUIDs(final_exclude_uuids)
     }, [now, targetCartProducts, exchangeRates, excludeUUIDs])
+
+    useEffect(()=>{
+        const timeoutId = setTimeout(()=>{
+            customer_preview_checkout({
+                exclude_uuids: excludeUUIDs,
+                apply_points: 0,
+                cart_products_data: customer?.uuid ? undefined : targetCartProducts,
+            }).then(res=>{
+                setCheckoutPreview(res?.data||null)
+            }).catch(err=>{
+                console.log(err)
+            })
+        }, 300)
+
+        return ()=>clearTimeout(timeoutId)
+    }, [targetCartProducts, excludeUUIDs, customer?.uuid])
 
 
 //   useEffect(()=>{
@@ -210,22 +226,20 @@ const plusOneDisabled = (cartProduct)=>{
                         {
                           (targetCartProducts||[]).map((cartProduct, key) => {
 
-                            // const targetProduct = getTargetProduct(cartProduct)
-                            // const {sufficientStock, left} = isStockSufficient(cartProduct?.quantity, targetProduct)
-                            const {composeValid} = isComposeValid(cartProduct)
-
+                            const cartProductExclude = (checkoutPreview?.excludes||[]).find(excludeItem=>excludeItem?.cart_product_uuid==cartProduct?.uuid)
+                            const insufficientInventory = cartProductExclude?.reason=='insufficient_inventory'
+                            const invalidCompose = cartProductExclude?.reason=='invalid_compose'
 
                             const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalTotalPrice, discountTotalPrice} = getProductPrice(now, cartProduct?.product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
-                            const {inventoryControl, inventorySufficient, inventory} = isInventorySufficient(cartProduct)
                             const [productName, variantName, composeName] = getCartProductName(cartProduct)
-                            
+
                             return (
-                                <tr className={clsx(style['表格-列'], '表格-列', !inventorySufficient?`${style['缺貨']} 缺貨`:'',excludeUUIDs?.[cartProduct?.uuid]?`${style['未選取']} 未選取`:'',!composeValid?`${style['組合不合規']} 組合不合規`:'')} key={key}>
+                                <tr className={clsx(style['表格-列'], '表格-列', insufficientInventory?`${style['缺貨']} 缺貨`:'',excludeUUIDs?.[cartProduct?.uuid]?`${style['未選取']} 未選取`:'',invalidCompose?`${style['組合不合規']} 組合不合規`:'')} key={key}>
 
 
                                     <td className={clsx(style['表格-勾選框'], "表格-勾選框")}>
                                         {
-                                        inventorySufficient && composeValid &&
+                                        !insufficientInventory && !invalidCompose &&
                                         <input className={clsx(style['購物車商品-勾選'], "購物車商品-勾選")} type="checkbox" checked={excludeUUIDs?.[cartProduct?.uuid]?false:true} onChange={
                                             (event)=>{
                                                 const _excludeUUIDS = JSON.parse(JSON.stringify(excludeUUIDs))
@@ -238,13 +252,13 @@ const plusOneDisabled = (cartProduct)=>{
 
                                         }}/>
                                         }
-                                        
+
                                         {
-                                            !composeValid &&
+                                            invalidCompose &&
                                             <span className={clsx(style['重新搭配-文字'], "重新搭配-文字")}>
                                                 請重新搭選商品
                                             </span>
-                                        
+
                                         }
                                     </td>
 
@@ -341,12 +355,12 @@ const plusOneDisabled = (cartProduct)=>{
 
                                     <td className={clsx('表格-小計框',style['表格-小計框'])}>
                                         <span className={clsx('小計',style['小計'])}>
-                                            { inventorySufficient?`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(isDiscountApplied?discountTotalPrice:originalTotalPrice, baseCurrency)}`:''}
+                                            { !insufficientInventory?`${cartProduct?.product?.currency_sign||'$'}${getToFixedNumber(isDiscountApplied?discountTotalPrice:originalTotalPrice, baseCurrency)}`:''}
                                         </span>
                                     </td>
 
                                     <td className={clsx('表格-動作框',style['表格-動作框'])}>
-                                        {!inventorySufficient &&
+                                        {insufficientInventory &&
                                             <div className={clsx('缺貨文字框',style['缺貨文字框'])}>
                                                 <span className={clsx('缺貨文字',style['缺貨文字'])}>缺貨中</span>
                                             </div>
@@ -604,21 +618,21 @@ const plusOneDisabled = (cartProduct)=>{
                             商品件數:
                         </h5>
                         <span className={clsx('商品件數',style['商品件數'])}>
-                            {totalItems}
+                            {checkoutPreview?.total_items||0}
                         </span>
                     </div>
-                      
+
                     <div className={clsx('總金額框',style['總金額框'])}>
                         <h5 className={clsx('總金額-文字',style['總金額-文字'])}>
                             金額:
                         </h5>
                         <span className={clsx('總金額',style['總金額'])}>
-                            {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(subtotal, baseCurrency)}`}
+                            {`${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(checkoutPreview?.subtotal||0, baseCurrency)}`}
                         </span>
                     </div>
-                    
+
                     <div className={clsx('結帳連結框',style['結帳連結框'])}>
-                        <a href={`/${routingTable?.['checkout_route']}?exclude_uuids=${Object.keys(finalExcludeUUIDs).join(',')}`} className={clsx('結帳連結',style['結帳連結'])}>
+                        <a href={`/${routingTable?.['checkout_route']}?exclude_uuids=${(checkoutPreview?.excludes||[]).map(excludeItem=>excludeItem?.cart_product_uuid).join(',')}`} className={clsx('結帳連結',style['結帳連結'])}>
                             前往結帳
                         </a>
                     </div>

@@ -84,7 +84,7 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                 &lt;/thead&gt;
                 &lt;tbody className={clsx(style['表格-身體'], '表格-身體')}&gt;
                   {
-                    (product?.compose_products||[]).map((composeProduct,composeProductIndex)=&gt;{
+                    (product?.compose_products||[]).filter(composeProduct=&gt;composeProduct?.enable).map((composeProduct,composeProductIndex)=&gt;{
                       const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( composeProduct.source_product, (composeBase?.base||1) * (quantityCount||1), cartProduct?.quantity||0)
 
                       return (&lt;Fragment key={composeProductIndex}&gt;
@@ -92,7 +92,7 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                             &lt;td className={clsx(style['表格-圖片框'], &quot;表格-圖片框&quot;)}&gt;
                               &lt;img
                                 className={clsx(style['表格-圖片'], &quot;表格-圖片&quot;)}
-                                src={composeProduct?.source_product.images?.[0]?.image}
+                                src={composeProduct?.source_product?.images?.[0]?.image}
                               /&gt;
                             &lt;/td&gt;
                             &lt;td className={clsx(style['表格-名稱框'], &quot;表格-名稱框&quot;)}&gt;
