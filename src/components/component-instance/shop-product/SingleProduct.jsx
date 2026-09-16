@@ -86,10 +86,13 @@ const SingleProduct = ({
                 
 
                 <div className={clsx(style["特殊商品標章框"], '特殊商品標章框')}>
-                    { product?.new_product && 
-                        <span className={clsx(style["新品標章"], '新品標章')}>新品</span> 
+                    { product?.new_product &&
+                        <span className={clsx(style["新品標章"], '新品標章')}>新品</span>
                     }
-                    { isDiscountApplied && 
+                    { product?.free_shipping_label &&
+                        <span className={clsx(style["免運標章"], '免運標章')}>免運</span>
+                    }
+                    { isDiscountApplied &&
                         <span className={clsx(style["特價標章"], '特價標章')} >
                             {
                                 ['compose', 'variant'].includes(product.type) 
@@ -177,10 +180,22 @@ const SingleProduct = ({
                             ?
                                 <Fragment>
                                     <span className={clsx('折扣後價格',style['折扣後價格'])}>
-                                        {`${product?.currency_sign||'$'}${getToFixedNumber(discountMinimumPrice, product?.currency)} ~ ${product?.currency_sign||'$'}${getToFixedNumber(discountMaximumPrice, product?.currency) }`}
+                                        {
+                                            discountMinimumPrice===discountMaximumPrice
+                                            ?
+                                            `${product?.currency_sign||'$'}${getToFixedNumber(discountMinimumPrice, product?.currency)}`
+                                            :
+                                            `${product?.currency_sign||'$'}${getToFixedNumber(discountMinimumPrice, product?.currency)} ~ ${product?.currency_sign||'$'}${getToFixedNumber(discountMaximumPrice, product?.currency) }`
+                                        }
                                     </span>
                                     <span className={clsx('折扣前價格',style['折扣前價格'])} >
-                                        {`${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) } ~ ${product?.currency_sign||'$'}${getToFixedNumber(originalMaximumPrice, product?.currency) }`}
+                                        {
+                                            originalMinimumPrice===originalMaximumPrice
+                                            ?
+                                            `${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency)}`
+                                            :
+                                            `${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) } ~ ${product?.currency_sign||'$'}${getToFixedNumber(originalMaximumPrice, product?.currency) }`
+                                        }
                                     </span>
                                 </Fragment>
                             :
@@ -195,7 +210,15 @@ const SingleProduct = ({
                         :
                             ['variant', 'compose'].includes(product.type)
                             ?
-                            <span className={clsx('商品價格',style['商品價格'])}>{`${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) } ~ ${product?.currency_sign||'$'}${getToFixedNumber(originalMaximumPrice, product?.currency) }`}</span>
+                            <span className={clsx('商品價格',style['商品價格'])}>
+                                {
+                                    originalMinimumPrice===originalMaximumPrice
+                                    ?
+                                    `${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) }`
+                                    :
+                                    `${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) } ~ ${product?.currency_sign||'$'}${getToFixedNumber(originalMaximumPrice, product?.currency) }`
+                                }
+                            </span>
                             :
                             <span className={clsx('商品價格',style['商品價格'])}>{`${product?.currency_sign||'$'}${getToFixedNumber(originalSinglePrice, product?.currency) }`} </span>
                     

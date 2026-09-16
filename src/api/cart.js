@@ -34,12 +34,13 @@ export const customer_checkout_cart = ({checkout_data, exclude_uuids, cart_produ
     });
 }
 
-export const customer_preview_checkout = ({logistic_service_uuid, exclude_uuids, apply_points, cart_products_data}) => {
+export const customer_preview_checkout = ({logistic_service_uuid, exclude_uuids, apply_points, coupon_code, cart_products_data}) => {
     const query = logistic_service_uuid ? `?logistic_service_uuid=${logistic_service_uuid}` : ''
     return createCustomerAxios().put(`/api/v1/store/cart/customer/preview_checkout/${query}`,
     {
         exclude_uuids,
         apply_points,
+        coupon_code,
         cart_products_data,
     });
 }

@@ -60,6 +60,7 @@ const CheckoutForm = ({
     const [shippingFee, setShippingFee] = useState(0)
     const [shippingFeeBreakdown, setShippingFeeBreakdown] = useState([])
     const [checkoutPreview, setCheckoutPreview] = useState(null)
+    const [couponCodeInput, setCouponCodeInput] = useState('')
     const [applyPointsValid, setApplyPointsValid] = useState(true)
     const [applyPointsDiscount, setApplyPointsDiscount] = useState(0)
     const [total, setTotal] = useState(0)
@@ -87,6 +88,7 @@ const CheckoutForm = ({
         shipping_principle:'anytime',
         customer_remark:'',
         apply_points:0,
+        coupon_code:'',
 
 
 
@@ -229,6 +231,7 @@ const CheckoutForm = ({
                 logistic_service_uuid: checkoutData?.logistic_service_uuid,
                 exclude_uuids,
                 apply_points: Number(checkoutData?.apply_points||0),
+                coupon_code: checkoutData?.coupon_code||undefined,
                 cart_products_data: customer?.uuid ? undefined : targetCartProducts,
             }).then(res=>{
                 setCheckoutPreview(res?.data||null)
@@ -238,7 +241,7 @@ const CheckoutForm = ({
         }, 500)
 
         return ()=>clearTimeout(timeoutId)
-    }, [targetCartProducts, searchParams, checkoutData?.logistic_service_uuid, checkoutData?.apply_points, customer?.uuid])
+    }, [targetCartProducts, searchParams, checkoutData?.logistic_service_uuid, checkoutData?.apply_points, checkoutData?.coupon_code, customer?.uuid])
 
     const previewExcludeUUIDs = Object.fromEntries((checkoutPreview?.excludes||[]).map(excludeItem=>[excludeItem?.cart_product_uuid, true]))
 
@@ -1001,33 +1004,113 @@ const CheckoutForm = ({
                                 </div>
                             }
 
-                            <div className={clsx('可用紅利-文字框',style['可用紅利-文字框'])}> 
+                            <div className={clsx('可用紅利-文字框',style['可用紅利-文字框'])}>
                                 <span className={clsx('可用紅利-文字',style['可用紅利-文字'])}>
                                     {`(可用紅利點數:${(customer?.points||0).toLocaleString()})`}
                                 </span>
                             </div>
                         </div>
-                        
 
-
+                        <div className={clsx('優惠碼框',style['優惠碼框'])}>
+                            <h5 className={clsx('優惠碼-文字',style['優惠碼-文字'])}>
+                                優惠碼:
+                            </h5>
+                            <input
+                                className={clsx(style['優惠碼-輸入'], '優惠碼-輸入')}
+                                type="text"
+                                name="coupon_code"
+                                placeholder="輸入優惠碼"
+                                value={couponCodeInput}
+                                onChange={(e)=>{
+                                    setCouponCodeInput(e.target.value)
+                                }}
+                            />
+                            <button
+                                className={clsx('優惠碼-套用按鈕',style['優惠碼-套用按鈕'])}
+                                type="button"
+                                disabled={!couponCodeInput.trim()}
+                                onClick={()=>{
+                                    setCheckoutData({...checkoutData, coupon_code:couponCodeInput.trim()})
+                                }}
+                            >
+                                套用
+                            </button>
+                            {
+                                checkoutData?.coupon_code &&
+                                <button
+                                    className={clsx('優惠碼-移除按鈕',style['優惠碼-移除按鈕'])}
+                                    type="button"
+                                    onClick={()=>{
+                                        setCouponCodeInput('')
+                                        setCheckoutData({...checkoutData, coupon_code:''})
+                                    }}
+                                >
+                                    移除
+                                </button>
+                            }
+                        </div>
 
                         {
-                            (checkoutPreview?.discounts||[]).map((discountItem, key)=>(
-                                <div key={key} className={clsx('紅利折抵框',style['紅利折抵框'])}>
-                                    <h5 className={clsx('紅利折抵-文字',style['紅利折抵-文字'])}>
-                                        {
-                                            {
-                                                'apply_points':'紅利折抵',
-                                                'coupon':'優惠券折抵',
-                                                'promo':'促銷折抵',
-                                            }[discountItem.type]||'折抵'
-                                        }:
-                                    </h5>
-                                    <span className={clsx('紅利折抵',style['紅利折抵'])}>
-                                        {`-${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.amount), baseCurrency)}`}
-                                    </span>
-                                </div>
-                            ))
+                            (checkoutPreview?.discounts||[]).map((discountItem, key)=>{
+
+                                if(discountItem.type==='apply_points'){
+                                    return (
+                                        <div key={key} className={clsx('紅利折抵框',style['紅利折抵框'])}>
+                                            <h5 className={clsx('紅利折抵-文字',style['紅利折抵-文字'])}>
+                                                紅利折抵:
+                                            </h5>
+                                            <span className={clsx('紅利折抵',style['紅利折抵'])}>
+                                                {`-${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.amount), baseCurrency)}`}
+                                            </span>
+                                        </div>
+                                    )
+
+                                }else if(discountItem.type==='coupon' && discountItem.error){
+                                    return (
+                                        <div key={key} className={clsx('優惠碼錯誤框',style['優惠碼錯誤框'])}>
+                                            <span className={clsx('優惠碼錯誤-文字',style['優惠碼錯誤-文字'])}>
+                                                {
+                                                    discountItem.error==='min_subtotal_not_met'?
+                                                    `還差 ${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.min_subtotal_gap), baseCurrency)} 才能使用這組優惠碼`
+                                                    :
+                                                    {
+                                                        'invalid_code':'這組優惠碼無效',
+                                                        'not_started':'這組優惠碼尚未開始',
+                                                        'expired':'這組優惠碼已過期',
+                                                        'usage_limit_reached':'這組優惠碼已被使用過或已達使用上限',
+                                                    }[discountItem.error]||'這組優惠碼無法使用'
+                                                }
+                                            </span>
+                                        </div>
+                                    )
+
+                                }else if(discountItem.type==='coupon'){
+                                    return (
+                                        <div key={key} className={clsx('優惠碼折抵框',style['優惠碼折抵框'])}>
+                                            <h5 className={clsx('優惠碼折抵-文字',style['優惠碼折抵-文字'])}>
+                                                {`優惠碼(${discountItem.code})折抵`}:
+                                            </h5>
+                                            <span className={clsx('優惠碼折抵',style['優惠碼折抵'])}>
+                                                {`-${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.amount), baseCurrency)}`}
+                                            </span>
+                                        </div>
+                                    )
+
+                                }else if(discountItem.type==='promo'){
+                                    return (
+                                        <div key={key} className={clsx('促銷折抵框',style['促銷折抵框'])}>
+                                            <h5 className={clsx('促銷折抵-文字',style['促銷折抵-文字'])}>
+                                                促銷折抵:
+                                            </h5>
+                                            <span className={clsx('促銷折抵',style['促銷折抵'])}>
+                                                {`-${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.amount), baseCurrency)}`}
+                                            </span>
+                                        </div>
+                                    )
+                                }
+
+                                return null
+                            })
                         }
 
                         {

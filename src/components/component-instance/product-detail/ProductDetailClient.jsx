@@ -441,7 +441,13 @@ const ProductDetailClient = ({
                                                 }
                                                 {
                                                     _composeBase?.price_description&&
-                                                    <span className={clsx('單任搭選項-價錢敘述',style['單任搭選項-價錢敘述'])}>{_composeBase?.price_description}</span>   
+                                                    <span className={clsx('單任搭選項-價錢敘述',style['單任搭選項-價錢敘述'])}>{_composeBase?.price_description}</span>
+                                                }
+                                                {
+                                                    _composeBase?.free_shipping_label &&
+                                                    <div className={clsx('特殊標章框',style['特殊標章框'])}>
+                                                        <span className={clsx('免運標章',style['免運標章'])}>免運</span>
+                                                    </div>
                                                 }
                                             </label>
                                         );
@@ -487,7 +493,13 @@ const ProductDetailClient = ({
                                                         }
                                                         {
                                                             value?.price_description&&
-                                                            <span className={clsx('單變體1-價錢敘述',style['單變體1-價錢敘述'])}>{value?.price_description}</span>   
+                                                            <span className={clsx('單變體1-價錢敘述',style['單變體1-價錢敘述'])}>{value?.price_description}</span>
+                                                        }
+                                                        {
+                                                            variantProduct?.free_shipping_label &&
+                                                            <div className={clsx('特殊標章框',style['特殊標章框'])}>
+                                                                <span className={clsx('免運標章',style['免運標章'])}>免運</span>
+                                                            </div>
                                                         }
 
                                                     </label>
@@ -530,7 +542,13 @@ const ProductDetailClient = ({
                                                         }
                                                         {
                                                             value?.price_description&&
-                                                            <span className={clsx('單變體2-價錢敘述',style['單變體2-價錢敘述'])}>{value?.price_description}</span>   
+                                                            <span className={clsx('單變體2-價錢敘述',style['單變體2-價錢敘述'])}>{value?.price_description}</span>
+                                                        }
+                                                        {
+                                                            variantProduct?.free_shipping_label &&
+                                                            <div className={clsx('特殊標章框',style['特殊標章框'])}>
+                                                                <span className={clsx('免運標章',style['免運標章'])}>免運</span>
+                                                            </div>
                                                         }
                                                     </label>
                                             )
