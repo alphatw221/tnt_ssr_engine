@@ -69,6 +69,7 @@ const CheckoutForm = ({
     const [shippingFee, setShippingFee] = useState(0)
     const [shippingFeeBreakdown, setShippingFeeBreakdown] = useState([])
     const [checkoutPreview, setCheckoutPreview] = useState(null)
+    const [couponCodeInput, setCouponCodeInput] = useState('')
     const [applyPointsValid, setApplyPointsValid] = useState(true)
     const [applyPointsDiscount, setApplyPointsDiscount] = useState(0)
     const [total, setTotal] = useState(0)
@@ -96,6 +97,7 @@ const CheckoutForm = ({
         shipping_principle:'anytime',
         customer_remark:'',
         apply_points:0,
+        coupon_code:'',
 
 
 
@@ -238,6 +240,7 @@ const CheckoutForm = ({
                 logistic_service_uuid: checkoutData?.logistic_service_uuid,
                 exclude_uuids,
                 apply_points: Number(checkoutData?.apply_points||0),
+                coupon_code: checkoutData?.coupon_code||undefined,
                 cart_products_data: customer?.uuid ? undefined : targetCartProducts,
             }).then(res=&gt;{
                 setCheckoutPreview(res?.data||null)
@@ -247,7 +250,7 @@ const CheckoutForm = ({
         }, 500)
 
         return ()=&gt;clearTimeout(timeoutId)
-    }, [targetCartProducts, searchParams, checkoutData?.logistic_service_uuid, checkoutData?.apply_points, customer?.uuid])
+    }, [targetCartProducts, searchParams, checkoutData?.logistic_service_uuid, checkoutData?.apply_points, checkoutData?.coupon_code, customer?.uuid])
 
     const previewExcludeUUIDs = Object.fromEntries((checkoutPreview?.excludes||[]).map(excludeItem=&gt;[excludeItem?.cart_product_uuid, true]))
 
@@ -1010,33 +1013,113 @@ const CheckoutForm = ({
                                 &lt;/div&gt;
                             }
 
-                            &lt;div className={clsx('可用紅利-文字框',style['可用紅利-文字框'])}&gt; 
+                            &lt;div className={clsx('可用紅利-文字框',style['可用紅利-文字框'])}&gt;
                                 &lt;span className={clsx('可用紅利-文字',style['可用紅利-文字'])}&gt;
                                     {`(可用紅利點數:${(customer?.points||0).toLocaleString()})`}
                                 &lt;/span&gt;
                             &lt;/div&gt;
                         &lt;/div&gt;
-                        
 
-
+                        &lt;div className={clsx('優惠碼框',style['優惠碼框'])}&gt;
+                            &lt;h5 className={clsx('優惠碼-文字',style['優惠碼-文字'])}&gt;
+                                優惠碼:
+                            &lt;/h5&gt;
+                            &lt;input
+                                className={clsx(style['優惠碼-輸入'], '優惠碼-輸入')}
+                                type=&quot;text&quot;
+                                name=&quot;coupon_code&quot;
+                                placeholder=&quot;輸入優惠碼&quot;
+                                value={couponCodeInput}
+                                onChange={(e)=&gt;{
+                                    setCouponCodeInput(e.target.value)
+                                }}
+                            /&gt;
+                            &lt;button
+                                className={clsx('優惠碼-套用按鈕',style['優惠碼-套用按鈕'])}
+                                type=&quot;button&quot;
+                                disabled={!couponCodeInput.trim()}
+                                onClick={()=&gt;{
+                                    setCheckoutData({...checkoutData, coupon_code:couponCodeInput.trim()})
+                                }}
+                            &gt;
+                                套用
+                            &lt;/button&gt;
+                            {
+                                checkoutData?.coupon_code &amp;&amp;
+                                &lt;button
+                                    className={clsx('優惠碼-移除按鈕',style['優惠碼-移除按鈕'])}
+                                    type=&quot;button&quot;
+                                    onClick={()=&gt;{
+                                        setCouponCodeInput('')
+                                        setCheckoutData({...checkoutData, coupon_code:''})
+                                    }}
+                                &gt;
+                                    移除
+                                &lt;/button&gt;
+                            }
+                        &lt;/div&gt;
 
                         {
-                            (checkoutPreview?.discounts||[]).map((discountItem, key)=&gt;(
-                                &lt;div key={key} className={clsx('紅利折抵框',style['紅利折抵框'])}&gt;
-                                    &lt;h5 className={clsx('紅利折抵-文字',style['紅利折抵-文字'])}&gt;
-                                        {
-                                            {
-                                                'apply_points':'紅利折抵',
-                                                'coupon':'優惠券折抵',
-                                                'promo':'促銷折抵',
-                                            }[discountItem.type]||'折抵'
-                                        }:
-                                    &lt;/h5&gt;
-                                    &lt;span className={clsx('紅利折抵',style['紅利折抵'])}&gt;
-                                        {`-${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.amount), baseCurrency)}`}
-                                    &lt;/span&gt;
-                                &lt;/div&gt;
-                            ))
+                            (checkoutPreview?.discounts||[]).map((discountItem, key)=&gt;{
+
+                                if(discountItem.type==='apply_points'){
+                                    return (
+                                        &lt;div key={key} className={clsx('紅利折抵框',style['紅利折抵框'])}&gt;
+                                            &lt;h5 className={clsx('紅利折抵-文字',style['紅利折抵-文字'])}&gt;
+                                                紅利折抵:
+                                            &lt;/h5&gt;
+                                            &lt;span className={clsx('紅利折抵',style['紅利折抵'])}&gt;
+                                                {`-${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.amount), baseCurrency)}`}
+                                            &lt;/span&gt;
+                                        &lt;/div&gt;
+                                    )
+
+                                }else if(discountItem.type==='coupon' &amp;&amp; discountItem.error){
+                                    return (
+                                        &lt;div key={key} className={clsx('優惠碼錯誤框',style['優惠碼錯誤框'])}&gt;
+                                            &lt;span className={clsx('優惠碼錯誤-文字',style['優惠碼錯誤-文字'])}&gt;
+                                                {
+                                                    discountItem.error==='min_subtotal_not_met'?
+                                                    `還差 ${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.min_subtotal_gap), baseCurrency)} 才能使用這組優惠碼`
+                                                    :
+                                                    {
+                                                        'invalid_code':'這組優惠碼無效',
+                                                        'not_started':'這組優惠碼尚未開始',
+                                                        'expired':'這組優惠碼已過期',
+                                                        'usage_limit_reached':'這組優惠碼已被使用過或已達使用上限',
+                                                    }[discountItem.error]||'這組優惠碼無法使用'
+                                                }
+                                            &lt;/span&gt;
+                                        &lt;/div&gt;
+                                    )
+
+                                }else if(discountItem.type==='coupon'){
+                                    return (
+                                        &lt;div key={key} className={clsx('優惠碼折抵框',style['優惠碼折抵框'])}&gt;
+                                            &lt;h5 className={clsx('優惠碼折抵-文字',style['優惠碼折抵-文字'])}&gt;
+                                                {`優惠碼(${discountItem.code})折抵`}:
+                                            &lt;/h5&gt;
+                                            &lt;span className={clsx('優惠碼折抵',style['優惠碼折抵'])}&gt;
+                                                {`-${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.amount), baseCurrency)}`}
+                                            &lt;/span&gt;
+                                        &lt;/div&gt;
+                                    )
+
+                                }else if(discountItem.type==='promo'){
+                                    return (
+                                        &lt;div key={key} className={clsx('促銷折抵框',style['促銷折抵框'])}&gt;
+                                            &lt;h5 className={clsx('促銷折抵-文字',style['促銷折抵-文字'])}&gt;
+                                                促銷折抵:
+                                            &lt;/h5&gt;
+                                            &lt;span className={clsx('促銷折抵',style['促銷折抵'])}&gt;
+                                                {`-${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(discountItem.amount), baseCurrency)}`}
+                                            &lt;/span&gt;
+                                        &lt;/div&gt;
+                                    )
+                                }
+
+                                return null
+                            })
                         }
 
                         {

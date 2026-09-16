@@ -95,10 +95,13 @@ const SingleProduct = ({
                 
 
                 &lt;div className={clsx(style[&quot;特殊商品標章框&quot;], '特殊商品標章框')}&gt;
-                    { product?.new_product &amp;&amp; 
-                        &lt;span className={clsx(style[&quot;新品標章&quot;], '新品標章')}&gt;新品&lt;/span&gt; 
+                    { product?.new_product &amp;&amp;
+                        &lt;span className={clsx(style[&quot;新品標章&quot;], '新品標章')}&gt;新品&lt;/span&gt;
                     }
-                    { isDiscountApplied &amp;&amp; 
+                    { product?.free_shipping_label &amp;&amp;
+                        &lt;span className={clsx(style[&quot;免運標章&quot;], '免運標章')}&gt;免運&lt;/span&gt;
+                    }
+                    { isDiscountApplied &amp;&amp;
                         &lt;span className={clsx(style[&quot;特價標章&quot;], '特價標章')} &gt;
                             {
                                 ['compose', 'variant'].includes(product.type) 
@@ -186,10 +189,22 @@ const SingleProduct = ({
                             ?
                                 &lt;Fragment&gt;
                                     &lt;span className={clsx('折扣後價格',style['折扣後價格'])}&gt;
-                                        {`${product?.currency_sign||'$'}${getToFixedNumber(discountMinimumPrice, product?.currency)} ~ ${product?.currency_sign||'$'}${getToFixedNumber(discountMaximumPrice, product?.currency) }`}
+                                        {
+                                            discountMinimumPrice===discountMaximumPrice
+                                            ?
+                                            `${product?.currency_sign||'$'}${getToFixedNumber(discountMinimumPrice, product?.currency)}`
+                                            :
+                                            `${product?.currency_sign||'$'}${getToFixedNumber(discountMinimumPrice, product?.currency)} ~ ${product?.currency_sign||'$'}${getToFixedNumber(discountMaximumPrice, product?.currency) }`
+                                        }
                                     &lt;/span&gt;
                                     &lt;span className={clsx('折扣前價格',style['折扣前價格'])} &gt;
-                                        {`${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) } ~ ${product?.currency_sign||'$'}${getToFixedNumber(originalMaximumPrice, product?.currency) }`}
+                                        {
+                                            originalMinimumPrice===originalMaximumPrice
+                                            ?
+                                            `${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency)}`
+                                            :
+                                            `${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) } ~ ${product?.currency_sign||'$'}${getToFixedNumber(originalMaximumPrice, product?.currency) }`
+                                        }
                                     &lt;/span&gt;
                                 &lt;/Fragment&gt;
                             :
@@ -204,7 +219,15 @@ const SingleProduct = ({
                         :
                             ['variant', 'compose'].includes(product.type)
                             ?
-                            &lt;span className={clsx('商品價格',style['商品價格'])}&gt;{`${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) } ~ ${product?.currency_sign||'$'}${getToFixedNumber(originalMaximumPrice, product?.currency) }`}&lt;/span&gt;
+                            &lt;span className={clsx('商品價格',style['商品價格'])}&gt;
+                                {
+                                    originalMinimumPrice===originalMaximumPrice
+                                    ?
+                                    `${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) }`
+                                    :
+                                    `${product?.currency_sign||'$'}${getToFixedNumber(originalMinimumPrice, product?.currency) } ~ ${product?.currency_sign||'$'}${getToFixedNumber(originalMaximumPrice, product?.currency) }`
+                                }
+                            &lt;/span&gt;
                             :
                             &lt;span className={clsx('商品價格',style['商品價格'])}&gt;{`${product?.currency_sign||'$'}${getToFixedNumber(originalSinglePrice, product?.currency) }`} &lt;/span&gt;
                     
