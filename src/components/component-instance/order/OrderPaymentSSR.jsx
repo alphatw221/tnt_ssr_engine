@@ -9,11 +9,13 @@ const OrderPaymentSSR = ({
     
     const [guestUUID, setGuestUUID] = useState()
     const [objectUUID, setObjectUUID] = useState()
+    const [ready, setReady] = useState(false)
     useEffect(()=>{
         setGuestUUID(new URLSearchParams(window.location.search).get('guest_uuid'))
         setObjectUUID(window?.__SSR_PARAMS__?.objectUUID)
+        setReady(true)
     },[])
-    return <OrderPayment objectUUID={objectUUID} guestUUID={guestUUID} {...props}/>
+    return ready?<OrderPayment objectUUID={objectUUID} guestUUID={guestUUID} {...props}/>:null
 };
 
 

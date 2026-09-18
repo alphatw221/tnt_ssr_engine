@@ -245,6 +245,10 @@ const CheckoutForm = ({
 
     const previewExcludeUUIDs = Object.fromEntries((checkoutPreview?.excludes||[]).map(excludeItem=>[excludeItem?.cart_product_uuid, true]))
 
+    const rawShippingFeeBreakdown = checkoutPreview?.shipping_fee_breakdown||[]
+    const isSingleTrivialShippingGroup = rawShippingFeeBreakdown.length===1 && (rawShippingFeeBreakdown[0]?.lines||[]).length<=1
+    const shippingFeeBreakdownForDisplay = (isSingleTrivialShippingGroup && [null, undefined].includes(rawShippingFeeBreakdown[0]?.free_shipping_gap)) ? [] : rawShippingFeeBreakdown
+
     const nextAction = ()=>{
         setSubmitMessage({ type: '', text: '' })
         setAwaitSubmitButton(true)
@@ -270,8 +274,8 @@ const CheckoutForm = ({
                     points:(customer?.points||0)-(checkoutData?.apply_points||0)
                 }))
             }
-            // router.push(`/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}`)
-            window.location.href = `/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}`
+            const guestUUIDQuery = !customer?.uuid && res?.data?.order?.guest_uuid ? `?guest_uuid=${res?.data?.order?.guest_uuid}` : ''
+            window.location.href = `/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}${guestUUIDQuery}`
         }).catch(err=>{
             console.log(err)
             setSubmitMessage({ type: 'error', text: '結帳失敗 請重試' })
@@ -896,22 +900,34 @@ const CheckoutForm = ({
                         }
 
                         {
-                            (checkoutPreview?.shipping_fee_breakdown||[]).length>1 &&
+                            shippingFeeBreakdownForDisplay.length>0 &&
                             <div className={clsx('運費明細框',style['運費明細框'])}>
+                                <h5 className={clsx('運費明細框-文字',style['運費明細框-文字'])}>
+                                    運費明細
+                                </h5>
                                 {
-                                    (checkoutPreview?.shipping_fee_breakdown||[]).map((breakdownItem, key)=>(
+                                    shippingFeeBreakdownForDisplay.map((breakdownItem, key)=>(
                                         <div key={key} className={clsx('運費明細項',style['運費明細項'])}>
                                             <h5 className={clsx('運費明細項-名稱',style['運費明細項-名稱'])}>
                                                 {breakdownItem.shipping_group_name||'其他商品'}:
                                             </h5>
-                                            <span className={clsx('運費明細項-費用',style['運費明細項-費用'])}>
-                                                {
-                                                    breakdownItem.free_shipping?
-                                                    '免運'
-                                                    :
-                                                    `${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(breakdownItem.fee), baseCurrency)}`
-                                                }
-                                            </span>
+                                            {
+                                                (breakdownItem.lines||[]).length<=0 &&
+                                                <span className={clsx('運費明細項-費用',style['運費明細項-費用'])}>
+                                                    {
+                                                        breakdownItem.free_shipping?
+                                                        '免運'
+                                                        :
+                                                        `${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(breakdownItem.fee), baseCurrency)}`
+                                                    }
+                                                </span>
+                                            }
+                                            {
+                                                (breakdownItem.lines||[]).length>0 && breakdownItem.free_shipping &&
+                                                <span className={clsx('運費明細項-費用',style['運費明細項-費用'])}>
+                                                    免運
+                                                </span>
+                                            }
                                             {
                                                 !breakdownItem.free_shipping && ![null, undefined].includes(breakdownItem.free_shipping_gap) &&
                                                 <span className={clsx('運費明細項-還差免運',style['運費明細項-還差免運'])}>
@@ -931,6 +947,9 @@ const CheckoutForm = ({
                                                             <div key={lineKey} className={clsx('運費明細項-商品',style['運費明細項-商品'])}>
                                                                 <span className={clsx('運費明細項-商品名稱',style['運費明細項-商品名稱'])}>
                                                                     {line.product_name}
+                                                                </span>
+                                                                <span className={clsx('運費明細項-商品數量',style['運費明細項-商品數量'])}>
+                                                                    {`x${line.quantity}`}
                                                                 </span>
                                                                 <span className={clsx('運費明細項-商品費用',style['運費明細項-商品費用'])}>
                                                                     {

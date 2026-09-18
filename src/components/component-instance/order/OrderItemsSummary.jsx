@@ -116,23 +116,46 @@ const OrderItemsSummary = ({order, routingTable})=>{
                     <span className={clsx(style['小計'], '小計')}>
                     {order?.base_currency_sign||'$'}{getToFixedNumber(Number(order?.subtotal||0), order?.base_currency||'TWD')}</span>
                 </div>
-                <div className={clsx(style['使用紅利框'], '使用紅利框')}>
-                    <label className={clsx(style['使用紅利-標籤'], '使用紅利-標籤')}>使用紅利</label>
-                    <span>
-                        {Number(Number(order?.apply_points||0)?.toFixed(0)).toLocaleString()}
-                    </span>
-                </div>
-                <div className={clsx(style['紅利折抵框'], '紅利折抵框')}>
-                    <label className={clsx(style['紅利折抵-標籤'], '紅利折抵-標籤')}>紅利折抵</label>
-                    <span>{order?.base_currency_sign||'$'}{getToFixedNumber(Number(order?.apply_points_discount||0), order?.base_currency||'TWD')}</span>
-                </div>
+                {
+                    Number(order?.apply_points||0)>0 &&
+                    <div className={clsx(style['使用紅利框'], '使用紅利框')}>
+                        <label className={clsx(style['使用紅利-標籤'], '使用紅利-標籤')}>使用紅利</label>
+                        <span>
+                            {Number(Number(order?.apply_points||0)?.toFixed(0)).toLocaleString()}
+                        </span>
+                    </div>
+                }
+                {
+                    Number(order?.apply_points_discount||0)>0 &&
+                    <div className={clsx(style['紅利折抵框'], '紅利折抵框')}>
+                        <label className={clsx(style['紅利折抵-標籤'], '紅利折抵-標籤')}>紅利折抵</label>
+                        <span>-{order?.base_currency_sign||'$'}{getToFixedNumber(Number(order?.apply_points_discount||0), order?.base_currency||'TWD')}</span>
+                    </div>
+                }
+                {
+                    order?.coupon_code &&
+                    <div className={clsx(style['使用優惠碼框'], '使用優惠碼框')}>
+                        <label className={clsx(style['使用優惠碼-標籤'], '使用優惠碼-標籤')}>使用優惠碼</label>
+                        <span>{order?.coupon_code}</span>
+                    </div>
+                }
+                {
+                    order?.coupon_code &&
+                    <div className={clsx(style['優惠碼折抵框'], '優惠碼折抵框')}>
+                        <label className={clsx(style['優惠碼折抵-標籤'], '優惠碼折抵-標籤')}>優惠碼折抵</label>
+                        <span>-{order?.base_currency_sign||'$'}{getToFixedNumber(Number(order?.coupon_discount||0), order?.base_currency||'TWD')}</span>
+                    </div>
+                }
+                {
+                    Number(order?.tax||0)>0 &&
+                    <div className={clsx(style['稅金框'], '稅金框')}>
+                        <label className={clsx(style['稅金-標籤'], '稅金-標籤')}>稅金 </label>
+                        <span>{order?.base_currency_sign||'$'}{getToFixedNumber(Number(order?.tax||0), order?.base_currency||'TWD')}</span>
+                    </div>
+                }
                 <div className={clsx(style['運費框'], '運費框')}>
                     <label className={clsx(style['運費-標籤'], '運費-標籤')}>運費 </label>
                     <span>{order?.base_currency_sign||'$'}{getToFixedNumber(Number(order?.shipping_fee||0), order?.base_currency||'TWD')}</span>
-                </div>
-                <div className={clsx(style['稅金框'], '稅金框')}>
-                    <label className={clsx(style['稅金-標籤'], '稅金-標籤')}>稅金 </label>
-                    <span>{order?.base_currency_sign||'$'}{getToFixedNumber(Number(order?.tax||0), order?.base_currency||'TWD')}</span>
                 </div>
                 <div className={clsx(style['合計框'], '合計框')}>
                     <label className={clsx(style['合計-標籤'], '合計-標籤')}>合計 </label>

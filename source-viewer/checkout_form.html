@@ -254,6 +254,10 @@ const CheckoutForm = ({
 
     const previewExcludeUUIDs = Object.fromEntries((checkoutPreview?.excludes||[]).map(excludeItem=&gt;[excludeItem?.cart_product_uuid, true]))
 
+    const rawShippingFeeBreakdown = checkoutPreview?.shipping_fee_breakdown||[]
+    const isSingleTrivialShippingGroup = rawShippingFeeBreakdown.length===1 &amp;&amp; (rawShippingFeeBreakdown[0]?.lines||[]).length&lt;=1
+    const shippingFeeBreakdownForDisplay = (isSingleTrivialShippingGroup &amp;&amp; [null, undefined].includes(rawShippingFeeBreakdown[0]?.free_shipping_gap)) ? [] : rawShippingFeeBreakdown
+
     const nextAction = ()=&gt;{
         setSubmitMessage({ type: '', text: '' })
         setAwaitSubmitButton(true)
@@ -279,8 +283,8 @@ const CheckoutForm = ({
                     points:(customer?.points||0)-(checkoutData?.apply_points||0)
                 }))
             }
-            // router.push(`/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}`)
-            window.location.href = `/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}`
+            const guestUUIDQuery = !customer?.uuid &amp;&amp; res?.data?.order?.guest_uuid ? `?guest_uuid=${res?.data?.order?.guest_uuid}` : ''
+            window.location.href = `/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}${guestUUIDQuery}`
         }).catch(err=&gt;{
             console.log(err)
             setSubmitMessage({ type: 'error', text: '結帳失敗 請重試' })
@@ -905,22 +909,34 @@ const CheckoutForm = ({
                         }
 
                         {
-                            (checkoutPreview?.shipping_fee_breakdown||[]).length&gt;1 &amp;&amp;
+                            shippingFeeBreakdownForDisplay.length&gt;0 &amp;&amp;
                             &lt;div className={clsx('運費明細框',style['運費明細框'])}&gt;
+                                &lt;h5 className={clsx('運費明細框-文字',style['運費明細框-文字'])}&gt;
+                                    運費明細
+                                &lt;/h5&gt;
                                 {
-                                    (checkoutPreview?.shipping_fee_breakdown||[]).map((breakdownItem, key)=&gt;(
+                                    shippingFeeBreakdownForDisplay.map((breakdownItem, key)=&gt;(
                                         &lt;div key={key} className={clsx('運費明細項',style['運費明細項'])}&gt;
                                             &lt;h5 className={clsx('運費明細項-名稱',style['運費明細項-名稱'])}&gt;
                                                 {breakdownItem.shipping_group_name||'其他商品'}:
                                             &lt;/h5&gt;
-                                            &lt;span className={clsx('運費明細項-費用',style['運費明細項-費用'])}&gt;
-                                                {
-                                                    breakdownItem.free_shipping?
-                                                    '免運'
-                                                    :
-                                                    `${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(breakdownItem.fee), baseCurrency)}`
-                                                }
-                                            &lt;/span&gt;
+                                            {
+                                                (breakdownItem.lines||[]).length&lt;=0 &amp;&amp;
+                                                &lt;span className={clsx('運費明細項-費用',style['運費明細項-費用'])}&gt;
+                                                    {
+                                                        breakdownItem.free_shipping?
+                                                        '免運'
+                                                        :
+                                                        `${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(breakdownItem.fee), baseCurrency)}`
+                                                    }
+                                                &lt;/span&gt;
+                                            }
+                                            {
+                                                (breakdownItem.lines||[]).length&gt;0 &amp;&amp; breakdownItem.free_shipping &amp;&amp;
+                                                &lt;span className={clsx('運費明細項-費用',style['運費明細項-費用'])}&gt;
+                                                    免運
+                                                &lt;/span&gt;
+                                            }
                                             {
                                                 !breakdownItem.free_shipping &amp;&amp; ![null, undefined].includes(breakdownItem.free_shipping_gap) &amp;&amp;
                                                 &lt;span className={clsx('運費明細項-還差免運',style['運費明細項-還差免運'])}&gt;
@@ -940,6 +956,9 @@ const CheckoutForm = ({
                                                             &lt;div key={lineKey} className={clsx('運費明細項-商品',style['運費明細項-商品'])}&gt;
                                                                 &lt;span className={clsx('運費明細項-商品名稱',style['運費明細項-商品名稱'])}&gt;
                                                                     {line.product_name}
+                                                                &lt;/span&gt;
+                                                                &lt;span className={clsx('運費明細項-商品數量',style['運費明細項-商品數量'])}&gt;
+                                                                    {`x${line.quantity}`}
                                                                 &lt;/span&gt;
                                                                 &lt;span className={clsx('運費明細項-商品費用',style['運費明細項-商品費用'])}&gt;
                                                                     {

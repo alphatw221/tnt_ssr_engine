@@ -30,11 +30,6 @@ import { deleteAllCartProduct, setCartProducts } from "@/redux/slices/cart-slice
 import { setCustomerAndLocalStorage} from "@/redux/slices/customer-slice";
 import ComposeProductModal from "@/components/product/ComposeProductModal"
 import CartProductPreloader from './CartProductsPreloader';
-import {
-    // guest_request_cellphone_verification,
-    guest_request_email_verification,
-    guest_verify_otp_code,
- } from "@/api/customer";
 
 function CheckoutWidget01({ routingTable, now, elementProps }) {
   // const store = window.__APP_REDUX_STORE__;
@@ -96,7 +91,6 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
     const [sameAsReceiver, setSameAsReceiver] = useState(false)
     const [awaitSubmitButton, setAwaitSubmitButton] = useState(false)
     const [submitMessage, setSubmitMessage] = useState({ type: '', text: '' })
-    const [submitOTPMessage, setSubmitOTPMessage] = useState({ type: '', text: '' })
     const purchaserInfoValidator = useRef(createValidator())
     const receiverInfoValidator = useRef(createValidator())
     const addressInfoValidator = useRef(createValidator())
@@ -219,6 +213,10 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
 
     const previewExcludeUUIDs = Object.fromEntries((checkoutPreview?.excludes||[]).map(excludeItem=>[excludeItem?.cart_product_uuid, true]))
 
+    const rawShippingFeeBreakdown = checkoutPreview?.shipping_fee_breakdown||[]
+    const isSingleTrivialShippingGroup = rawShippingFeeBreakdown.length===1 && (rawShippingFeeBreakdown[0]?.lines||[]).length<=1
+    const shippingFeeBreakdownForDisplay = (isSingleTrivialShippingGroup && [null, undefined].includes(rawShippingFeeBreakdown[0]?.free_shipping_gap)) ? [] : rawShippingFeeBreakdown
+
     const nextAction = ()=>{
         setSubmitMessage({ type: '', text: '' })
         setAwaitSubmitButton(true)
@@ -241,7 +239,8 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
                     points:(customer?.points||0)-(checkoutData?.apply_points||0)
                 }))
             }
-            window.location.href = `/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}`
+            const guestUUIDQuery = !customer?.uuid && res?.data?.order?.guest_uuid ? `?guest_uuid=${res?.data?.order?.guest_uuid}` : ''
+            window.location.href = `/${routingTable?.['order_payment_route']}/${res?.data?.order?.uuid}${guestUUIDQuery}`
         }).catch(err=>{
             console.log(err)
             setSubmitMessage({ type: 'error', text: '結帳失敗 請重試' })
@@ -281,11 +280,6 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
             return
         }
 
-        if(!customer?.uuid && !emailOtpVerified){
-            setSubmitMessage({ type: 'error', text: '請先完成Email驗證' })
-            return
-        }
-
         nextAction();
 
         // if(!customer?.uuid ){
@@ -307,57 +301,7 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
     }
 
 
-    const [emailOtpVerified, setEmailOtpVerified] = useState(false)
-    const [cellphoneOtpVerified, setCellphoneOtpVerified] = useState(false)
-    const [countDown, setCountDown] = useState(0)
-    const [otpCode, setOtpCode] = useState('')
-    const [awaitSubmitOTPButton, setAwaitSubmitOTPButton] = useState(false)
-
-    const resetOTP = () => {
-        setEmailOtpVerified(false)
-        setCellphoneOtpVerified(false)
-        Cookies.remove('guest_access_token')
-        setOtpCode('')
-        setSubmitOTPMessage({ type: '', text: '' })
-        setCountDown(0)
-    }
-
     const ref = useRef()
-
-    // const sendSMS = ()=>{
-    //     setCountDown(60)
-    //     guest_request_cellphone_verification({country, cellphone:purchaserData.purchaser_cellphone}).then(res=>{
-    //         showGeneralToast('驗證簡訊已發送')
-    //     })
-    // }
-
-    const sendEmail = ()=>{
-        setCountDown(60)
-        guest_request_email_verification({country, email:purchaserData.purchaser_email}).then(res=>{
-            showGeneralToast('驗證信件已發送')
-        })
-    }
-    const verifyOTPCode = ()=>{
-        setSubmitOTPMessage({type:'', text:''})
-        setAwaitSubmitOTPButton(true)
-
-        guest_verify_otp_code({'email':purchaserData.purchaser_email, 'cellphone':purchaserData.purchaser_cellphone, 'otp_code':otpCode}).then(res=>{
-            var inSevenDays = new Date(new Date().getTime() + 7 * 24 * 60 * 60 *1000)
-            Cookies.set('guest_access_token', res?.data?.guest_access_token, {expires: inSevenDays})
-            setAwaitSubmitOTPButton(false)
-            setEmailOtpVerified(true)
-
-        }).catch(err=>{
-            setAwaitSubmitOTPButton(false)
-            setSubmitOTPMessage({type:'error', text:'驗證失敗'})
-        })
-    }
-
-    useEffect(() => {
-        if (countDown <= 0) return
-        const timer = setTimeout(() => setCountDown(countDown - 1), 1000)
-        return () => clearTimeout(timer)
-    }, [countDown]);
 
   return (
               
@@ -510,9 +454,9 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
                           {
                             !customer?.uuid &&
                             <div ref={ref} className={clsx( '會員專區框',)}>
-                                  
+
                                 <div className={clsx(style['身份選擇框'], '身份選擇框')}>
-                    
+
                                     <div className={clsx(style['身份選擇訊息框'], '身份選擇訊息框')}>
                                         <p className={clsx(style['身份選擇訊息'], '身份選擇訊息')}>登入會員管理訂單更方便</p>
                                     </div>
@@ -523,109 +467,7 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
                                     </div>
 
                                 </div>
-                                
-                                <div className={clsx(style['驗證框'], '驗證框')}>
-                                                
-                                    <div className={clsx(style['驗證訊息框'], '驗證訊息框')}>
-                                        <p className={clsx(style['驗證訊息'], '驗證訊息')}>訪客購買需完成驗證</p>
-                                    </div>
-                                    
-                                    {/* 手機驗證框（已停用，改為Email驗證）
-                                    <div className={clsx(style['手機驗證框'], "手機驗證框")}>
-                                        <label className={clsx(style['購買人電話-標籤'], '購買人電話-標籤')}>購買人電話：</label>
 
-                                        {otpVerified ? (
-                                            <Fragment>
-                                                <span className={clsx(style['購買人電話-已驗證'], '購買人電話-已驗證')}>
-                                                    {purchaserData.purchaser_cellphone}
-                                                </span>
-                                                <button
-                                                    className={clsx(style['手機-修改按鈕'], '手機-修改按鈕')}
-                                                    onClick={resetOTP}
-                                                >
-                                                    修改
-                                                </button>
-                                            </Fragment>
-                                        ) : (
-                                            <Fragment>
-                                                <input
-                                                    className={clsx(style['購買人電話-輸入'], '購買人電話-輸入')}
-                                                    type="tel"
-                                                    name="purchaser_cellphone"
-                                                    placeholder="購買人電話"
-                                                    value={purchaserData.purchaser_cellphone}
-                                                    onChange={(e) => { setPurchaserData({...purchaserData, purchaser_cellphone: e.target.value}) }}
-                                                />
-                                                <button className={clsx(style['手機-發送按鈕'], "手機-發送按鈕")} onClick={sendSMS} disabled={countDown>0}>
-                                                    {countDown>0?`${countDown}秒後可重新發送`:'取得簡訊驗證碼'}
-                                                </button>
-                                            </Fragment>
-                                        )}
-                                    </div>
-                                    */}
-
-                                    <div className={clsx(style['Email驗證框'], "Email驗證框")}>
-                                        <label className={clsx(style['購買人Email-標籤'], '購買人Email-標籤')}>購買人Email：</label>
-
-                                        {emailOtpVerified ? (
-                                            <Fragment>
-                                                <span className={clsx(style['購買人Email-已驗證'], '購買人Email-已驗證')}>
-                                                    {purchaserData.purchaser_email}
-                                                </span>
-                                                <button
-                                                    className={clsx(style['Email-修改按鈕'], 'Email-修改按鈕')}
-                                                    onClick={resetOTP}
-                                                >
-                                                    修改
-                                                </button>
-                                            </Fragment>
-                                        ) : (
-                                            <Fragment>
-                                                <input
-                                                    className={clsx(style['購買人Email-輸入'], '購買人Email-輸入')}
-                                                    type="email"
-                                                    name="purchaser_email"
-                                                    placeholder="購買人Email"
-                                                    value={purchaserData.purchaser_email}
-                                                    onChange={(e) => { setPurchaserData({...purchaserData, purchaser_email: e.target.value}) }}
-                                                />
-                                                <button className={clsx(style['Email-發送按鈕'], "Email-發送按鈕")} onClick={sendEmail} disabled={countDown>0}>
-                                                    {countDown>0?`${countDown}秒後可重新發送`:'取得Email驗證碼'}
-                                                </button>
-                                            </Fragment>
-                                        )}
-                                    </div>
-
-                                    {!emailOtpVerified && (
-                                        <Fragment>
-                                            <div className={clsx(style['驗證碼輸入框'], "驗證碼輸入框")}>
-                                                <label className={clsx(style['驗證碼-標籤'], "驗證碼-標籤")}>驗證碼:</label>
-                                                <input className={clsx(style['驗證碼-輸入'], "驗證碼-輸入")} type="text" placeholder="驗證碼" value={otpCode} onChange={(e)=>{setOtpCode(e.target.value)}}/>
-                                            </div>
-
-                                            <div className={clsx(style['按鈕框'], "按鈕框")}>
-                                                <div className={clsx(style['送出按鈕框'], "送出按鈕框")}>
-                                                    <button className={clsx(style['送出按鈕'], "送出按鈕", awaitSubmitOTPButton?`${style['等待']} 等待`:'')} disabled={awaitSubmitOTPButton} onClick={verifyOTPCode}>確認</button>
-                                                </div>
-                                            </div>
-                                        </Fragment>
-                                    )}
-
-                                    {submitOTPMessage.text && (
-                                        <div className={clsx(
-                                            style['訊息框'],
-                                            '訊息框',
-                                            submitOTPMessage.type === 'success' ? style['成功'] : style['錯誤'],
-                                            submitOTPMessage.type === 'success' ? '成功' : '錯誤'
-                                        )}>
-                                            {submitOTPMessage.text}
-                                        </div>
-                                    )}
-
-
-                                </div>
-                                    
-                      
                             </div>
                           }
 
@@ -657,12 +499,11 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
                               <div className={clsx(style['購買人電話框'], '購買人電話框')}>
                                   <label className={clsx(style['購買人電話-標籤'], '購買人電話-標籤')}>購買人電話：</label>
                                   <input
-                                      className={clsx(style['購買人電話-輸入'], '購買人電話-輸入', cellphoneOtpVerified && !customer?.uuid ? `${style['已驗證鎖定']} 已驗證鎖定` : '')}
+                                      className={clsx(style['購買人電話-輸入'], '購買人電話-輸入')}
                                       type="tel"
                                       name="purchaser_cellphone"
                                       placeholder="購買人電話"
                                       value={purchaserData.purchaser_cellphone}
-                                      readOnly={cellphoneOtpVerified && !customer?.uuid}
                                       onChange={(e) => { setPurchaserData({...purchaserData, purchaser_cellphone: e.target.value}) }}
                                       onBlur={() => {
                                           purchaserInfoValidator.current.showMessageFor("purchaser_cellphone")
@@ -1043,22 +884,34 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
                               }
 
                               {
-                                  (checkoutPreview?.shipping_fee_breakdown||[]).length>1 &&
+                                  shippingFeeBreakdownForDisplay.length>0 &&
                                   <div className={clsx('運費明細框',style['運費明細框'])}>
+                                      <h5 className={clsx('運費明細框-文字',style['運費明細框-文字'])}>
+                                          運費明細
+                                      </h5>
                                       {
-                                          (checkoutPreview?.shipping_fee_breakdown||[]).map((breakdownItem, key)=>(
+                                          shippingFeeBreakdownForDisplay.map((breakdownItem, key)=>(
                                               <div key={key} className={clsx('運費明細項',style['運費明細項'])}>
                                                   <h5 className={clsx('運費明細項-名稱',style['運費明細項-名稱'])}>
                                                       {breakdownItem.shipping_group_name||'其他商品'}:
                                                   </h5>
-                                                  <span className={clsx('運費明細項-費用',style['運費明細項-費用'])}>
-                                                      {
-                                                          breakdownItem.free_shipping?
-                                                          '免運'
-                                                          :
-                                                          `${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(breakdownItem.fee), baseCurrency)}`
-                                                      }
-                                                  </span>
+                                                  {
+                                                      (breakdownItem.lines||[]).length<=0 &&
+                                                      <span className={clsx('運費明細項-費用',style['運費明細項-費用'])}>
+                                                          {
+                                                              breakdownItem.free_shipping?
+                                                              '免運'
+                                                              :
+                                                              `${estore?.e_commerce_settings?.base_currency_sign||'$'}${getToFixedNumber(Number(breakdownItem.fee), baseCurrency)}`
+                                                          }
+                                                      </span>
+                                                  }
+                                                  {
+                                                      (breakdownItem.lines||[]).length>0 && breakdownItem.free_shipping &&
+                                                      <span className={clsx('運費明細項-費用',style['運費明細項-費用'])}>
+                                                          免運
+                                                      </span>
+                                                  }
                                                   {
                                                       !breakdownItem.free_shipping && ![null, undefined].includes(breakdownItem.free_shipping_gap) &&
                                                       <span className={clsx('運費明細項-還差免運',style['運費明細項-還差免運'])}>
@@ -1078,6 +931,9 @@ function CheckoutWidget01({ routingTable, now, elementProps }) {
                                                                   <div key={lineKey} className={clsx('運費明細項-商品',style['運費明細項-商品'])}>
                                                                       <span className={clsx('運費明細項-商品名稱',style['運費明細項-商品名稱'])}>
                                                                           {line.product_name}
+                                                                      </span>
+                                                                      <span className={clsx('運費明細項-商品數量',style['運費明細項-商品數量'])}>
+                                                                          {`x${line.quantity}`}
                                                                       </span>
                                                                       <span className={clsx('運費明細項-商品費用',style['運費明細項-商品費用'])}>
                                                                           {

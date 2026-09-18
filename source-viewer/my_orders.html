@@ -352,7 +352,7 @@ const MyOrders = ({
                               &lt;/td&gt;
 
                               &lt;td className={clsx(style['表格-訂單動作框'], &quot;表格-訂單動作框&quot;)}&gt;
-                                &lt;a href={`/${routingTable?.['order_route']}/${order?.uuid}?guest_uuid=${new URLSearchParams(window.location.search).get('guest_uuid')}`} className={clsx(style['訂單內容-超連結'], '訂單內容-超連結')}&gt;
+                                &lt;a href={`/${routingTable?.['order_route']}/${order?.uuid}?guest_uuid=${order?.guest_uuid||''}`} className={clsx(style['訂單內容-超連結'], '訂單內容-超連結')}&gt;
                                     訂單內容
                                 &lt;/a&gt;
                               &lt;/td&gt;
