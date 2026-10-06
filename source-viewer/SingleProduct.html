@@ -30,6 +30,9 @@ const PRODUCT_TYPE_CLASS_NAME = {
     'assorted': '套組商品',
 }
 
+// 販售形態: single/assorted 可直接加入購物車, variant/compose 需至商品頁選規格
+const DIRECT_ADD_PRODUCT_TYPES = ['single', 'assorted']
+
 const SingleProduct = ({
     product,
     cartProduct,
@@ -43,6 +46,10 @@ const SingleProduct = ({
     const ref = useRef()
     const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalMinimumPrice, originalMaximumPrice, discountMinimumPrice, discountMaximumPrice, discountMaximumPercent, discountMinimumPercent} = getProductPrice(now, product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
     const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( product, 1, cartProduct?.quantity||0)
+    const productType = product?.type || 'single'
+    const canDirectAdd = DIRECT_ADD_PRODUCT_TYPES.includes(productType)
+    const cartQuantity = cartProduct?.quantity || 0
+    const isOutOfStock = canDirectAdd &amp;&amp; !inventorySufficient
 
     useEffect(()=&gt;{
             const mouseEnterHandler = (e)=&gt;{
@@ -70,7 +77,18 @@ const SingleProduct = ({
 
   return (
     &lt;Fragment&gt;
-        &lt;div className={clsx(style[&quot;單商品框&quot;], '單商品框', PRODUCT_TYPE_CLASS_NAME[product?.type] || PRODUCT_TYPE_CLASS_NAME['single'])} ref={ref}&gt;
+        &lt;div
+            className={clsx(
+                style[&quot;單商品框&quot;], '單商品框',
+                PRODUCT_TYPE_CLASS_NAME[productType] || PRODUCT_TYPE_CLASS_NAME['single'],
+                canDirectAdd ? [style[&quot;可直接加入&quot;], '可直接加入'] : [style[&quot;需選規格&quot;], '需選規格'],
+                cartQuantity &gt; 0 &amp;&amp; [style[&quot;已加入&quot;], '已加入'],
+                isOutOfStock &amp;&amp; [style[&quot;缺貨&quot;], '缺貨'],
+                product?.enable_direct_buy &amp;&amp; [style[&quot;可直接購買&quot;], '可直接購買'],
+            )}
+            data-cart-quantity={cartQuantity}
+            ref={ref}
+        &gt;
 
             &lt;div className={clsx(style[&quot;商品圖片框&quot;], '商品圖片框')}&gt;
 
@@ -121,48 +139,39 @@ const SingleProduct = ({
                 &lt;div className={clsx(style[&quot;加入願望清單框&quot;], '加入願望清單框')}&gt;
 
                 &lt;/div&gt;
-                &lt;div className={clsx(style[&quot;加入購物車框&quot;], '加入購物車框')}&gt;
-                    {
-                        ['compose', 'variant'].includes(product.type) 
-                        ?
-                        &lt;a href={`/${routingTable?.['product_route']}/${product?.uuid}`}  className={clsx(style[&quot;加入購物車-超連結&quot;], '加入購物車-超連結')}&gt;
-                            &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;去逛逛&lt;/span&gt;
-                        &lt;/a&gt;
-                        :
-                        inventorySufficient ?
-                        &lt;Fragment&gt;
-                            &lt;button
-                                className={clsx(style[&quot;加入購物車-按鈕&quot;], '加入購物車-按鈕')}
-                                onClick={() =&gt; {updateCartProduct(product, null, 1, dispatch)}}
-                                disabled={cartProduct !== undefined &amp;&amp; cartProduct.quantity &gt; 0}
-                            &gt;
-                                {
-                                    (cartProduct?.quantity||0) &gt; 0
-                                    ?
-                                    &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;已加入購物車&lt;/span&gt;
-                                    :
-                                    &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;加入購物車&lt;/span&gt;
-                                }
-                            &lt;/button&gt;
-                            {
-                                product?.enable_direct_buy &amp;&amp;
-                                &lt;button
-                                    className={clsx(style[&quot;直接購買-按鈕&quot;], '直接購買-按鈕')}
-                                    onClick={() =&gt; {
-                                        updateCartProduct(product, null, 1, dispatch).then(()=&gt;{
-                                            window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
-                                        })
-                                    }}
-                                &gt;
-                                    &lt;span className={clsx(style[&quot;直接購買-文字&quot;], '直接購買-文字')}&gt;直接購買&lt;/span&gt;
-                                &lt;/button&gt;
-                            }
-                        &lt;/Fragment&gt;
-                        :
-                        &lt;button disabled className={clsx(style[&quot;加入購物車-按鈕&quot;], '加入購物車-按鈕')}&gt;
-                        缺貨中
+                {/* 文字/圖標交由樣式表以 ::before / ::after 決定，顯示與否依 .單商品框 上的販售形態與狀態 class 切換 */}
+                {
+                    canDirectAdd &amp;&amp;
+                    &lt;div className={clsx(style[&quot;加入購物車框&quot;], '加入購物車框')}&gt;
+                        &lt;button
+                            className={clsx(style[&quot;加入購物車-按鈕&quot;], '加入購物車-按鈕')}
+                            disabled={isOutOfStock}
+                            onClick={() =&gt; {updateCartProduct(product, null, 1, dispatch)}}
+                        &gt;
+                            &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;&lt;/span&gt;
                         &lt;/button&gt;
-                    }
+                    &lt;/div&gt;
+                }
+                {
+                    canDirectAdd &amp;&amp; product?.enable_direct_buy &amp;&amp;
+                    &lt;div className={clsx(style[&quot;直接購買框&quot;], '直接購買框')}&gt;
+                        &lt;button
+                            className={clsx(style[&quot;直接購買-按鈕&quot;], '直接購買-按鈕')}
+                            disabled={isOutOfStock}
+                            onClick={() =&gt; {
+                                updateCartProduct(product, null, 1, dispatch).then(()=&gt;{
+                                    window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
+                                })
+                            }}
+                        &gt;
+                            &lt;span className={clsx(style[&quot;直接購買-文字&quot;], '直接購買-文字')}&gt;&lt;/span&gt;
+                        &lt;/button&gt;
+                    &lt;/div&gt;
+                }
+                &lt;div className={clsx(style[&quot;前往商品框&quot;], '前往商品框')}&gt;
+                    &lt;a href={`/${routingTable?.['product_route']}/${product?.uuid}`} className={clsx(style[&quot;前往商品-超連結&quot;], '前往商品-超連結')}&gt;
+                        &lt;span className={clsx(style[&quot;前往商品-文字&quot;], '前往商品-文字')}&gt;&lt;/span&gt;
+                    &lt;/a&gt;
                 &lt;/div&gt;
                 &lt;div className={clsx(style[&quot;快速瀏覽框&quot;], '快速瀏覽框')}&gt;
                     &lt;button className={clsx(style[&quot;快速瀏覽-按鈕&quot;], '快速瀏覽-按鈕')}onClick={() =&gt; setModalShow(true)}&gt;
@@ -328,6 +337,7 @@ export default SingleProduct;
     background-color: green;
 }
 
+
 /* 商品動作按鈕 */
 .商品動作框 {
     display: flex;
@@ -447,6 +457,92 @@ export default SingleProduct;
     inset: 0;
     overflow: auto;
     padding: 20px;
-}</pre>
+}
+
+
+
+// ============================================================
+// 商品動作框 樣式表使用說明
+// ------------------------------------------------------------
+// 結構：
+// .單商品框  ← 販售形態、狀態 class 都掛在這一層
+//   └ .商品動作框
+//       ├ .加入購物車框 &gt; button.加入購物車-按鈕 &gt; span.加入購物車-文字
+//       ├ .直接購買框   &gt; button.直接購買-按鈕   &gt; span.直接購買-文字
+//       ├ .前往商品框   &gt; a.前往商品-超連結      &gt; span.前往商品-文字
+//       └ .快速瀏覽框   &gt; button.快速瀏覽-按鈕   &gt; i.快速瀏覽-圖標
+//
+// .單商品框 上可能出現的 class：
+//   商品種類：.單一商品 / .變體商品 / .任搭商品 / .套組商品
+//   販售形態：.可直接加入（單一、套組）／ .需選規格（變體、任搭）
+//   狀態：    .已加入（購物車已有此商品）
+//             .缺貨（只會出現在 .可直接加入 的商品）
+//             .可直接購買（後台開啟直接購買）
+//   屬性：    data-cart-quantity=&quot;購物車內數量&quot;，沒有則為 0
+//
+// 程式端的限制（樣式表無法改變）：
+//   - .需選規格 的商品「不會輸出」加入購物車框、直接購買框
+//   - 直接購買框 只有在 .可直接購買 時才會輸出
+//   - .缺貨 時，加入購物車、直接購買按鈕會被設成 disabled
+//   - 所有 span 都是空的，文字或圖標一律由網站樣式表用 ::before / ::after 提供
+//     （此檔案不提供預設文字）
+//
+// ------------------------------------------------------------
+// 範例（寫在網站的樣式表中）
+// ------------------------------------------------------------
+//
+// 1. 決定哪些商品顯示哪些動作
+//    .可直接加入 .前往商品框 { display: none; }   // 可直接加入的商品藏起前往商品
+//    .任搭商品 .快速瀏覽框 { display: none; }     // 只針對某一種商品
+//
+// 2. 加入購物車：依狀態切換文字
+//    順序很重要，後面的規則會蓋掉前面的，.缺貨 放最後讓它優先
+//    .加入購物車-文字::before { content: &quot;加入購物車&quot;; }
+//    .已加入 .加入購物車-文字::before { content: &quot;再加一件&quot;; }
+//    .缺貨 .加入購物車-文字::before { content: &quot;缺貨中&quot;; }
+//
+// 3. 直接購買、前往商品
+//    .直接購買-文字::before { content: &quot;直接購買&quot;; }
+//    .前往商品-文字::before { content: &quot;查看商品&quot;; }
+//    .需選規格 .前往商品-文字::before { content: &quot;選擇規格&quot;; }
+//
+// 4. 改用 SVG 圖標（mask-image）
+//    - content 留空字串，偽元素才會出現
+//    - background-color: currentColor → 圖標顏色跟著按鈕的 color
+//    - mask 只取 SVG 的形狀，SVG 本身的 fill 顏色不影響結果
+//    .加入購物車-文字::before {
+//        content: &quot;&quot;;
+//        display: inline-block;
+//        width: 1.2em;
+//        height: 1.2em;
+//        vertical-align: middle;
+//        background-color: currentColor;
+//        -webkit-mask: url(&quot;/icons/cart.svg&quot;) no-repeat center / contain;
+//                mask: url(&quot;/icons/cart.svg&quot;) no-repeat center / contain;
+//    }
+//    .已加入 .加入購物車-文字::before {          // 只換形狀，尺寸沿用上一條
+//        -webkit-mask-image: url(&quot;/icons/check.svg&quot;);
+//                mask-image: url(&quot;/icons/check.svg&quot;);
+//    }
+//    SVG 也可以直接寫成 data URI：url(&quot;data:image/svg+xml,%3Csvg ...%3E&quot;)
+//    （# 要寫成 %23，&lt; &gt; 建議寫成 %3C %3E）
+//
+// 5. 圖標加文字：::before 放圖標、::after 放文字
+//    .加入購物車-文字::after { content: &quot;加入購物車&quot;; margin-left: .3em; }
+//    .已加入 .加入購物車-文字::after { content: &quot;已加入&quot;; }
+//    .缺貨 .加入購物車-文字::after { content: &quot;缺貨中&quot;; }
+//
+// 6. 依狀態調整按鈕外觀
+//    .已加入 .加入購物車-按鈕 { color: #fff; background-color: #2e7d32; }
+//    .缺貨 .加入購物車-按鈕 { background-color: #bdbdbd; }   // disabled 預設已是灰色，可再覆蓋
+//
+// 7. 快速瀏覽圖標：下方 .快速瀏覽-圖標 已用 mask-image 畫了眼睛，覆蓋 mask-image 即可替換
+//
+// 注意：
+//   - ::before / ::after 沒有 content 就不會出現，只放圖標也要寫 content: &quot;&quot;
+//   - attr(data-cart-quantity) 只能讀「自己這個元素」的屬性，
+//     data-cart-quantity 在 .單商品框 上，span 的偽元素讀不到
+//   - 覆蓋不掉時可以加一層提高權重，例如 .單商品框.已加入 .加入購物車-文字::before
+// ============================================================</pre>
 </body>
 </html>
