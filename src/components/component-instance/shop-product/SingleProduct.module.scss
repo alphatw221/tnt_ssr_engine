@@ -62,6 +62,7 @@
     background-color: green;
 }
 
+
 /* 商品動作按鈕 */
 .商品動作框 {
     display: flex;
@@ -182,3 +183,89 @@
     overflow: auto;
     padding: 20px;
 }
+
+
+
+// ============================================================
+// 商品動作框 樣式表使用說明
+// ------------------------------------------------------------
+// 結構：
+// .單商品框  ← 販售形態、狀態 class 都掛在這一層
+//   └ .商品動作框
+//       ├ .加入購物車框 > button.加入購物車-按鈕 > span.加入購物車-文字
+//       ├ .直接購買框   > button.直接購買-按鈕   > span.直接購買-文字
+//       ├ .前往商品框   > a.前往商品-超連結      > span.前往商品-文字
+//       └ .快速瀏覽框   > button.快速瀏覽-按鈕   > i.快速瀏覽-圖標
+//
+// .單商品框 上可能出現的 class：
+//   商品種類：.單一商品 / .變體商品 / .任搭商品 / .套組商品
+//   販售形態：.可直接加入（單一、套組）／ .需選規格（變體、任搭）
+//   狀態：    .已加入（購物車已有此商品）
+//             .缺貨（只會出現在 .可直接加入 的商品）
+//             .可直接購買（後台開啟直接購買）
+//   屬性：    data-cart-quantity="購物車內數量"，沒有則為 0
+//
+// 程式端的限制（樣式表無法改變）：
+//   - .需選規格 的商品「不會輸出」加入購物車框、直接購買框
+//   - 直接購買框 只有在 .可直接購買 時才會輸出
+//   - .缺貨 時，加入購物車、直接購買按鈕會被設成 disabled
+//   - 所有 span 都是空的，文字或圖標一律由網站樣式表用 ::before / ::after 提供
+//     （此檔案不提供預設文字）
+//
+// ------------------------------------------------------------
+// 範例（寫在網站的樣式表中）
+// ------------------------------------------------------------
+//
+// 1. 決定哪些商品顯示哪些動作
+//    .可直接加入 .前往商品框 { display: none; }   // 可直接加入的商品藏起前往商品
+//    .任搭商品 .快速瀏覽框 { display: none; }     // 只針對某一種商品
+//
+// 2. 加入購物車：依狀態切換文字
+//    順序很重要，後面的規則會蓋掉前面的，.缺貨 放最後讓它優先
+//    .加入購物車-文字::before { content: "加入購物車"; }
+//    .已加入 .加入購物車-文字::before { content: "再加一件"; }
+//    .缺貨 .加入購物車-文字::before { content: "缺貨中"; }
+//
+// 3. 直接購買、前往商品
+//    .直接購買-文字::before { content: "直接購買"; }
+//    .前往商品-文字::before { content: "查看商品"; }
+//    .需選規格 .前往商品-文字::before { content: "選擇規格"; }
+//
+// 4. 改用 SVG 圖標（mask-image）
+//    - content 留空字串，偽元素才會出現
+//    - background-color: currentColor → 圖標顏色跟著按鈕的 color
+//    - mask 只取 SVG 的形狀，SVG 本身的 fill 顏色不影響結果
+//    .加入購物車-文字::before {
+//        content: "";
+//        display: inline-block;
+//        width: 1.2em;
+//        height: 1.2em;
+//        vertical-align: middle;
+//        background-color: currentColor;
+//        -webkit-mask: url("/icons/cart.svg") no-repeat center / contain;
+//                mask: url("/icons/cart.svg") no-repeat center / contain;
+//    }
+//    .已加入 .加入購物車-文字::before {          // 只換形狀，尺寸沿用上一條
+//        -webkit-mask-image: url("/icons/check.svg");
+//                mask-image: url("/icons/check.svg");
+//    }
+//    SVG 也可以直接寫成 data URI：url("data:image/svg+xml,%3Csvg ...%3E")
+//    （# 要寫成 %23，< > 建議寫成 %3C %3E）
+//
+// 5. 圖標加文字：::before 放圖標、::after 放文字
+//    .加入購物車-文字::after { content: "加入購物車"; margin-left: .3em; }
+//    .已加入 .加入購物車-文字::after { content: "已加入"; }
+//    .缺貨 .加入購物車-文字::after { content: "缺貨中"; }
+//
+// 6. 依狀態調整按鈕外觀
+//    .已加入 .加入購物車-按鈕 { color: #fff; background-color: #2e7d32; }
+//    .缺貨 .加入購物車-按鈕 { background-color: #bdbdbd; }   // disabled 預設已是灰色，可再覆蓋
+//
+// 7. 快速瀏覽圖標：下方 .快速瀏覽-圖標 已用 mask-image 畫了眼睛，覆蓋 mask-image 即可替換
+//
+// 注意：
+//   - ::before / ::after 沒有 content 就不會出現，只放圖標也要寫 content: ""
+//   - attr(data-cart-quantity) 只能讀「自己這個元素」的屬性，
+//     data-cart-quantity 在 .單商品框 上，span 的偽元素讀不到
+//   - 覆蓋不掉時可以加一層提高權重，例如 .單商品框.已加入 .加入購物車-文字::before
+// ============================================================
