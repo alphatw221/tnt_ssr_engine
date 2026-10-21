@@ -63,6 +63,7 @@ const components = [
   { name: "GuestCheckoutNotification", file: "src/components/guest-checkout-notification/GuestCheckoutNotification.jsx",
     scss: ["src/components/guest-checkout-notification/order/GuestCheckoutNotification.module.scss"] },
   { name: "dynamic_route_element", file: "src/components/component-instance/DynamicRouteElement.jsx" },
+  { name: "CartToast", file: "src/components/cart-toast/CartToast.jsx" },
 
 
 

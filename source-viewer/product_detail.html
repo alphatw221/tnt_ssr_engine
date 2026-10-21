@@ -16,6 +16,7 @@ import style from './ProductDetail.module.scss'
 import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;
 
 import ComposeProductModal from &quot;@/components/product/ComposeProductModal&quot;
+import CartToast, { useCartToast } from &quot;@/components/cart-toast/CartToast&quot;
 // import AddonProductsModal from &quot;@/components/product/AddonProductsModal&quot;
 import ProductRating2 from &quot;@/components/product/sub-components/ProductRating2&quot;
 import { isStockSufficient, getProductPrice } from &quot;@/lib/utils/productHelper&quot;;
@@ -79,6 +80,7 @@ const ProductDetailClient = ({
     const [productCartQty, setProductCartQty] = useState(0);
     const [showComposeModal, setShowComposeModal] = useState(false)
     const [showAddonModal, setShowAddonModal] = useState(false)
+    const [cartToastProps, showCartToast] = useCartToast()
     const [directBuyIntent, setDirectBuyIntent] = useState(false)
 
     const [supportLogisticServices, setSupportLogisticServices] = useState([])
@@ -179,12 +181,15 @@ const ProductDetailClient = ({
         }else{
           updateCartProduct(product, selectedVariantProduct, quantityCount, dispatch).then(()=&gt;{
             setQuantityCount(1);
+            showCartToast('成功')
           }).then(()=&gt;{
             setShowAddonModal(true)
           }).then(()=&gt;{
             if(product?.single_page_product){
               window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
             }
+          }).catch(()=&gt;{
+            showCartToast('失敗')
           })
         }
     }
@@ -783,7 +788,8 @@ const ProductDetailClient = ({
                     &lt;/div&gt;
                 &lt;/div&gt;
             }
-           
+
+            &lt;CartToast {...cartToastProps}/&gt;
         &lt;/div&gt;)
 };
 

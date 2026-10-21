@@ -21,6 +21,7 @@ import { getProductPrice, isStockSufficient } from &quot;@/lib/utils/productHelp
 // import ProductModal from &quot;./ProductModal&quot;
 
 import ProductDetailClient from '@/components/component-instance/product-detail/ProductDetailClient'
+import CartToast, { useCartToast } from '@/components/cart-toast/CartToast'
 import { getToFixedNumber } from &quot;@/lib/utils/toFixedHelper&quot;;
 
 const PRODUCT_TYPE_CLASS_NAME = {
@@ -42,6 +43,7 @@ const SingleProduct = ({
     const [modalShow, setModalShow] = useState(false);
 
     const dispatch = useAppDispatch();
+    const [cartToastProps, showCartToast] = useCartToast();
     const now = new Date().toJSON().slice(0, 10);
     const ref = useRef()
     const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalMinimumPrice, originalMaximumPrice, discountMinimumPrice, discountMaximumPrice, discountMaximumPercent, discountMinimumPercent} = getProductPrice(now, product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
@@ -146,7 +148,11 @@ const SingleProduct = ({
                         &lt;button
                             className={clsx(style[&quot;加入購物車-按鈕&quot;], '加入購物車-按鈕')}
                             disabled={isOutOfStock}
-                            onClick={() =&gt; {updateCartProduct(product, null, 1, dispatch)}}
+                            onClick={() =&gt; {
+                                updateCartProduct(product, null, 1, dispatch)
+                                    .then(()=&gt;{showCartToast('成功')})
+                                    .catch(()=&gt;{showCartToast('失敗')})
+                            }}
                         &gt;
                             &lt;span className={clsx(style[&quot;加入購物車-文字&quot;], '加入購物車-文字')}&gt;&lt;/span&gt;
                         &lt;/button&gt;
@@ -261,6 +267,8 @@ const SingleProduct = ({
                 &lt;/div&gt;
             &lt;/div&gt;
         }
+
+        &lt;CartToast {...cartToastProps}/&gt;
     &lt;/Fragment&gt;
   );
 };

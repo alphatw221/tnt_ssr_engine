@@ -12,6 +12,7 @@ import { getProductPrice, isStockSufficient } from "@/lib/utils/productHelper"
 // import ProductModal from "./ProductModal"
 
 import ProductDetailClient from '@/components/component-instance/product-detail/ProductDetailClient'
+import CartToast, { useCartToast } from '@/components/cart-toast/CartToast'
 import { getToFixedNumber } from "@/lib/utils/toFixedHelper";
 
 const PRODUCT_TYPE_CLASS_NAME = {
@@ -33,6 +34,7 @@ const SingleProduct = ({
     const [modalShow, setModalShow] = useState(false);
 
     const dispatch = useAppDispatch();
+    const [cartToastProps, showCartToast] = useCartToast();
     const now = new Date().toJSON().slice(0, 10);
     const ref = useRef()
     const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalMinimumPrice, originalMaximumPrice, discountMinimumPrice, discountMaximumPrice, discountMaximumPercent, discountMinimumPercent} = getProductPrice(now, product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
@@ -137,7 +139,11 @@ const SingleProduct = ({
                         <button
                             className={clsx(style["加入購物車-按鈕"], '加入購物車-按鈕')}
                             disabled={isOutOfStock}
-                            onClick={() => {updateCartProduct(product, null, 1, dispatch)}}
+                            onClick={() => {
+                                updateCartProduct(product, null, 1, dispatch)
+                                    .then(()=>{showCartToast('成功')})
+                                    .catch(()=>{showCartToast('失敗')})
+                            }}
                         >
                             <span className={clsx(style["加入購物車-文字"], '加入購物車-文字')}></span>
                         </button>
@@ -252,6 +258,8 @@ const SingleProduct = ({
                 </div>
             </div>
         }
+
+        <CartToast {...cartToastProps}/>
     </Fragment>
   );
 };

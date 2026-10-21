@@ -18,10 +18,13 @@ import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;
 import style from &quot;./ComposeProductModal.module.scss&quot;
 import clsx from &quot;clsx&quot;;
 import { updateCartProduct } from &quot;@/lib/utils/cartHelper&quot;;
+import CartToast, { useCartToast } from &quot;@/components/cart-toast/CartToast&quot;;
 import { isStockSufficient } from &quot;@/lib/utils/productHelper&quot;;
 
 
 const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, quantityCount, updateCompose, nextAction, reviewContent, props}) =&gt;{
+
+  const [cartToastProps, showCartToast] = useCartToast();
 
   const onCloseModal = () =&gt; {
     onHide()
@@ -179,9 +182,12 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                 onClick={() =&gt;{
                   // console.log(composeProductData)
                   updateCartProduct(product, null, quantityCount, dispatch, composeBase, composeProductData, updateCompose).then(()=&gt;{
+                    showCartToast('成功')
                     onHide()
                   }).then(()=&gt;{
                     nextAction?.()
+                  }).catch(()=&gt;{
+                    showCartToast('失敗')
                   })
                 }}
                 disabled={!composeValid}
@@ -196,9 +202,13 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
   );
 
   // 使用 Portal 將 modal 渲染到 body
-  return modalContent &amp;&amp; typeof document !== 'undefined'
-    ? createPortal(modalContent, document.body)
-    : null;
+  // CartToast 放在 modalContent 之外, modal 關閉後提示仍會顯示
+  return (
+    &lt;Fragment&gt;
+      {modalContent &amp;&amp; typeof document !== 'undefined' &amp;&amp; createPortal(modalContent, document.body)}
+      &lt;CartToast {...cartToastProps}/&gt;
+    &lt;/Fragment&gt;
+  );
 }
 
 ComposeProductModal.propTypes = {

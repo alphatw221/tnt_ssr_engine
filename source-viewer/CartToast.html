@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>CartToast</title>
+</head>
+<body>
+<h1>CartToast</h1>
+<h2>src/components/cart-toast/CartToast.jsx</h2>
+<pre>import { useState, useEffect, useRef } from &quot;react&quot;;
+import { createPortal } from &quot;react-dom&quot;;
+import clsx from &quot;clsx&quot;;
+
+// 加入購物車提示: 觸發時才掛載到 body, 下一個 frame 加上「顯示」以便進場 transition,
+// duration 後移除「顯示」, 再等 exitDelay (離場 transition) 後從 DOM 移除
+// 文字交由樣式表以 .加入購物車提示-文字::before { content: &quot;...&quot; } 決定
+export const useCartToast = ({ duration = 2500, exitDelay = 400 } = {}) =&gt; {
+    const [mounted, setMounted] = useState(false)
+    const [visible, setVisible] = useState(false)
+    const [status, setStatus] = useState('')
+    const timers = useRef([])
+    const frame = useRef(null)
+
+    const clear = () =&gt; {
+        timers.current.forEach(clearTimeout)
+        timers.current = []
+        if (frame.current) cancelAnimationFrame(frame.current)
+        frame.current = null
+    }
+    useEffect(() =&gt; clear, [])
+
+    // status: '成功' | '失敗'
+    const showToast = (_status = '成功') =&gt; {
+        clear()
+        setStatus(_status)
+        setMounted(true)
+        frame.current = requestAnimationFrame(() =&gt; {
+            frame.current = requestAnimationFrame(() =&gt; setVisible(true))
+        })
+        timers.current.push(
+            setTimeout(() =&gt; setVisible(false), duration),
+            setTimeout(() =&gt; setMounted(false), duration + exitDelay),
+        )
+    }
+
+    return [{ mounted, visible, status }, showToast]
+}
+
+const CartToast = ({ mounted, visible, status }) =&gt; {
+    if (!mounted || typeof document === 'undefined') return null
+    return createPortal(
+        &lt;div className={clsx('加入購物車提示框', visible &amp;&amp; '顯示', status)}&gt;
+            &lt;span className={clsx('加入購物車提示-文字')}&gt;&lt;/span&gt;
+        &lt;/div&gt;,
+        document.body
+    )
+}
+
+export default CartToast
+</pre>
+
+</body>
+</html>

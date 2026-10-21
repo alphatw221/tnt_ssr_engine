@@ -9,10 +9,13 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import style from "./ComposeProductModal.module.scss"
 import clsx from "clsx";
 import { updateCartProduct } from "@/lib/utils/cartHelper";
+import CartToast, { useCartToast } from "@/components/cart-toast/CartToast";
 import { isStockSufficient } from "@/lib/utils/productHelper";
 
 
 const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, quantityCount, updateCompose, nextAction, reviewContent, props}) =>{
+
+  const [cartToastProps, showCartToast] = useCartToast();
 
   const onCloseModal = () => {
     onHide()
@@ -170,9 +173,12 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                 onClick={() =>{
                   // console.log(composeProductData)
                   updateCartProduct(product, null, quantityCount, dispatch, composeBase, composeProductData, updateCompose).then(()=>{
+                    showCartToast('成功')
                     onHide()
                   }).then(()=>{
                     nextAction?.()
+                  }).catch(()=>{
+                    showCartToast('失敗')
                   })
                 }}
                 disabled={!composeValid}
@@ -187,9 +193,13 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
   );
 
   // 使用 Portal 將 modal 渲染到 body
-  return modalContent && typeof document !== 'undefined'
-    ? createPortal(modalContent, document.body)
-    : null;
+  // CartToast 放在 modalContent 之外, modal 關閉後提示仍會顯示
+  return (
+    <Fragment>
+      {modalContent && typeof document !== 'undefined' && createPortal(modalContent, document.body)}
+      <CartToast {...cartToastProps}/>
+    </Fragment>
+  );
 }
 
 ComposeProductModal.propTypes = {
