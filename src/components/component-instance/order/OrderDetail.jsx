@@ -12,6 +12,7 @@ import { customer_retrieve_order } from "@/api/order";
 import Cookies from "js-cookie";
 
 import OrderItemsSummary from "./OrderItemsSummary"
+import OrderReviews from "./OrderReviews"
 import PaymentInfo from "./payment-info/PaymentInfo"
 // import { useParams, useSearchParams } from "react-router-dom";
 
@@ -255,6 +256,8 @@ const OrderDetail = ({
             </div>
 
             <OrderItemsSummary order={order} routingTable={routingTable}/>
+
+            <OrderReviews order={order} guestUUID={guestUUID}/>
 {/* 
             <div className={clsx(style['訂單商品框'], '訂單商品框')}>
                 <div className={clsx(style['訂單商品標題框'], '訂單商品標題框')}>

@@ -1,4 +1,4 @@
-import { createCustomerAxios, createCustomerAxiosWithoutInterceptor } from "../lib/axiosClient";
+import { createCustomerAxios, createCustomerAxiosWithoutInterceptor, createAnonymousAxios } from "../lib/axiosClient";
 
 export const validate_customer_token = () => {
     return createCustomerAxiosWithoutInterceptor().get(`/api/v1/auth/customer/validate/`);
@@ -48,5 +48,5 @@ export const guest_request_email_verification = ({country, email}) => {
     return createCustomerAxios().post(`/api/v1/auth/customer/email/verification/`, {'country':country, 'email':email});
 }
 export const guest_verify_otp_code = ({email, cellphone, otp_code}) => {
-    return createCustomerAxiosWithoutInterceptor().post(`/api/v1/auth/customer/verify_otp/`, {'email':email, 'cellphone':cellphone, 'otp_code':otp_code});
+    return createAnonymousAxios().post(`/api/v1/auth/customer/verify_otp/`, {'email':email, 'cellphone':cellphone, 'otp_code':otp_code});
 }

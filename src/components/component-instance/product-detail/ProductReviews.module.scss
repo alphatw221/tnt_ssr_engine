@@ -1,0 +1,111 @@
+/* 評價摘要 */
+.評價摘要框 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.評價摘要-平均框 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.評價摘要-分布框 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 200px;
+}
+
+.單星等分布框 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.單星等分布-長條框 {
+    flex: 1;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.單星等分布-長條 {
+    height: 100%;
+    background: #f5a623;
+}
+
+/* 評價區 */
+.評價區框 {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 2px solid #ddd;
+}
+
+.評價列表 {
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.單評價框 {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.單評價-頭部 {
+    display: flex;
+    justify-content: space-between;
+}
+
+.單評價-日期,
+.單評價-規格 {
+    color: #888;
+    font-size: 0.875em;
+}
+
+.單評價-內容,
+.單評價-商家回覆-內容 {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.單評價-圖片列表 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.單評價-圖片 {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.單評價-商家回覆框 {
+    background: #f7f7f7;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.單評價-商家回覆-頭部 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875em;
+}
+
+.單評價-商家回覆-日期 {
+    color: #888;
+}
+
+.評價區-無評價 {
+    margin-top: 16px;
+    color: #888;
+}

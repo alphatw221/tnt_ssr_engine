@@ -31,10 +31,18 @@ export function createSSRInternalAxios(){
     })
 }
 
+//不帶任何 token 用在換取新 token 的請求 避免帶到過期的舊 token
+export function createAnonymousAxios(){
+    return axios.create({
+        baseURL:_baseURL,
+    })
+}
+
 export function createCustomerAxiosWithoutInterceptor(){
 
     const headers = {}
-    if(Cookies.get("customer_access_token")) headers.Authorization = `Bearer ${Cookies.get("customer_access_token")}`
+    if(Cookies.get("customer_access_token")) {headers.Authorization = `Bearer ${Cookies.get("customer_access_token")}`}
+    else if(Cookies.get("guest_access_token")){headers.Authorization = `Bearer ${Cookies.get("guest_access_token")}`}
 
     return axios.create({
         // baseURL: window.location.protocol+'://'+window.location.host,

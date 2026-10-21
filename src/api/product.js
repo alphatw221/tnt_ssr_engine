@@ -11,27 +11,31 @@ export const customer_retrieve_product = (product_uuid) => {
     return createCustomerAxios().get(`/api/v1/store/product/${product_uuid}/retrieve/`);
 }
 
-export const customer_search_product_reviews = (product_uuid, order_by, page) => {
-    return createCustomerAxios().get(`/api/v1/store/product_review/${product_uuid}/search/?order_by=${order_by}&page=${page}`);
+export const customer_search_product_reviews = (product_uuid, page, page_size) => {
+    return createCustomerAxios().get(`/api/v1/store/product_review/${product_uuid}/search/?page=${page}&page_size=${page_size}`);
 }
 
-export const customer_create_product_review = (product_uuid, data) => {
+export const customer_get_product_review_summary = (product_uuid) => {
+    return createCustomerAxios().get(`/api/v1/store/product_review/${product_uuid}/summary/`);
+}
 
-    //data
+//會員與訪客共用 會員靠 header 的 customer token 訪客靠 query 的 guest_uuid 或 header 的 guest token
+export const customer_get_order_review_items = ({order_uuid, guest_uuid}) => {
+    return createCustomerAxiosWithoutInterceptor().get(`/api/v1/store/product_review/order/${order_uuid}/items/`, {params: guest_uuid ? {guest_uuid} : {}});
+}
+
+export const customer_create_order_product_review = ({order_uuid, product_uuid, guest_uuid, stars, review, display_name, upload_images}) => {
 
     const formData = new FormData();
-    
-    formData.set('stars',data?.stars||5);
-    formData.set('review',data?.review||'');
 
-    // if((data?.upload_images||[]).length){
-    //     formData.set('upload_images',data?.upload_images||[])
-    // }
-    (data?.upload_images||[]).forEach((image,i) => {
-        formData.set('upload_images',image)
+    formData.set('stars', stars);
+    formData.set('review', review||'');
+    if(display_name) formData.set('display_name', display_name);
+    (upload_images||[]).forEach((image) => {
+        formData.append('upload_images', image)
     });
 
-    return createCustomerAxios().post(`/api/v1/store/product_review/${product_uuid}/create/`, formData);
+    return createCustomerAxiosWithoutInterceptor().post(`/api/v1/store/product_review/order/${order_uuid}/${product_uuid}/create/`, formData, {params: guest_uuid ? {guest_uuid} : {}});
 }
 //-----------------------user----------------------------------
 

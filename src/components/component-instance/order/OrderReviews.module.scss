@@ -1,0 +1,110 @@
+/* 訂單評價 */
+.訂單評價框 {
+    margin-top: 24px;
+}
+
+.訂單評價列表 {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.單訂單評價框 {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.單訂單評價-商品框 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.單訂單評價-商品圖片 {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+
+.單訂單評價-商品資訊 {
+    display: flex;
+    flex-direction: column;
+}
+
+.單訂單評價-商品規格,
+.評價表單-字數 {
+    color: #888;
+    font-size: 0.875em;
+}
+
+/* 表單 */
+.評價表單框,
+.我的評價框 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.評價表單-星等框,
+.評價表單-內容框,
+.評價表單-名稱框,
+.評價表單-圖片框 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.評價表單-內容 {
+    min-height: 100px;
+}
+
+.評價表單-圖片列表,
+.我的評價-圖片列表 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.評價表單-單圖片框 {
+    position: relative;
+}
+
+.評價表單-圖片,
+.我的評價-圖片 {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.評價表單-移除圖片按鈕 {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+}
+
+.評價表單-錯誤訊息 {
+    color: #d9534f;
+}
+
+.評價表單-送出按鈕 {
+    align-self: flex-start;
+}
+
+/* 已評價 */
+.我的評價-內容,
+.我的評價-商家回覆-內容 {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.我的評價-商家回覆框 {
+    background: #f7f7f7;
+    padding: 8px 12px;
+    border-radius: 4px;
+}

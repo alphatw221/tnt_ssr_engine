@@ -9,7 +9,9 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import ComposeProductModal from "@/components/product/ComposeProductModal"
 import CartToast, { useCartToast } from "@/components/cart-toast/CartToast"
 // import AddonProductsModal from "@/components/product/AddonProductsModal"
-import ProductRating2 from "@/components/product/sub-components/ProductRating2"
+import ProductReviewSummary from "./ProductReviewSummary"
+import ProductReviews from "./ProductReviews"
+import { customer_get_product_review_summary } from "@/api/product";
 import { isStockSufficient, getProductPrice } from "@/lib/utils/productHelper";
 import { updateCartProduct, getCartProductsCount } from "@/lib/utils/cartHelper";
 
@@ -81,6 +83,7 @@ const ProductDetailClient = ({
     const [defaultImage, setDefaultImage] = useState(null)
 
     const [selectedTabIndex, setSelectedTabIndex] = useState(0)
+    const [reviewSummary, setReviewSummary] = useState(null)
 
     const smallImageRefs = useRef([]);
     const variantType1Refs = useRef([]);
@@ -155,6 +158,18 @@ const ProductDetailClient = ({
         },[product])
 
 
+
+    useEffect(() => {
+        if (!product?.enable_review || !product?.uuid) {
+            setReviewSummary(null)
+            return
+        }
+        customer_get_product_review_summary(product.uuid).then(res => {
+            setReviewSummary(res?.data || null)
+        }).catch(() => {
+            setReviewSummary(null)
+        })
+    }, [product?.uuid, product?.enable_review])
 
     useEffect(() => {
         console.log('product detail')
@@ -387,8 +402,8 @@ const ProductDetailClient = ({
                             <h2 className={clsx(style['商品名稱'], '商品名稱',)}>{product?.name}</h2>
                         </div>
 
-                        {product?.enable_review && (product?.stars_count||0) > 0 && 
-                            <ProductRating2 ratingValue={(product?.stars_count||0)/(product?.reviews_count||1)} />   
+                        {product?.enable_review && 
+                            <ProductReviewSummary summary={reviewSummary} />
                         }
 
                         <div className={clsx(style['商品敘述框'], '商品敘述框',)}>
@@ -757,6 +772,10 @@ const ProductDetailClient = ({
                     </div> */}
                 </div>
             </div>  
+
+            {product?.enable_review &&
+                <ProductReviews productUuid={product?.uuid} summary={reviewSummary} />
+            }
 
             {
                 (product?.relate_products||[]).length >0 &&
