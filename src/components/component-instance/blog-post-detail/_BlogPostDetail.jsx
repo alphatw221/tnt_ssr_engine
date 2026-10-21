@@ -4,6 +4,7 @@ import 'ckeditor5/ckeditor5-content.css';
 import clsx from "clsx";
 import style from './BlogPostDetail.module.scss'
 import ShareButton from './ShareButton'
+import BlogPostComments from './BlogPostComments'
 import { customer_increment_blog_post_view } from '../../../api/blog_post'
 const _BlogPostDetail = ({  
 
@@ -124,10 +125,10 @@ const _BlogPostDetail = ({
                     }
                     
                     {
-                        blogPost?.allow_comment||true &&
+                        blogPost?.enable_comments !== false &&
                         <div className={clsx('留言數框',style['留言數框'])}>
                             <label className={clsx('留言數-標題',style['留言數-標題'])}>留言數：</label>
-                            <span className={clsx('留言數',style['留言數'])}>{`${(blogPost?.comments||[]).length} `}</span>
+                            <span className={clsx('留言數',style['留言數'])}>{blogPost?.comments_count||0}</span>
                         </div>
                     }
 
@@ -194,6 +195,10 @@ const _BlogPostDetail = ({
                         prePostNextPost()
                     }
                 </div>
+
+                {blogPost?.uuid && blogPost?.enable_comments !== false &&
+                    <BlogPostComments blogPostUuid={blogPost.uuid} commentsCount={blogPost?.comments_count} />
+                }
             
 
 

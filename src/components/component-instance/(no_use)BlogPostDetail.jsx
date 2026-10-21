@@ -13,7 +13,7 @@ import BlogPostNotFound from "../../KPpages/other/BlogPostNotFound"
 import { customer_retrieve_blog_post } from "../../api/blog_post";
 
 import { setBlogPost } from "../../redux/slices/blog-slice";
-import BlogPostDetailKingPork from "../blog/BlogPostDetailKingPork"
+import BlogPostDetailKingPork from "../blog/(no_use)BlogPostDetailKingPork"
 const BlogPostDetail = ({  
     component,  mode, actions, update}) => {
 

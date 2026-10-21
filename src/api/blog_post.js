@@ -15,6 +15,16 @@ export const customer_increment_blog_post_view = (blog_post_uuid) => {
     return createCustomerAxios().put(`/api/v1/store/blog_post/${blog_post_uuid}/increment_view/`);
 }
 
+//帶會員 token 時 自己 pending / hidden 的留言也會列出來
+export const customer_search_blog_post_comments = ({blog_post_uuid, page, page_size}) => {
+    return createCustomerAxiosWithoutInterceptor().get(`/api/v1/store/blog_post_comment/${blog_post_uuid}/search/`, {params: {page, page_size}});
+}
+
+//訪客要帶 guest_name 與 guest_email website 是 honeypot 欄位
+export const customer_create_blog_post_comment = ({blog_post_uuid, content, guest_name, guest_email, website}) => {
+    return createCustomerAxiosWithoutInterceptor().post(`/api/v1/store/blog_post_comment/${blog_post_uuid}/create/`, {content, guest_name, guest_email, website});
+}
+
 
 
 //----user----

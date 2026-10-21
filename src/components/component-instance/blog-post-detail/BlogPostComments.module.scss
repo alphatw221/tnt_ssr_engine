@@ -1,0 +1,109 @@
+/* 留言區 */
+.留言區框 {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 2px solid #ddd;
+}
+
+.留言區-標題框 {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+/* 表單 */
+.留言表單框 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.留言表單-訪客資訊框 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.留言表單-暱稱框,
+.留言表單-信箱框,
+.留言表單-內容框 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* honeypot 不給使用者看到 */
+.留言表單-網站框 {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.留言表單-內容 {
+    min-height: 100px;
+}
+
+.留言表單-字數,
+.單留言-日期 {
+    color: #888;
+    font-size: 0.875em;
+}
+
+.留言表單-錯誤訊息 {
+    color: #d9534f;
+}
+
+.留言表單-送出按鈕 {
+    align-self: flex-start;
+}
+
+/* 列表 */
+.留言列表 {
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.單留言框 {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.單留言-頭部 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.單留言-日期 {
+    margin-left: auto;
+}
+
+.單留言-內容 {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.回覆列表 {
+    display: flex;
+    flex-direction: column;
+    margin-left: 24px;
+}
+
+.回覆 {
+    padding: 8px 12px;
+    border-bottom: none;
+    background: #f7f7f7;
+    border-radius: 4px;
+}
+
+.留言區-無留言 {
+    margin-top: 16px;
+    color: #888;
+}
