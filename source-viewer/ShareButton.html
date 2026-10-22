@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ShareButton</title>
+</head>
+<body>
+<h1>ShareButton</h1>
+<h2>src/components/component-instance/blog-post-detail/ShareButton.jsx</h2>
+<pre>
+import clsx from &quot;clsx&quot;;
+import style from &quot;./ShareButton.module.scss&quot;
+
+
+const ShareButton = ({})=&gt;{
+
+
+    return (
+    &lt;div className={clsx('分享框',style['分享框'])}&gt;
+        &lt;label className={clsx('分享-標題',style['分享-標題'])}&gt;分享：&lt;/label&gt;
+        &lt;i className={clsx('分享-按鈕',style['分享-按鈕'])} onClick={()=&gt;{
+            // console.log(window.location.href)
+            if (navigator.share) {
+                navigator.share({
+                    title: document?.title,
+                    url: window?.location?.href
+                }).then(() =&gt; {
+                    alert(&quot;分享成功&quot;);
+                })
+                .catch(err=&gt;{});
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert(&quot;已複製連結&quot;);
+
+            }
+            }}/&gt;
+    &lt;/div&gt;)
+
+
+}
+
+export default ShareButton;
+</pre>
+<h2>src/components/component-instance/blog-post-detail/ShareButton.module.scss</h2>
+<pre>.分享-按鈕{
+    cursor:pointer
+
+}</pre>
+</body>
+</html>

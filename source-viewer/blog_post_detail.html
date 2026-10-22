@@ -6,53 +6,219 @@
 </head>
 <body>
 <h1>blog_post_detail</h1>
-<h2>src/components/component-instance/blog-post-detail/BlogPostDetailSSR.jsx</h2>
-<pre>
-import PropTypes from &quot;prop-types&quot;;
-import React, { Fragment} from &quot;react&quot;;
+<h2>src/components/component-instance/blog-post-detail/_BlogPostDetail.jsx</h2>
+<pre>import React, { Fragment, useState, useEffect } from &quot;react&quot;;
+import 'ckeditor5/ckeditor5-content.css';
+
 import clsx from &quot;clsx&quot;;
+import style from './BlogPostDetail.module.scss'
+import ShareButton from './ShareButton'
+import BlogPostComments from './BlogPostComments'
+import { customer_increment_blog_post_view } from '../../../api/blog_post'
+const _BlogPostDetail = ({  
 
+    // template_nodes,
+    // node,  
+    // mode, 
+    // actions, 
+    // hierarchy, 
+    // children, 
+    // isSudoNode, 
+    blogPost,
+    // mode,
+    // actions,
+    // ...props,
 
-import _BlogPostDetail from './_BlogPostDetail'
-
-// import {getBlogPostDetail} from '../../../fetch/blog'
-// import { customer_retrieve_blog_post } from '@/api/blog_post'
-
-const BlogPostDetailSSR = ({  
-
-    
-    
+    routingTable,
     element, 
     elementProps,
     mode,
     actions,
-    object,
-    ...props}) =&gt; {
+    ...props
 
 
+})=&gt;{
 
+//     return (
+//         &lt;div className={
+//             clsx(
+//                 'ck-content',
+//                 style['ck-content'],
+//             )}
+
+//             dangerouslySetInnerHTML={{ __html: blogPost?.content }}
+//         &gt;&lt;/div&gt;
+// )
+
+    const [createdAt, setCreatedAt] = useState('')
+    const [updatedAt, setUpdatedAt] = useState('')
+
+    useEffect(()=&gt;{
+        setCreatedAt(new Date(blogPost?.created_at||null).toLocaleDateString())
+        setUpdatedAt(new Date(blogPost?.updated_at||null).toLocaleDateString())
+    },[])
+
+    useEffect(()=&gt;{
+        if(mode!=='dev' &amp;&amp; blogPost?.uuid){
+            customer_increment_blog_post_view(blogPost.uuid).catch(()=&gt;{})
+        }
+    },[mode, blogPost?.uuid])
+
+    const prePostNextPost = ()=&gt;{
         return (
             &lt;Fragment&gt;
-
-              &lt;_BlogPostDetail 
-                element={element}
-                elementProps={elementProps}
-                blogPost={object}
-                mode={mode}
-                {...props}
-              /&gt;
-
+                 {
+                        blogPost?.pre &amp;&amp;
+                        &lt;div className={clsx('上一則文章大框',style['上一則文章大框'])}&gt;
+                            &lt;label className={clsx('上一則文章-標籤',style['上一則文章-標籤'])}&gt;上一則文章：&lt;/label&gt;
+                            &lt;div className={clsx('上一則文章框',style['上一則文章框'])}&gt;
+                                &lt;a className={clsx('上一則文章-超連結',style['上一則文章-超連結'])} href={`/${element?.data?.pre_next_route ?? routingTable?.['blog_post_route']}/${blogPost?.pre?.uuid}`}&gt;
+                                    &lt;img className={clsx('上一則文章-圖片',style['上一則文章-圖片'])} src={blogPost?.pre?.image}&gt;&lt;/img&gt;
+                                    &lt;h5 className={clsx('上一則文章-標題',style['上一則文章-標題'])}&gt;{blogPost?.pre?.title}&lt;/h5&gt;
+                                &lt;/a&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        
+                    }
+                    {
+                        blogPost?.next &amp;&amp;
+                        &lt;div className={clsx('下一則文章大框',style['下一則文章大框'])}&gt;
+                            &lt;label className={clsx('下一則文章-標籤',style['下一則文章-標籤'])}&gt;下一則文章：&lt;/label&gt;
+                            &lt;div className={clsx('下一則文章框',style['下一則文章框'])}&gt;
+                                &lt;a className={clsx('下一則文章-超連結',style['下一則文章-超連結'])} href={`/${element?.data?.pre_next_route ?? routingTable?.['blog_post_route']}/${blogPost?.next?.uuid}`}&gt;
+                                    &lt;img className={clsx('下一則文章-圖片',style['下一則文章-圖片'])} src={blogPost?.next?.image}&gt;&lt;/img&gt;
+                                    &lt;h5 className={clsx('下一則文章-標題',style['下一則文章-標題'])}&gt;{blogPost?.next?.title}&lt;/h5&gt;
+                                &lt;/a&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                            
+                    }
             &lt;/Fragment&gt;
-          )
+        )
+    }
 
-};
+    return (
+        &lt;Fragment&gt;
+            &lt;div 
+                {...elementProps}
+            &gt;
 
-BlogPostDetailSSR.propTypes = {
-};
+            
+                &lt;div className={clsx('文章圖片框',style['文章圖片框'])}&gt;
+                    &lt;img
+                        className={clsx('文章圖片',style['文章圖片'])}
+                        alt=&quot;&quot;
+                        src={ blogPost?.image}
+                    /&gt;
+                &lt;/div&gt;
 
-export default BlogPostDetailSSR;
+                &lt;div className={clsx('文章資訊框',style['文章資訊框'])}&gt;
+                    &lt;div className={clsx('發表時間框',style['發表時間框'])}&gt;
+                        &lt;label className={clsx('發表時間-標題',style['發表時間-標題'])}&gt;發表於：&lt;/label&gt;
+                        &lt;span className={clsx('發表時間',style['發表時間'])}&gt;{createdAt}&lt;/span&gt;
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx('更新時間框',style['更新時間框'])}&gt;
+                        &lt;label className={clsx('更新時間-標題',style['更新時間-標題'])}&gt;最後更新：&lt;/label&gt;
+                        &lt;span className={clsx('更新時間',style['更新時間'])}&gt;{updatedAt}&lt;/span&gt;
+                    &lt;/div&gt;
+                    
+                    {
+                        (blogPost?.author_relations?.length &gt; 0) &amp;&amp;
+                        &lt;div className={clsx('作者框',style['作者框'])}&gt;
+                            &lt;label className={clsx('作者-標題',style['作者-標題'])}&gt;作者：&lt;/label&gt;
+                            &lt;span className={clsx('作者',style['作者'])}&gt;
+                                {blogPost.author_relations.map(r =&gt; r.blog_post_author_nick_name).join('、')}
+                            &lt;/span&gt;
+                        &lt;/div&gt;
+                    }
+                    
+                    {
+                        blogPost?.enable_comments !== false &amp;&amp;
+                        &lt;div className={clsx('留言數框',style['留言數框'])}&gt;
+                            &lt;label className={clsx('留言數-標題',style['留言數-標題'])}&gt;留言數：&lt;/label&gt;
+                            &lt;span className={clsx('留言數',style['留言數'])}&gt;{blogPost?.comments_count||0}&lt;/span&gt;
+                        &lt;/div&gt;
+                    }
+
+                    
+                    &lt;div className={clsx('造訪數框',style['造訪數框'])}&gt;
+                        &lt;label className={clsx('造訪數-標題',style['造訪數-標題'])}&gt;造訪數：&lt;/label&gt;
+                        &lt;span className={clsx('造訪數',style['造訪數'])}&gt;{blogPost?.view_count||0}&lt;/span&gt;
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx('文章類別框',style['文章類別框'])}&gt;
+                        &lt;label className={clsx('文章類別-標題',style['文章類別-標題'])}&gt;文章類別：&lt;/label&gt;
+                        {(blogPost?.blog_post_category_relations||[]).map((blog_post_category_relation,i)=&gt;{
+
+                                // blog_post_category_relation?.blog_post_category_uuid
+                                //TODO a
+                                return (
+                                        &lt;span key={i} className={clsx('文章類別',style['文章類別'])}&gt;
+                                            {blog_post_category_relation?.blog_post_category_name||''}
+                                        &lt;/span&gt;
+                                )
+                            })}
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx('文章標籤框',style['文章標籤框'])}&gt;
+                        &lt;label className={clsx('文章標籤-標題',style['文章標籤-標題'])}&gt;文章標籤：&lt;/label&gt;
+                        {(blogPost?.tags||[]).map((tag,i)=&gt;{
+
+                                //TODO a
+                                return (
+                                        &lt;span key={i} className={clsx('文章標籤',style['文章標籤'])}&gt;
+                                            {tag}
+                                        &lt;/span&gt;
+                                )
+                            })}
+                    &lt;/div&gt;
+                    
+                    &lt;ShareButton/&gt;
+                    
+                    &lt;div className={clsx('上下文章框-頂部',style['上下文章框-頂部'])}&gt;
+                        {
+                            prePostNextPost()
+                        }
+                    &lt;/div&gt;
 
 
+                &lt;/div&gt;
+
+
+                &lt;h3 className={clsx('文章標題',style['文章標題'])}&gt;{blogPost?.title}&lt;/h3&gt;
+                &lt;h5 className={clsx('文章副標題',style['文章副標題'])}&gt;{blogPost?.subtitle}&lt;/h5&gt;
+
+                &lt;div className={
+                    clsx(
+                        'ck-content',
+                        style['編輯器內容'],
+                        '編輯器內容'
+                    )}
+
+                    dangerouslySetInnerHTML={{ __html: blogPost?.content||'' }}
+                &gt;&lt;/div&gt;
+
+                &lt;div className={clsx('上下文章框-底部',style['上下文章框-底部'])}&gt;
+                    {
+                        prePostNextPost()
+                    }
+                &lt;/div&gt;
+
+                {blogPost?.uuid &amp;&amp; blogPost?.enable_comments !== false &amp;&amp;
+                    &lt;BlogPostComments blogPostUuid={blogPost.uuid} commentsCount={blogPost?.comments_count} /&gt;
+                }
+            
+
+
+            &lt;/div&gt;
+
+
+        &lt;/Fragment&gt;
+    )
+}
+
+export default _BlogPostDetail;
 </pre>
 <h2>src/components/component-instance/blog-post-detail/BlogPostDetail.module.scss</h2>
 <pre>

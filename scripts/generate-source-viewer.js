@@ -41,7 +41,7 @@ const components = [
     scss: ["src/components/component-instance/my-ckeditor/CKEditor.module.scss"] },
   { name: "product_detail", file: "src/components/component-instance/product-detail/ProductDetailClient.jsx",
     scss: ["src/components/component-instance/product-detail/ProductDetail.module.scss"] },
-  { name: "blog_post_detail", file: "src/components/component-instance/blog-post-detail/BlogPostDetailSSR.jsx",
+  { name: "blog_post_detail", file: "src/components/component-instance/blog-post-detail/_BlogPostDetail.jsx",
     scss: ["src/components/component-instance/blog-post-detail/BlogPostDetail.module.scss"] },
   { name: "blog_grid", file: "src/components/component-instance/BlogGrid.jsx",
     scss: ["src/components/component-instance/BlogGrid.module.scss"] },
@@ -78,6 +78,8 @@ const components = [
     scss: ["src/components/product/sub-components/ProductRating.module.scss"] },
   { name: "BlogPostComments", file: "src/components/component-instance/blog-post-detail/BlogPostComments.jsx",
     scss: ["src/components/component-instance/blog-post-detail/BlogPostComments.module.scss"] },
+  { name: "ShareButton", file: "src/components/component-instance/blog-post-detail/ShareButton.jsx",
+    scss: ["src/components/component-instance/blog-post-detail/ShareButton.module.scss"] },
 
 
 
