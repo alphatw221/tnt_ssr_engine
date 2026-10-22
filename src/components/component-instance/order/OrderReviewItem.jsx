@@ -10,6 +10,44 @@ const MAX_REVIEW_LENGTH = 2000
 const MAX_DISPLAY_NAME_LENGTH = 64
 const MAX_IMAGES = 5
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+const COMPRESS_MAX_DIMENSION = 1920
+const COMPRESS_QUALITY = 0.8
+
+//上傳前在前端壓縮：長邊縮到 COMPRESS_MAX_DIMENSION 內並轉成 JPEG
+//GIF 保留原檔避免動畫失效；瀏覽器無法解碼（例如部分 HEIC）或壓完反而變大時也回傳原檔
+const compressImage = (file) => new Promise((resolve) => {
+    if (!file.type.startsWith('image/') || file.type === 'image/gif') {
+        resolve(file)
+        return
+    }
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+        URL.revokeObjectURL(url)
+        const scale = Math.min(1, COMPRESS_MAX_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight))
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(img.naturalWidth * scale)
+        canvas.height = Math.round(img.naturalHeight * scale)
+        const ctx = canvas.getContext('2d')
+        //PNG 透明背景轉 JPEG 會變黑，先鋪白底
+        ctx.fillStyle = '#fff'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        canvas.toBlob((blob) => {
+            if (!blob || blob.size >= file.size) {
+                resolve(file)
+                return
+            }
+            const name = file.name.replace(/\.[^.]+$/, '') + '.jpg'
+            resolve(new File([blob], name, { type: 'image/jpeg', lastModified: Date.now() }))
+        }, 'image/jpeg', COMPRESS_QUALITY)
+    }
+    img.onerror = () => {
+        URL.revokeObjectURL(url)
+        resolve(file)
+    }
+    img.src = url
+})
 
 const ERROR_MESSAGES = {
     'order_not_found': '找不到這張訂單',
@@ -33,6 +71,7 @@ const OrderReviewItem = ({ item, orderUuid, guestUUID, defaultDisplayName, onCre
     const [displayName, setDisplayName] = useState(defaultDisplayName || '')
     const [images, setImages] = useState([])
     const [submitting, setSubmitting] = useState(false)
+    const [compressing, setCompressing] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
 
     //預覽用的 object URL 在移除圖片或卸載時釋放
@@ -42,15 +81,19 @@ const OrderReviewItem = ({ item, orderUuid, guestUUID, defaultDisplayName, onCre
         return () => imagesRef.current.forEach(image => URL.revokeObjectURL(image.preview))
     }, [])
 
-    const handleSelectImages = (e) => {
-        const files = Array.from(e.target.files || [])
+    const handleSelectImages = async (e) => {
+        const selectedFiles = Array.from(e.target.files || [])
         e.target.value = ''
-        if (files.some(file => file.size > MAX_IMAGE_SIZE)) {
-            setErrorMessage('每張圖片不能超過 5MB')
+        if (images.length + selectedFiles.length > MAX_IMAGES) {
+            setErrorMessage(ERROR_MESSAGES['too_many_images'])
             return
         }
-        if (images.length + files.length > MAX_IMAGES) {
-            setErrorMessage(ERROR_MESSAGES['too_many_images'])
+        setCompressing(true)
+        const files = await Promise.all(selectedFiles.map(compressImage))
+        setCompressing(false)
+        //大小限制以壓縮後為準，手機原圖超過 5MB 壓完通常就能上傳
+        if (files.some(file => file.size > MAX_IMAGE_SIZE)) {
+            setErrorMessage('每張圖片不能超過 5MB')
             return
         }
         setErrorMessage('')
@@ -171,6 +214,7 @@ const OrderReviewItem = ({ item, orderUuid, guestUUID, defaultDisplayName, onCre
                                 type="file"
                                 accept="image/*"
                                 multiple
+                                disabled={compressing}
                                 onChange={handleSelectImages}
                             />
                         }
@@ -183,9 +227,9 @@ const OrderReviewItem = ({ item, orderUuid, guestUUID, defaultDisplayName, onCre
                     <button
                         type="button"
                         className={clsx(style['評價表單-送出按鈕'], '評價表單-送出按鈕')}
-                        disabled={submitting}
+                        disabled={submitting || compressing}
                         onClick={handleSubmit}
-                    >{submitting ? '送出中…' : '送出評價'}</button>
+                    >{submitting ? '送出中…' : compressing ? '圖片處理中…' : '送出評價'}</button>
                 </div>
             }
         </div>
