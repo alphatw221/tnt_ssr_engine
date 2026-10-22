@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ProductReviews</title>
+</head>
+<body>
+<h1>ProductReviews</h1>
+<h2>src/components/component-instance/product-detail/ProductReviews.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import React, { useState, useEffect } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './ProductReviews.module.scss'
+import ProductRating2 from &quot;@/components/product/sub-components/ProductRating2&quot;
+import Paginator from '@/components/paginator/MyPaginator.jsx';
+import ProductReviewSummary from &quot;./ProductReviewSummary&quot;;
+import { customer_search_product_reviews } from &quot;@/api/product&quot;;
+
+const PAGE_SIZE = 10
+
+const ProductReviews = ({ productUuid, summary }) =&gt; {
+
+    const [reviews, setReviews] = useState([])
+    const [totalRecords, setTotalRecords] = useState(0)
+    const [page, setPage] = useState(1)
+
+    useEffect(() =&gt; {
+        setPage(1)
+    }, [productUuid])
+
+    useEffect(() =&gt; {
+        if (!productUuid) return
+        customer_search_product_reviews(productUuid, page, PAGE_SIZE).then(res =&gt; {
+            setReviews(res?.data?.results || [])
+            setTotalRecords(res?.data?.count || 0)
+        }).catch(() =&gt; {
+            setReviews([])
+            setTotalRecords(0)
+        })
+    }, [productUuid, page])
+
+    return (
+        &lt;div className={clsx(style['評價區框'], '評價區框')}&gt;
+            &lt;div className={clsx(style['評價區-標題框'], '評價區-標題框')}&gt;
+                &lt;h2 className={clsx(style['評價區-標題'], '評價區-標題')}&gt;商品評價&lt;/h2&gt;
+            &lt;/div&gt;
+
+            &lt;ProductReviewSummary summary={summary} /&gt;
+
+            {reviews.length === 0 ?
+                &lt;div className={clsx(style['評價區-無評價'], '評價區-無評價')}&gt;目前還沒有評價&lt;/div&gt;
+                :
+                &lt;div className={clsx(style['評價列表'], '評價列表')}&gt;
+                    {reviews.map((review) =&gt; (
+                        &lt;div className={clsx(style['單評價框'], '單評價框')} key={review?.uuid}&gt;
+                            &lt;div className={clsx(style['單評價-頭部'], '單評價-頭部')}&gt;
+                                &lt;span className={clsx(style['單評價-名稱'], '單評價-名稱')}&gt;{review?.display_name}&lt;/span&gt;
+                                &lt;span className={clsx(style['單評價-日期'], '單評價-日期')}&gt;{review?.created_at ? new Date(review.created_at).toLocaleDateString('en-CA') : ''}&lt;/span&gt;
+                            &lt;/div&gt;
+
+                            &lt;ProductRating2 ratingValue={review?.stars || 0} /&gt;
+
+                            {(review?.variant_names || []).length &gt; 0 &amp;&amp;
+                                &lt;div className={clsx(style['單評價-規格'], '單評價-規格')}&gt;
+                                    {review.variant_names.join('、')}
+                                &lt;/div&gt;
+                            }
+
+                            {review?.review &amp;&amp;
+                                &lt;p className={clsx(style['單評價-內容'], '單評價-內容')}&gt;{review.review}&lt;/p&gt;
+                            }
+
+                            {(review?.images || []).length &gt; 0 &amp;&amp;
+                                &lt;div className={clsx(style['單評價-圖片列表'], '單評價-圖片列表')}&gt;
+                                    {review.images.map((image) =&gt; (
+                                        &lt;a className={clsx(style['單評價-圖片框'], '單評價-圖片框')} key={image?.id} href={image?.image} target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;
+                                            &lt;img className={clsx(style['單評價-圖片'], '單評價-圖片')} alt=&quot;&quot; src={image?.image_s || image?.image} /&gt;
+                                        &lt;/a&gt;
+                                    ))}
+                                &lt;/div&gt;
+                            }
+
+                            {review?.reply_content &amp;&amp;
+                                &lt;div className={clsx(style['單評價-商家回覆框'], '單評價-商家回覆框')}&gt;
+                                    &lt;div className={clsx(style['單評價-商家回覆-頭部'], '單評價-商家回覆-頭部')}&gt;
+                                        &lt;span className={clsx(style['單評價-商家回覆-標題'], '單評價-商家回覆-標題')}&gt;商家回覆&lt;/span&gt;
+                                        &lt;span className={clsx(style['單評價-商家回覆-日期'], '單評價-商家回覆-日期')}&gt;{review?.replied_at ? new Date(review.replied_at).toLocaleDateString('en-CA') : ''}&lt;/span&gt;
+                                    &lt;/div&gt;
+                                    &lt;p className={clsx(style['單評價-商家回覆-內容'], '單評價-商家回覆-內容')}&gt;{review.reply_content}&lt;/p&gt;
+                                &lt;/div&gt;
+                            }
+                        &lt;/div&gt;
+                    ))}
+                &lt;/div&gt;
+            }
+
+            &lt;Paginator
+                totalRecords={totalRecords}
+                pageLimit={PAGE_SIZE}
+                pageNeighbours={2}
+                setOffset={() =&gt; {}}
+                currentPage={page}
+                setCurrentPage={setPage}
+                pagePrevText=&quot;«&quot;
+                pageNextText=&quot;»&quot;
+            /&gt;
+        &lt;/div&gt;
+    )
+};
+
+ProductReviews.propTypes = {
+    productUuid: PropTypes.string,
+    summary: PropTypes.object,
+};
+
+export default ProductReviews;
+</pre>
+<h2>src/components/component-instance/product-detail/ProductReviews.module.scss</h2>
+<pre>/* 評價摘要 */
+.評價摘要框 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.評價摘要-平均框 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.評價摘要-分布框 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 200px;
+}
+
+.單星等分布框 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.單星等分布-長條框 {
+    flex: 1;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.單星等分布-長條 {
+    height: 100%;
+    background: #f5a623;
+}
+
+/* 評價區 */
+.評價區框 {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 2px solid #ddd;
+}
+
+.評價列表 {
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.單評價框 {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.單評價-頭部 {
+    display: flex;
+    justify-content: space-between;
+}
+
+.單評價-日期,
+.單評價-規格 {
+    color: #888;
+    font-size: 0.875em;
+}
+
+.單評價-內容,
+.單評價-商家回覆-內容 {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.單評價-圖片列表 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.單評價-圖片 {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.單評價-商家回覆框 {
+    background: #f7f7f7;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.單評價-商家回覆-頭部 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875em;
+}
+
+.單評價-商家回覆-日期 {
+    color: #888;
+}
+
+.評價區-無評價 {
+    margin-top: 16px;
+    color: #888;
+}
+</pre>
+</body>
+</html>

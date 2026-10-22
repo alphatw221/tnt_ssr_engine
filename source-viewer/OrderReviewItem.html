@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>OrderReviewItem</title>
+</head>
+<body>
+<h1>OrderReviewItem</h1>
+<h2>src/components/component-instance/order/OrderReviewItem.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import React, { useState, useEffect, useRef } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './OrderReviews.module.scss'
+import ProductRating2 from &quot;@/components/product/sub-components/ProductRating2&quot;
+import StarInput from &quot;@/components/product/sub-components/StarInput&quot;
+import { customer_create_order_product_review } from &quot;@/api/product&quot;;
+
+const MAX_REVIEW_LENGTH = 2000
+const MAX_DISPLAY_NAME_LENGTH = 64
+const MAX_IMAGES = 5
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+
+const ERROR_MESSAGES = {
+    'order_not_found': '找不到這張訂單',
+    'order_not_reviewable': '訂單尚未付款或取貨，暫時不能評價',
+    'product_not_reviewable': '這個商品目前不開放評價',
+    'already_reviewed': '這個商品已經評價過了',
+    'stars_required': '請選擇星等',
+    'too_many_images': `圖片最多 ${MAX_IMAGES} 張`,
+    'field_required': '請填寫必填欄位',
+}
+
+const REVIEW_STATUS_LABELS = {
+    'pending': '審核中',
+    'hidden': '已隱藏',
+}
+
+const OrderReviewItem = ({ item, orderUuid, guestUUID, defaultDisplayName, onCreated }) =&gt; {
+
+    const [stars, setStars] = useState(0)
+    const [content, setContent] = useState('')
+    const [displayName, setDisplayName] = useState(defaultDisplayName || '')
+    const [images, setImages] = useState([])
+    const [submitting, setSubmitting] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
+
+    //預覽用的 object URL 在移除圖片或卸載時釋放
+    const imagesRef = useRef(images)
+    imagesRef.current = images
+    useEffect(() =&gt; {
+        return () =&gt; imagesRef.current.forEach(image =&gt; URL.revokeObjectURL(image.preview))
+    }, [])
+
+    const handleSelectImages = (e) =&gt; {
+        const files = Array.from(e.target.files || [])
+        e.target.value = ''
+        if (files.some(file =&gt; file.size &gt; MAX_IMAGE_SIZE)) {
+            setErrorMessage('每張圖片不能超過 5MB')
+            return
+        }
+        if (images.length + files.length &gt; MAX_IMAGES) {
+            setErrorMessage(ERROR_MESSAGES['too_many_images'])
+            return
+        }
+        setErrorMessage('')
+        setImages(prev =&gt; [...prev, ...files.map(file =&gt; ({ file, preview: URL.createObjectURL(file) }))])
+    }
+
+    const handleRemoveImage = (index) =&gt; {
+        URL.revokeObjectURL(images[index]?.preview)
+        setImages(prev =&gt; prev.filter((_, i) =&gt; i !== index))
+    }
+
+    const handleSubmit = () =&gt; {
+        if (!stars) {
+            setErrorMessage(ERROR_MESSAGES['stars_required'])
+            return
+        }
+        setSubmitting(true)
+        setErrorMessage('')
+        customer_create_order_product_review({
+            order_uuid: orderUuid,
+            product_uuid: item?.product?.uuid,
+            guest_uuid: guestUUID,
+            stars,
+            review: content,
+            display_name: displayName,
+            upload_images: images.map(image =&gt; image.file),
+        }).then(res =&gt; {
+            onCreated?.(res?.data)
+        }).catch(err =&gt; {
+            const message = err?.response?.data?.message
+            setErrorMessage(typeof message === 'string' ? (ERROR_MESSAGES[message] || '送出失敗，請稍後再試') : '請檢查輸入內容')
+        }).finally(() =&gt; {
+            setSubmitting(false)
+        })
+    }
+
+    const review = item?.review
+
+    return (
+        &lt;div className={clsx(style['單訂單評價框'], '單訂單評價框', review ? `${style['已評價']} 已評價` : '')}&gt;
+            &lt;div className={clsx(style['單訂單評價-商品框'], '單訂單評價-商品框')}&gt;
+                {item?.image &amp;&amp;
+                    &lt;img className={clsx(style['單訂單評價-商品圖片'], '單訂單評價-商品圖片')} alt=&quot;&quot; src={item.image} /&gt;
+                }
+                &lt;div className={clsx(style['單訂單評價-商品資訊'], '單訂單評價-商品資訊')}&gt;
+                    &lt;span className={clsx(style['單訂單評價-商品名稱'], '單訂單評價-商品名稱')}&gt;{item?.product?.name}&lt;/span&gt;
+                    {(item?.variant_names || []).length &gt; 0 &amp;&amp;
+                        &lt;span className={clsx(style['單訂單評價-商品規格'], '單訂單評價-商品規格')}&gt;{item.variant_names.join('、')}&lt;/span&gt;
+                    }
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            {review ?
+                &lt;div className={clsx(style['我的評價框'], '我的評價框')}&gt;
+                    {REVIEW_STATUS_LABELS[review?.status] &amp;&amp;
+                        &lt;span className={clsx(style['我的評價-狀態'], '我的評價-狀態', review.status)}&gt;{REVIEW_STATUS_LABELS[review.status]}&lt;/span&gt;
+                    }
+                    &lt;ProductRating2 ratingValue={review?.stars || 0} /&gt;
+                    {review?.review &amp;&amp;
+                        &lt;p className={clsx(style['我的評價-內容'], '我的評價-內容')}&gt;{review.review}&lt;/p&gt;
+                    }
+                    {(review?.images || []).length &gt; 0 &amp;&amp;
+                        &lt;div className={clsx(style['我的評價-圖片列表'], '我的評價-圖片列表')}&gt;
+                            {review.images.map((image) =&gt; (
+                                &lt;img className={clsx(style['我的評價-圖片'], '我的評價-圖片')} key={image?.id} alt=&quot;&quot; src={image?.image_s || image?.image} /&gt;
+                            ))}
+                        &lt;/div&gt;
+                    }
+                    {review?.reply_content &amp;&amp;
+                        &lt;div className={clsx(style['我的評價-商家回覆框'], '我的評價-商家回覆框')}&gt;
+                            &lt;span className={clsx(style['我的評價-商家回覆-標題'], '我的評價-商家回覆-標題')}&gt;商家回覆&lt;/span&gt;
+                            &lt;p className={clsx(style['我的評價-商家回覆-內容'], '我的評價-商家回覆-內容')}&gt;{review.reply_content}&lt;/p&gt;
+                        &lt;/div&gt;
+                    }
+                &lt;/div&gt;
+                :
+                &lt;div className={clsx(style['評價表單框'], '評價表單框')}&gt;
+                    &lt;div className={clsx(style['評價表單-星等框'], '評價表單-星等框')}&gt;
+                        &lt;label className={clsx(style['評價表單-標籤'], '評價表單-標籤')}&gt;評分&lt;/label&gt;
+                        &lt;StarInput value={stars} onChange={setStars} /&gt;
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx(style['評價表單-內容框'], '評價表單-內容框')}&gt;
+                        &lt;label className={clsx(style['評價表單-標籤'], '評價表單-標籤')}&gt;評價內容&lt;/label&gt;
+                        &lt;textarea
+                            className={clsx(style['評價表單-內容'], '評價表單-內容')}
+                            value={content}
+                            maxLength={MAX_REVIEW_LENGTH}
+                            onChange={(e) =&gt; setContent(e.target.value)}
+                        /&gt;
+                        &lt;span className={clsx(style['評價表單-字數'], '評價表單-字數')}&gt;{content.length}/{MAX_REVIEW_LENGTH}&lt;/span&gt;
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx(style['評價表單-名稱框'], '評價表單-名稱框')}&gt;
+                        &lt;label className={clsx(style['評價表單-標籤'], '評價表單-標籤')}&gt;顯示名稱&lt;/label&gt;
+                        &lt;input
+                            className={clsx(style['評價表單-名稱'], '評價表單-名稱')}
+                            type=&quot;text&quot;
+                            value={displayName}
+                            maxLength={MAX_DISPLAY_NAME_LENGTH}
+                            onChange={(e) =&gt; setDisplayName(e.target.value)}
+                        /&gt;
+                    &lt;/div&gt;
+
+                    &lt;div className={clsx(style['評價表單-圖片框'], '評價表單-圖片框')}&gt;
+                        &lt;label className={clsx(style['評價表單-標籤'], '評價表單-標籤')}&gt;圖片（最多 {MAX_IMAGES} 張）&lt;/label&gt;
+                        &lt;div className={clsx(style['評價表單-圖片列表'], '評價表單-圖片列表')}&gt;
+                            {images.map((image, i) =&gt; (
+                                &lt;div className={clsx(style['評價表單-單圖片框'], '評價表單-單圖片框')} key={image.preview}&gt;
+                                    &lt;img className={clsx(style['評價表單-圖片'], '評價表單-圖片')} alt=&quot;&quot; src={image.preview} /&gt;
+                                    &lt;button type=&quot;button&quot; className={clsx(style['評價表單-移除圖片按鈕'], '評價表單-移除圖片按鈕')} onClick={() =&gt; handleRemoveImage(i)}&gt;×&lt;/button&gt;
+                                &lt;/div&gt;
+                            ))}
+                        &lt;/div&gt;
+                        {images.length &lt; MAX_IMAGES &amp;&amp;
+                            &lt;input
+                                className={clsx(style['評價表單-上傳圖片'], '評價表單-上傳圖片')}
+                                type=&quot;file&quot;
+                                accept=&quot;image/*&quot;
+                                multiple
+                                onChange={handleSelectImages}
+                            /&gt;
+                        }
+                    &lt;/div&gt;
+
+                    {errorMessage &amp;&amp;
+                        &lt;div className={clsx(style['評價表單-錯誤訊息'], '評價表單-錯誤訊息')}&gt;{errorMessage}&lt;/div&gt;
+                    }
+
+                    &lt;button
+                        type=&quot;button&quot;
+                        className={clsx(style['評價表單-送出按鈕'], '評價表單-送出按鈕')}
+                        disabled={submitting}
+                        onClick={handleSubmit}
+                    &gt;{submitting ? '送出中…' : '送出評價'}&lt;/button&gt;
+                &lt;/div&gt;
+            }
+        &lt;/div&gt;
+    )
+};
+
+OrderReviewItem.propTypes = {
+    item: PropTypes.object,
+    orderUuid: PropTypes.string,
+    guestUUID: PropTypes.string,
+    defaultDisplayName: PropTypes.string,
+    onCreated: PropTypes.func,
+};
+
+export default OrderReviewItem;
+</pre>
+<h2>src/components/component-instance/order/OrderReviews.module.scss</h2>
+<pre>/* 訂單評價 */
+.訂單評價框 {
+    margin-top: 24px;
+}
+
+.訂單評價列表 {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.單訂單評價框 {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.單訂單評價-商品框 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.單訂單評價-商品圖片 {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+
+.單訂單評價-商品資訊 {
+    display: flex;
+    flex-direction: column;
+}
+
+.單訂單評價-商品規格,
+.評價表單-字數 {
+    color: #888;
+    font-size: 0.875em;
+}
+
+/* 表單 */
+.評價表單框,
+.我的評價框 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.評價表單-星等框,
+.評價表單-內容框,
+.評價表單-名稱框,
+.評價表單-圖片框 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.評價表單-內容 {
+    min-height: 100px;
+}
+
+.評價表單-圖片列表,
+.我的評價-圖片列表 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.評價表單-單圖片框 {
+    position: relative;
+}
+
+.評價表單-圖片,
+.我的評價-圖片 {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.評價表單-移除圖片按鈕 {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+}
+
+.評價表單-錯誤訊息 {
+    color: #d9534f;
+}
+
+.評價表單-送出按鈕 {
+    align-self: flex-start;
+}
+
+/* 已評價 */
+.我的評價-內容,
+.我的評價-商家回覆-內容 {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.我的評價-商家回覆框 {
+    background: #f7f7f7;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+</pre>
+</body>
+</html>

@@ -64,6 +64,20 @@ const components = [
     scss: ["src/components/guest-checkout-notification/order/GuestCheckoutNotification.module.scss"] },
   { name: "dynamic_route_element", file: "src/components/component-instance/DynamicRouteElement.jsx" },
   { name: "CartToast", file: "src/components/cart-toast/CartToast.jsx" },
+  { name: "OrderReviews", file: "src/components/component-instance/order/OrderReviews.jsx",
+    scss: ["src/components/component-instance/order/OrderReviews.module.scss"] },
+  { name: "OrderReviewItem", file: "src/components/component-instance/order/OrderReviewItem.jsx",
+    scss: ["src/components/component-instance/order/OrderReviews.module.scss"] },
+  { name: "StarInput", file: "src/components/product/sub-components/StarInput.jsx",
+    scss: ["src/components/product/sub-components/ProductRating.module.scss"] },
+  { name: "ProductReviews", file: "src/components/component-instance/product-detail/ProductReviews.jsx",
+    scss: ["src/components/component-instance/product-detail/ProductReviews.module.scss"] },
+  { name: "ProductReviewSummary", file: "src/components/component-instance/product-detail/ProductReviewSummary.jsx",
+    scss: ["src/components/component-instance/product-detail/ProductReviews.module.scss"] },
+  { name: "ProductRating2", file: "src/components/product/sub-components/ProductRating2.jsx",
+    scss: ["src/components/product/sub-components/ProductRating.module.scss"] },
+  { name: "BlogPostComments", file: "src/components/component-instance/blog-post-detail/BlogPostComments.jsx",
+    scss: ["src/components/component-instance/blog-post-detail/BlogPostComments.module.scss"] },
 
 
 

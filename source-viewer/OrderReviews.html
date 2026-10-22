@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>OrderReviews</title>
+</head>
+<body>
+<h1>OrderReviews</h1>
+<h2>src/components/component-instance/order/OrderReviews.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import React, { useState, useEffect } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './OrderReviews.module.scss'
+import OrderReviewItem from &quot;./OrderReviewItem&quot;;
+import { customer_get_order_review_items } from &quot;@/api/product&quot;;
+
+//訂單已付款且已取貨才顯示 會員與訪客打同一支 API 由後端判斷身份
+const OrderReviews = ({ order, guestUUID }) =&gt; {
+
+    const [items, setItems] = useState([])
+    const [defaultDisplayName, setDefaultDisplayName] = useState('')
+
+    const isReviewable = order?.payment_status === 'paid' &amp;&amp; order?.delivery_status === 'collected'
+
+    useEffect(() =&gt; {
+        if (!isReviewable || !order?.uuid) return
+        customer_get_order_review_items({ order_uuid: order.uuid, guest_uuid: guestUUID }).then(res =&gt; {
+            setItems(res?.data?.items || [])
+            setDefaultDisplayName(res?.data?.default_display_name || '')
+        }).catch(() =&gt; {
+            setItems([])
+        })
+    }, [isReviewable, order?.uuid, guestUUID])
+
+    const handleCreated = (productUuid, review) =&gt; {
+        setItems(prev =&gt; prev.map(item =&gt; item?.product?.uuid === productUuid ? { ...item, review } : item))
+    }
+
+    if (!isReviewable || items.length === 0) return null
+
+    return (
+        &lt;div className={clsx(style['訂單評價框'], '訂單評價框')}&gt;
+            &lt;div className={clsx(style['訂單評價標題框'], '訂單評價標題框')}&gt;
+                &lt;h3 className={clsx(style['訂單評價標題'], '訂單評價標題')}&gt;商品評價&lt;/h3&gt;
+            &lt;/div&gt;
+            &lt;div className={clsx(style['訂單評價列表'], '訂單評價列表')}&gt;
+                {items.map((item) =&gt; (
+                    &lt;OrderReviewItem
+                        key={item?.product?.uuid}
+                        item={item}
+                        orderUuid={order.uuid}
+                        guestUUID={guestUUID}
+                        defaultDisplayName={defaultDisplayName}
+                        onCreated={(review) =&gt; handleCreated(item?.product?.uuid, review)}
+                    /&gt;
+                ))}
+            &lt;/div&gt;
+        &lt;/div&gt;
+    )
+};
+
+OrderReviews.propTypes = {
+    order: PropTypes.object,
+    guestUUID: PropTypes.string,
+};
+
+export default OrderReviews;
+</pre>
+<h2>src/components/component-instance/order/OrderReviews.module.scss</h2>
+<pre>/* 訂單評價 */
+.訂單評價框 {
+    margin-top: 24px;
+}
+
+.訂單評價列表 {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.單訂單評價框 {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.單訂單評價-商品框 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.單訂單評價-商品圖片 {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+
+.單訂單評價-商品資訊 {
+    display: flex;
+    flex-direction: column;
+}
+
+.單訂單評價-商品規格,
+.評價表單-字數 {
+    color: #888;
+    font-size: 0.875em;
+}
+
+/* 表單 */
+.評價表單框,
+.我的評價框 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.評價表單-星等框,
+.評價表單-內容框,
+.評價表單-名稱框,
+.評價表單-圖片框 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.評價表單-內容 {
+    min-height: 100px;
+}
+
+.評價表單-圖片列表,
+.我的評價-圖片列表 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.評價表單-單圖片框 {
+    position: relative;
+}
+
+.評價表單-圖片,
+.我的評價-圖片 {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.評價表單-移除圖片按鈕 {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+}
+
+.評價表單-錯誤訊息 {
+    color: #d9534f;
+}
+
+.評價表單-送出按鈕 {
+    align-self: flex-start;
+}
+
+/* 已評價 */
+.我的評價-內容,
+.我的評價-商家回覆-內容 {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.我的評價-商家回覆框 {
+    background: #f7f7f7;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+</pre>
+</body>
+</html>

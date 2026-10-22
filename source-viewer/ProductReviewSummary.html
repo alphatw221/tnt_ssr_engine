@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ProductReviewSummary</title>
+</head>
+<body>
+<h1>ProductReviewSummary</h1>
+<h2>src/components/component-instance/product-detail/ProductReviewSummary.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import React from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './ProductReviews.module.scss'
+import ProductRating2 from &quot;@/components/product/sub-components/ProductRating2&quot;
+
+//評價摘要 會同時出現在商品資訊區與評價區 顯示方式交給自訂樣式表依外層框決定
+const ProductReviewSummary = ({ summary }) =&gt; {
+
+    if (!summary) return null
+
+    const count = summary?.count || 0
+
+    return (
+        &lt;div className={clsx(style['評價摘要框'], '評價摘要框')}&gt;
+            &lt;div className={clsx(style['評價摘要-平均框'], '評價摘要-平均框')}&gt;
+                &lt;span className={clsx(style['評價摘要-平均分數'], '評價摘要-平均分數')}&gt;{Number(summary?.average || 0).toFixed(1)}&lt;/span&gt;
+                &lt;ProductRating2 ratingValue={Number(summary?.average || 0)} /&gt;
+                &lt;span className={clsx(style['評價摘要-數量'], '評價摘要-數量')}&gt;{count} 則評價&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div className={clsx(style['評價摘要-分布框'], '評價摘要-分布框')}&gt;
+                {[5, 4, 3, 2, 1].map((star) =&gt; {
+                    const starCount = summary?.distribution?.[String(star)] || 0
+                    return (
+                        &lt;div className={clsx(style['單星等分布框'], '單星等分布框')} key={star}&gt;
+                            &lt;span className={clsx(style['單星等分布-星等'], '單星等分布-星等')}&gt;{star} 星&lt;/span&gt;
+                            &lt;div className={clsx(style['單星等分布-長條框'], '單星等分布-長條框')}&gt;
+                                &lt;div
+                                    className={clsx(style['單星等分布-長條'], '單星等分布-長條')}
+                                    style={{ width: `${count ? (starCount / count) * 100 : 0}%` }}
+                                &gt;&lt;/div&gt;
+                            &lt;/div&gt;
+                            &lt;span className={clsx(style['單星等分布-數量'], '單星等分布-數量')}&gt;{starCount}&lt;/span&gt;
+                        &lt;/div&gt;
+                    )
+                })}
+            &lt;/div&gt;
+        &lt;/div&gt;
+    )
+};
+
+ProductReviewSummary.propTypes = {
+    summary: PropTypes.object,
+};
+
+export default ProductReviewSummary;
+</pre>
+<h2>src/components/component-instance/product-detail/ProductReviews.module.scss</h2>
+<pre>/* 評價摘要 */
+.評價摘要框 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.評價摘要-平均框 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.評價摘要-分布框 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 200px;
+}
+
+.單星等分布框 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.單星等分布-長條框 {
+    flex: 1;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.單星等分布-長條 {
+    height: 100%;
+    background: #f5a623;
+}
+
+/* 評價區 */
+.評價區框 {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 2px solid #ddd;
+}
+
+.評價列表 {
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.單評價框 {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.單評價-頭部 {
+    display: flex;
+    justify-content: space-between;
+}
+
+.單評價-日期,
+.單評價-規格 {
+    color: #888;
+    font-size: 0.875em;
+}
+
+.單評價-內容,
+.單評價-商家回覆-內容 {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.單評價-圖片列表 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.單評價-圖片 {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.單評價-商家回覆框 {
+    background: #f7f7f7;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.單評價-商家回覆-頭部 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875em;
+}
+
+.單評價-商家回覆-日期 {
+    color: #888;
+}
+
+.評價區-無評價 {
+    margin-top: 16px;
+    color: #888;
+}
+</pre>
+</body>
+</html>

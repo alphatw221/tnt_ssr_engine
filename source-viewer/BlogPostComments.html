@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>BlogPostComments</title>
+</head>
+<body>
+<h1>BlogPostComments</h1>
+<h2>src/components/component-instance/blog-post-detail/BlogPostComments.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import React, { useState, useEffect } from &quot;react&quot;;
+import clsx from &quot;clsx&quot;;
+import style from './BlogPostComments.module.scss'
+import { useAppSelector } from &quot;@/redux/hooks&quot;;
+import Paginator from '@/components/paginator/MyPaginator.jsx';
+import { customer_search_blog_post_comments, customer_create_blog_post_comment } from '@/api/blog_post'
+
+const PAGE_SIZE = 10
+const MAX_CONTENT_LENGTH = 2000
+
+const ERROR_MESSAGES = {
+    'content_required': '請輸入留言內容',
+    'guest_name_and_email_required': '請填寫暱稱與 Email',
+    'comments_disabled': '這篇文章已關閉留言',
+    'blog_post_not_found': '找不到這篇文章',
+    'invalid_request': '送出失敗，請稍後再試',
+}
+
+const COMMENT_STATUS_LABELS = {
+    'pending': '審核中',
+    'hidden': '已隱藏',
+}
+
+const formatDate = (value) =&gt; value ? new Date(value).toLocaleDateString('en-CA') : ''
+
+//單則留言 頂層與回覆共用 回覆目前只有官方管理員
+const Comment = ({ comment, isReply }) =&gt; {
+    const isOfficial = Boolean(comment?.is_official)
+    return (
+        &lt;div className={clsx(
+            style['單留言框'], '單留言框',
+            isReply &amp;&amp; `${style['回覆']} 回覆`,
+            isOfficial &amp;&amp; `${style['官方']} 官方`,
+            comment?.is_mine &amp;&amp; `${style['我的']} 我的`,
+        )}&gt;
+            &lt;div className={clsx(style['單留言-頭部'], '單留言-頭部')}&gt;
+                &lt;span className={clsx(style['單留言-名稱'], '單留言-名稱')}&gt;{comment?.author_name}&lt;/span&gt;
+                {isOfficial &amp;&amp;
+                    &lt;span className={clsx(style['單留言-官方標籤'], '單留言-官方標籤')}&gt;官方&lt;/span&gt;
+                }
+                {comment?.is_mine &amp;&amp; COMMENT_STATUS_LABELS[comment?.status] &amp;&amp;
+                    &lt;span className={clsx(style['單留言-狀態'], '單留言-狀態', comment.status)}&gt;{COMMENT_STATUS_LABELS[comment.status]}&lt;/span&gt;
+                }
+                &lt;span className={clsx(style['單留言-日期'], '單留言-日期')}&gt;{formatDate(comment?.created_at)}&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;p className={clsx(style['單留言-內容'], '單留言-內容')}&gt;{comment?.content}&lt;/p&gt;
+
+            {(comment?.replies || []).length &gt; 0 &amp;&amp;
+                &lt;div className={clsx(style['回覆列表'], '回覆列表')}&gt;
+                    {comment.replies.map((reply) =&gt; (
+                        &lt;Comment comment={reply} isReply key={reply?.uuid} /&gt;
+                    ))}
+                &lt;/div&gt;
+            }
+        &lt;/div&gt;
+    )
+}
+
+const BlogPostComments = ({ blogPostUuid, commentsCount }) =&gt; {
+
+    const customer = useAppSelector((state) =&gt; state.customer);
+    const isCustomer = Boolean(customer?.uuid)
+
+    const [comments, setComments] = useState([])
+    const [totalRecords, setTotalRecords] = useState(0)
+    const [enableComments, setEnableComments] = useState(true)
+    const [page, setPage] = useState(1)
+    const [reloadKey, setReloadKey] = useState(0)
+
+    const [content, setContent] = useState('')
+    const [guestName, setGuestName] = useState('')
+    const [guestEmail, setGuestEmail] = useState('')
+    const [website, setWebsite] = useState('')
+    const [submitting, setSubmitting] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
+    const [noticeMessage, setNoticeMessage] = useState('')
+
+    useEffect(() =&gt; {
+        if (!blogPostUuid) return
+        customer_search_blog_post_comments({ blog_post_uuid: blogPostUuid, page, page_size: PAGE_SIZE }).then(res =&gt; {
+            setComments(res?.data?.results || [])
+            setTotalRecords(res?.data?.count || 0)
+            setEnableComments(res?.data?.enable_comments !== false)
+        }).catch(() =&gt; {
+            setComments([])
+            setTotalRecords(0)
+        })
+    }, [blogPostUuid, page, reloadKey, isCustomer])
+
+    const handleSubmit = () =&gt; {
+        if (!content.trim()) {
+            setErrorMessage(ERROR_MESSAGES['content_required'])
+            return
+        }
+        if (!isCustomer &amp;&amp; (!guestName.trim() || !guestEmail.trim())) {
+            setErrorMessage(ERROR_MESSAGES['guest_name_and_email_required'])
+            return
+        }
+        setSubmitting(true)
+        setErrorMessage('')
+        setNoticeMessage('')
+        customer_create_blog_post_comment({
+            blog_post_uuid: blogPostUuid,
+            content,
+            ...(isCustomer ? {} : { guest_name: guestName, guest_email: guestEmail }),
+            website,
+        }).then(res =&gt; {
+            setContent('')
+            setNoticeMessage(res?.data?.status === 'pending' ? '留言審核中，通過後就會顯示' : '留言成功')
+            setPage(1)
+            setReloadKey(key =&gt; key + 1)
+        }).catch(err =&gt; {
+            const message = err?.response?.data?.message
+            if (message === 'comments_disabled') setEnableComments(false)
+            setErrorMessage(typeof message === 'string' ? (ERROR_MESSAGES[message] || '送出失敗，請稍後再試') : '請檢查輸入內容')
+        }).finally(() =&gt; {
+            setSubmitting(false)
+        })
+    }
+
+    if (!enableComments) return null
+
+    return (
+        &lt;div className={clsx(style['留言區框'], '留言區框')}&gt;
+            &lt;div className={clsx(style['留言區-標題框'], '留言區-標題框')}&gt;
+                &lt;h3 className={clsx(style['留言區-標題'], '留言區-標題')}&gt;留言&lt;/h3&gt;
+                &lt;span className={clsx(style['留言區-數量'], '留言區-數量')}&gt;{commentsCount || 0}&lt;/span&gt;
+            &lt;/div&gt;
+
+            &lt;div className={clsx(style['留言表單框'], '留言表單框')}&gt;
+                {!isCustomer &amp;&amp;
+                    &lt;div className={clsx(style['留言表單-訪客資訊框'], '留言表單-訪客資訊框')}&gt;
+                        &lt;div className={clsx(style['留言表單-暱稱框'], '留言表單-暱稱框')}&gt;
+                            &lt;label className={clsx(style['留言表單-標籤'], '留言表單-標籤')}&gt;暱稱&lt;/label&gt;
+                            &lt;input
+                                className={clsx(style['留言表單-暱稱'], '留言表單-暱稱')}
+                                type=&quot;text&quot;
+                                value={guestName}
+                                onChange={(e) =&gt; setGuestName(e.target.value)}
+                            /&gt;
+                        &lt;/div&gt;
+                        &lt;div className={clsx(style['留言表單-信箱框'], '留言表單-信箱框')}&gt;
+                            &lt;label className={clsx(style['留言表單-標籤'], '留言表單-標籤')}&gt;Email（不會公開）&lt;/label&gt;
+                            &lt;input
+                                className={clsx(style['留言表單-信箱'], '留言表單-信箱')}
+                                type=&quot;email&quot;
+                                value={guestEmail}
+                                onChange={(e) =&gt; setGuestEmail(e.target.value)}
+                            /&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                }
+
+                {/* honeypot 用 CSS 藏起來 不能用 type=hidden 有值後端會判定為機器人 */}
+                &lt;div className={style['留言表單-網站框']} aria-hidden=&quot;true&quot;&gt;
+                    &lt;input
+                        type=&quot;text&quot;
+                        name=&quot;website&quot;
+                        tabIndex={-1}
+                        autoComplete=&quot;off&quot;
+                        value={website}
+                        onChange={(e) =&gt; setWebsite(e.target.value)}
+                    /&gt;
+                &lt;/div&gt;
+
+                &lt;div className={clsx(style['留言表單-內容框'], '留言表單-內容框')}&gt;
+                    &lt;textarea
+                        className={clsx(style['留言表單-內容'], '留言表單-內容')}
+                        value={content}
+                        maxLength={MAX_CONTENT_LENGTH}
+                        placeholder=&quot;寫下你的留言&quot;
+                        onChange={(e) =&gt; setContent(e.target.value)}
+                    /&gt;
+                    &lt;span className={clsx(style['留言表單-字數'], '留言表單-字數')}&gt;{content.length}/{MAX_CONTENT_LENGTH}&lt;/span&gt;
+                &lt;/div&gt;
+
+                {errorMessage &amp;&amp;
+                    &lt;div className={clsx(style['留言表單-錯誤訊息'], '留言表單-錯誤訊息')}&gt;{errorMessage}&lt;/div&gt;
+                }
+                {noticeMessage &amp;&amp;
+                    &lt;div className={clsx(style['留言表單-提示訊息'], '留言表單-提示訊息')}&gt;{noticeMessage}&lt;/div&gt;
+                }
+
+                &lt;button
+                    type=&quot;button&quot;
+                    className={clsx(style['留言表單-送出按鈕'], '留言表單-送出按鈕')}
+                    disabled={submitting}
+                    onClick={handleSubmit}
+                &gt;{submitting ? '送出中…' : '送出留言'}&lt;/button&gt;
+            &lt;/div&gt;
+
+            {comments.length === 0 ?
+                &lt;div className={clsx(style['留言區-無留言'], '留言區-無留言')}&gt;目前還沒有留言&lt;/div&gt;
+                :
+                &lt;div className={clsx(style['留言列表'], '留言列表')}&gt;
+                    {comments.map((comment) =&gt; (
+                        &lt;Comment comment={comment} key={comment?.uuid} /&gt;
+                    ))}
+                &lt;/div&gt;
+            }
+
+            &lt;Paginator
+                totalRecords={totalRecords}
+                pageLimit={PAGE_SIZE}
+                pageNeighbours={2}
+                setOffset={() =&gt; {}}
+                currentPage={page}
+                setCurrentPage={setPage}
+                pagePrevText=&quot;«&quot;
+                pageNextText=&quot;»&quot;
+            /&gt;
+        &lt;/div&gt;
+    )
+};
+
+BlogPostComments.propTypes = {
+    blogPostUuid: PropTypes.string,
+    commentsCount: PropTypes.number,
+};
+
+export default BlogPostComments;
+</pre>
+<h2>src/components/component-instance/blog-post-detail/BlogPostComments.module.scss</h2>
+<pre>/* 留言區 */
+.留言區框 {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 2px solid #ddd;
+}
+
+.留言區-標題框 {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+/* 表單 */
+.留言表單框 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.留言表單-訪客資訊框 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.留言表單-暱稱框,
+.留言表單-信箱框,
+.留言表單-內容框 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* honeypot 不給使用者看到 */
+.留言表單-網站框 {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.留言表單-內容 {
+    min-height: 100px;
+}
+
+.留言表單-字數,
+.單留言-日期 {
+    color: #888;
+    font-size: 0.875em;
+}
+
+.留言表單-錯誤訊息 {
+    color: #d9534f;
+}
+
+.留言表單-送出按鈕 {
+    align-self: flex-start;
+}
+
+/* 列表 */
+.留言列表 {
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.單留言框 {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.單留言-頭部 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.單留言-日期 {
+    margin-left: auto;
+}
+
+.單留言-內容 {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.回覆列表 {
+    display: flex;
+    flex-direction: column;
+    margin-left: 24px;
+}
+
+.回覆 {
+    padding: 8px 12px;
+    border-bottom: none;
+    background: #f7f7f7;
+    border-radius: 4px;
+}
+
+.留言區-無留言 {
+    margin-top: 16px;
+    color: #888;
+}
+</pre>
+</body>
+</html>

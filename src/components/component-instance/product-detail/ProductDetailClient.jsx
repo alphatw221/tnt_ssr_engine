@@ -402,10 +402,7 @@ const ProductDetailClient = ({
                             <h2 className={clsx(style['商品名稱'], '商品名稱',)}>{product?.name}</h2>
                         </div>
 
-                        {product?.enable_review && 
-                            <ProductReviewSummary summary={reviewSummary} />
-                        }
-
+                        
                         <div className={clsx(style['商品敘述框'], '商品敘述框',)}>
                             <p className={clsx(style['商品敘述'], '商品敘述',)} dangerouslySetInnerHTML={{__html: (product?.description||'').replace(/\n/g, "<br />")}}/>
                         </div>
@@ -684,6 +681,10 @@ const ProductDetailClient = ({
                                     )
                                 })}
                         </div>
+                        
+                        {product?.enable_review && 
+                            <ProductReviewSummary summary={reviewSummary} />
+                        }
 
                         {/* TODO */}
                         { product?.type=='compose' &&

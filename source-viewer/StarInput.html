@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>StarInput</title>
+</head>
+<body>
+<h1>StarInput</h1>
+<h2>src/components/product/sub-components/StarInput.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import React from &quot;react&quot;;
+
+import clsx from &quot;clsx&quot;;
+import style from &quot;./ProductRating.module.scss&quot;
+
+//可點選的星等輸入 只輸出結構與 class 星星外觀交給自訂樣式表 選到的星星帶有「激發」
+const StarInput = ({ value, onChange }) =&gt; {
+  return &lt;div className={clsx(style['星等輸入框'], '星等輸入框')}&gt;
+    {[1, 2, 3, 4, 5].map((star) =&gt; (
+      &lt;i
+        className={clsx(style['圖標'], '圖標', star &lt;= (value || 0) &amp;&amp; `${style['激發']} 激發`)}
+        key={star}
+        role=&quot;button&quot;
+        aria-label={`${star} 星`}
+        onClick={() =&gt; onChange?.(star)}
+      &gt;&lt;/i&gt;
+    ))}
+  &lt;/div&gt;;
+};
+
+StarInput.propTypes = {
+  value: PropTypes.number,
+  onChange: PropTypes.func,
+};
+
+export default StarInput;
+</pre>
+<h2>src/components/product/sub-components/ProductRating.module.scss</h2>
+<pre></pre>
+</body>
+</html>

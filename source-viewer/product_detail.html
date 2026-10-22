@@ -18,7 +18,9 @@ import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;
 import ComposeProductModal from &quot;@/components/product/ComposeProductModal&quot;
 import CartToast, { useCartToast } from &quot;@/components/cart-toast/CartToast&quot;
 // import AddonProductsModal from &quot;@/components/product/AddonProductsModal&quot;
-import ProductRating2 from &quot;@/components/product/sub-components/ProductRating2&quot;
+import ProductReviewSummary from &quot;./ProductReviewSummary&quot;
+import ProductReviews from &quot;./ProductReviews&quot;
+import { customer_get_product_review_summary } from &quot;@/api/product&quot;;
 import { isStockSufficient, getProductPrice } from &quot;@/lib/utils/productHelper&quot;;
 import { updateCartProduct, getCartProductsCount } from &quot;@/lib/utils/cartHelper&quot;;
 
@@ -90,6 +92,7 @@ const ProductDetailClient = ({
     const [defaultImage, setDefaultImage] = useState(null)
 
     const [selectedTabIndex, setSelectedTabIndex] = useState(0)
+    const [reviewSummary, setReviewSummary] = useState(null)
 
     const smallImageRefs = useRef([]);
     const variantType1Refs = useRef([]);
@@ -164,6 +167,18 @@ const ProductDetailClient = ({
         },[product])
 
 
+
+    useEffect(() =&gt; {
+        if (!product?.enable_review || !product?.uuid) {
+            setReviewSummary(null)
+            return
+        }
+        customer_get_product_review_summary(product.uuid).then(res =&gt; {
+            setReviewSummary(res?.data || null)
+        }).catch(() =&gt; {
+            setReviewSummary(null)
+        })
+    }, [product?.uuid, product?.enable_review])
 
     useEffect(() =&gt; {
         console.log('product detail')
@@ -396,10 +411,7 @@ const ProductDetailClient = ({
                             &lt;h2 className={clsx(style['商品名稱'], '商品名稱',)}&gt;{product?.name}&lt;/h2&gt;
                         &lt;/div&gt;
 
-                        {product?.enable_review &amp;&amp; (product?.stars_count||0) &gt; 0 &amp;&amp; 
-                            &lt;ProductRating2 ratingValue={(product?.stars_count||0)/(product?.reviews_count||1)} /&gt;   
-                        }
-
+                        
                         &lt;div className={clsx(style['商品敘述框'], '商品敘述框',)}&gt;
                             &lt;p className={clsx(style['商品敘述'], '商品敘述',)} dangerouslySetInnerHTML={{__html: (product?.description||'').replace(/\n/g, &quot;&lt;br /&gt;&quot;)}}/&gt;
                         &lt;/div&gt;
@@ -678,6 +690,10 @@ const ProductDetailClient = ({
                                     )
                                 })}
                         &lt;/div&gt;
+                        
+                        {product?.enable_review &amp;&amp; 
+                            &lt;ProductReviewSummary summary={reviewSummary} /&gt;
+                        }
 
                         {/* TODO */}
                         { product?.type=='compose' &amp;&amp;
@@ -766,6 +782,10 @@ const ProductDetailClient = ({
                     &lt;/div&gt; */}
                 &lt;/div&gt;
             &lt;/div&gt;  
+
+            {product?.enable_review &amp;&amp;
+                &lt;ProductReviews productUuid={product?.uuid} summary={reviewSummary} /&gt;
+            }
 
             {
                 (product?.relate_products||[]).length &gt;0 &amp;&amp;

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>ProductRating2</title>
+</head>
+<body>
+<h1>ProductRating2</h1>
+<h2>src/components/product/sub-components/ProductRating2.jsx</h2>
+<pre>import PropTypes from &quot;prop-types&quot;;
+import React from &quot;react&quot;;
+
+import clsx from &quot;clsx&quot;;
+import style from &quot;./ProductRating.module.scss&quot;
+
+//只輸出結構與 class 星星外觀交給自訂樣式表 亮起的星星帶有「激發」
+const ProductRating2 = ({ ratingValue }) =&gt; {
+  const filledCount = Math.floor(ratingValue || 0);
+
+  return &lt;div className={clsx(style['評分框'], '評分框')}&gt;
+    {[0, 1, 2, 3, 4].map((i) =&gt; (
+      &lt;i
+        className={clsx(style['圖標'], '圖標', i &lt; filledCount &amp;&amp; `${style['激發']} 激發`)}
+        key={i}
+      &gt;&lt;/i&gt;
+    ))}
+  &lt;/div&gt;;
+};
+
+ProductRating2.propTypes = {
+  ratingValue: PropTypes.number
+};
+
+export default ProductRating2;
+</pre>
+<h2>src/components/product/sub-components/ProductRating.module.scss</h2>
+<pre></pre>
+</body>
+</html>
