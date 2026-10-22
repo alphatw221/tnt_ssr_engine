@@ -1,15 +1,11 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef, Fragment } from "react";
 import styles from "./FileBrowser.module.scss";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { 
-    faFolder, faFile, faTh, faList, faSortAlphaDown, 
-    faSortAlphaUp, faMagnifyingGlass, faChevronRight, 
-    faFileVideo, faFileImage, faImage, faVideo, 
-    faEye,faEyeLowVision,faCopy,
-    faFileAudio, faFilePdf, faFileText, faFileCircleQuestion } from "@fortawesome/free-solid-svg-icons";
+import { Icons, FileTypeIcon, FolderIcon } from "./Icons.jsx";
 import { useDropzone } from "react-dropzone";
-import {user_upload_store_files, user_search_store_file, user_delete_store_files, user_update_store_file} from "@/api/store_file.js"
+import {user_upload_store_files, user_search_store_file, user_delete_store_files, user_update_store_file, user_move_store_files} from "@/api/store_file.js"
 import { createPortal } from "react-dom";
+import MoveDialog from "./MoveDialog.jsx";
+import Dialog from "./Dialog.jsx";
 
 const mockFiles = [
   { uuid: 1, name: "文件A.pdf", type: "application/pdf", created_at: "2023-05-01", is_folder: false },
@@ -66,22 +62,26 @@ const mimeTypes = {
 };
 
 
-function fileIconByType(type) {
+// 依檔案型別決定圖示 (kind) 與顏色 (scss 的 .tone-xxx)
+function fileKind(item) {
+    const type = item?.type || ''
+    if(item?.is_folder) return 'folder'
+    if(type.startsWith('image')) return 'image'
+    if(type.startsWith('video')) return 'video'
+    if(type.startsWith('audio')) return 'audio'
+    if(type === 'application/pdf') return 'pdf'
+    if(/zip|rar|7z|tar|gzip/.test(type)) return 'archive'
+    if(type.startsWith('text') || /json|xml|javascript/.test(type)) return 'text'
+    return 'default'
+}
 
-    if(type?.startsWith('image')){
-        return <FontAwesomeIcon icon={faFileImage} /> 
-    }else if(type?.startsWith('audio')){
-        return <FontAwesomeIcon icon={faFileAudio} /> 
-    }else if(type?.startsWith('video')){
-        return <FontAwesomeIcon icon={faFileVideo} /> 
-    }else if(type?.startsWith('text')){
-        return <FontAwesomeIcon icon={faFileText} />
-    }else if(type?.startsWith('application')){
-        return <FontAwesomeIcon icon={faFile} />
-    }
-
-    return <FontAwesomeIcon icon={faFileCircleQuestion} />
-    
+function FileIcon({ item, size }) {
+    const kind = fileKind(item)
+    return (
+        <span className={`${styles['file-icon']} ${styles['tone-'+kind]} ${size ? styles['file-icon-'+size] : ''}`}>
+            {kind === 'folder' ? <FolderIcon /> : <FileTypeIcon kind={kind} />}
+        </span>
+    )
 }
 
 
@@ -98,28 +98,72 @@ function formatBytes(bytes = 0) {
 }
 
 
-function formatDate(iso) {
+const dateTimeFormat = new Intl.DateTimeFormat('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+const dateFormat = new Intl.DateTimeFormat('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+
+function formatDate(iso, withTime = true) {
     if (!iso) return "-";
     const d = new Date(iso);
-    return d.toLocaleString();
+    if (isNaN(d)) return "-";
+    return (withTime ? dateTimeFormat : dateFormat).format(d);
+}
+
+// 簡單的 MIME → 好讀的型別名稱
+function formatType(item) {
+    if (item?.is_folder) return "資料夾";
+    const type = item?.type;
+    if (!type) return "未知";
+    const ext = Object.keys(mimeTypes).find(k => mimeTypes[k] === type);
+    return ext ? ext.slice(1).toUpperCase() : type;
 }
 
 
 
 
+// 記住上次的路徑 / 排序，下次打開時回到同樣的位置
+const STORAGE_KEYS = {
+    path: 'fileManagerPath',
+    sortKey: 'fileManagerSortKey',
+    sortOrder: 'fileManagerSortOrder',
+    layout: 'fileManagerLayout',
+}
+const SORT_KEYS = ['name', 'type', 'size', 'created_at'];
+const SORT_ORDERS = ['asc', 'desc'];
+
+// localStorage 可能不存在 (SSR / 無痕模式) 或內容損毀，失敗時回傳預設值
+function loadFromStorage(key, fallback, isValid) {
+    try {
+        const raw = window.localStorage.getItem(key);
+        if (raw === null) return fallback;
+        const value = JSON.parse(raw);
+        return isValid(value) ? value : fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+function saveToStorage(key, value) {
+    try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {}
+}
+
+
 export default function FileManager({actions, ...props}) {
-    const [layout, setLayout] = useState("grid"); // grid 或 list
-    const [path, setPath] = useState(JSON.parse(window?.localStorage?.getItem('fileManagerPath'))||[]);     //local storage
-    const [sortKey, setSortKey] = useState("name"); 
-    const [sortOrder, setSortOrder] = useState("asc");
+    const [layout, setLayout] = useState(() => loadFromStorage(STORAGE_KEYS.layout, "grid", v => ['grid', 'list'].includes(v)));
+    const [path, setPath] = useState(() => loadFromStorage(STORAGE_KEYS.path, [], v => Array.isArray(v) && v.every(p => p?.uuid)));
+    const [sortKey, setSortKey] = useState(() => loadFromStorage(STORAGE_KEYS.sortKey, "name", v => SORT_KEYS.includes(v)));
+    const [sortOrder, setSortOrder] = useState(() => loadFromStorage(STORAGE_KEYS.sortOrder, "asc", v => SORT_ORDERS.includes(v)));
     const [search, setSearch] = useState("");
-    const [selected, setSelected] = useState(new Set()); // 選取的 id
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [selected, setSelected] = useState(new Set()); // 選取的 uuid，刪除 / 編輯 / 移動都以此為準
+    const selectAnchorRef = useRef(null); // shift 範圍選取的起點 uuid
     const [items, setItems] = useState([]);   
     const [acceptedFiles, setAcceptedFiles] = useState([]);   
-    const [targetFile, setTargetFile] = useState(null);
     const [targetFileClone, setTargetFileClone] = useState(null);
     const [showUploadForm, setShowUploadForm] = useState(false);
     const [showUpdateForm, setShowUpdateForm] = useState(false);
+    const [showMoveDialog, setShowMoveDialog] = useState(false);
     const [processing, setProcessing] = useState(false);
 
     const [uploadIsPublic, setUploadIsPublic] = useState(true);
@@ -130,9 +174,31 @@ export default function FileManager({actions, ...props}) {
     const [tableContextMenuPos, setTableContextMenuPos] = useState(null); // {x, y} | null
     const tableContextMenuRef = useRef(null);
 
+    const [nextCursor, setNextCursor] = useState(null); // null 代表沒有下一頁
+    const loadingRef = useRef(false);
+    const requestIdRef = useRef(0);
+    const sentinelRef = useRef(null);
 
-    const savePathToLocalStorage = (path)=>{
-        window?.localStorage?.setItem('fileManagerPath', JSON.stringify(path))
+
+    useEffect(()=>{ saveToStorage(STORAGE_KEYS.path, path) },[path])
+    useEffect(()=>{ saveToStorage(STORAGE_KEYS.sortKey, sortKey) },[sortKey])
+    useEffect(()=>{ saveToStorage(STORAGE_KEYS.sortOrder, sortOrder) },[sortOrder])
+    useEffect(()=>{ saveToStorage(STORAGE_KEYS.layout, layout) },[layout])
+
+    // 右下角的短暫提示 (例如「已複製網址」)
+    const [toast, setToast] = useState(null);
+    const toastTimerRef = useRef(null);
+    const showToast = (message)=>{
+        setToast(message)
+        clearTimeout(toastTimerRef.current)
+        toastTimerRef.current = setTimeout(()=>setToast(null), 2000)
+    }
+    useEffect(()=>()=>clearTimeout(toastTimerRef.current),[])
+
+    const copyLink = (item)=>{
+        navigator.clipboard?.writeText(item?.public_file)
+            .then(()=>showToast('已複製網址'))
+            .catch(()=>showToast('複製失敗'))
     }
 
 
@@ -185,43 +251,95 @@ export default function FileManager({actions, ...props}) {
 
 
 
-    const sortedItems = useMemo(() => {
+    // 排序由後端處理 (分頁才會正確)，items 即為後端回傳的順序
 
-        const filtered = items.filter((item) => item.name.toLowerCase().includes(search.toLowerCase()));
+    const selectedItems = useMemo(() => items.filter(i => selected.has(i?.uuid)), [items, selected]);
+    const singleSelected = selectedItems.length === 1 ? selectedItems[0] : null;
 
+    // 從後端回傳的 next (完整網址或 cursor 字串) 取出 cursor
+    const getCursorFromNext = (next)=>{
+        if(!next) return null
+        try{
+            return new URL(next, window.location.origin).searchParams.get('cursor')
+        }catch(e){
+            return next
+        }
+    }
 
-        const comparator = (a, b) => {
-            const mul = sortOrder === "asc" ? 1 : -1;
-            // 資料夾永遠排在檔案前（像雲端硬碟）
-            if (a.is_folder && !b.is_folder) return -1;
-            if (!a.is_folder && b.is_folder) return 1;
+    const currentFolderUUID = path?.[path.length-1]?.uuid||''
 
-
-            if (sortKey === "name") return mul * a.name.localeCompare(b.name);
-            if (sortKey === "type") return mul * String(a.type || "").localeCompare(String(b.type || ""));
-            // if (sortKey === "size") return mul * ((a.size || 0) - (b.size || 0));
-            // if (sortKey === "modified") return mul * (new Date(a.modified || 0) - new Date(b.modified || 0));
-            return 0;
-        };
-
-
-        return [...filtered].sort(comparator);
-    }, [items, search, sortKey, sortOrder]);
-
-    useEffect(()=>{
+    const fetchItems = useCallback((cursor)=>{
+        const requestId = ++requestIdRef.current
+        loadingRef.current = true
         setProcessing(true)
         user_search_store_file({
             'store_uuid':actions?.getStoreUUID(),
-            'store_file_uuid':path?.[path.length-1]?.uuid||'',
-            'keyword':search,
+            'store_file_uuid':currentFolderUUID,
+            'keyword':debouncedSearch,
             'page_size':50,
-            'cursor':''
+            'cursor':cursor||'',
+            'order_by':sortKey,
+            'order':sortOrder,
         }).then(res=>{
-            console.log(res.data)
-            setItems(res.data?.results)
+            if(requestId !== requestIdRef.current) return   // 已切換資料夾、搜尋字或排序，丟棄舊回應
+            const results = res.data?.results||[]
+            setItems(prev=>{
+                if(!cursor) return results
+                // 剛新增 / 上傳的項目已經插入列表，翻到它所在的頁時不要重複
+                const exists = new Set(prev.map(i=>i?.uuid))
+                return [...prev, ...results.filter(i=>!exists.has(i?.uuid))]
+            })
+            setNextCursor(getCursorFromNext(res.data?.next))
+
+            // 資料夾可能已被移動 / 改名，以後端回傳的實際路徑為準
+            const folderPath = res.data?.folder_path
+            if(!cursor && Array.isArray(folderPath)){
+                setPath(prev=>{
+                    const same = prev.length===folderPath.length && prev.every((p, i)=>p?.uuid===folderPath[i]?.uuid && p?.name===folderPath[i]?.name)
+                    return same ? prev : folderPath
+                })
+            }
+        }).catch(err=>{
+            if(requestId !== requestIdRef.current) return
+            setNextCursor(null)
+            // 記住的資料夾已被刪除 → 回到根目錄
+            const message = err?.response?.data?.message
+            if(currentFolderUUID && ['folder_not_found', 'invalid store file uuid'].includes(message)){
+                setPath([])
+            }else{
+                alert('錯誤')
+            }
+        }).finally(()=>{
+            if(requestId !== requestIdRef.current) return
+            loadingRef.current = false
             setProcessing(false)
-        }).catch(err=>{setProcessing(false)})
-    },[path])
+        })
+    },[currentFolderUUID, debouncedSearch, sortKey, sortOrder, actions])
+
+    // 輸入停止 300ms 後才送出搜尋
+    useEffect(()=>{
+        const timer = setTimeout(()=>setDebouncedSearch(search.trim()), 300)
+        return ()=>clearTimeout(timer)
+    },[search])
+
+    useEffect(()=>{
+        setNextCursor(null)
+        clearSelection()
+        fetchItems('')
+    },[currentFolderUUID, debouncedSearch, sortKey, sortOrder])  // 只看目前資料夾的 uuid，路徑校正 (改名 / 移動) 不會重新載入
+
+    // 滑到底 (sentinel 進入可視範圍) 時載入下一頁
+    useEffect(()=>{
+        const sentinel = sentinelRef.current
+        if(!sentinel || !nextCursor) return
+        const observer = new IntersectionObserver((entries)=>{
+            if(entries[0]?.isIntersecting && !loadingRef.current){
+                fetchItems(nextCursor)
+            }
+        }, { rootMargin: '200px' })
+        observer.observe(sentinel)
+        return ()=>observer.disconnect()
+    },[nextCursor, fetchItems])
 
     // 當檔案被拖放進來
     const onDrop = useCallback((acceptedFiles) => {
@@ -245,7 +363,7 @@ export default function FileManager({actions, ...props}) {
             'formData':formData
         }).then(res=>{
             console.log(res.data)
-            setItems([...items, ...res.data])
+            setItems(prev=>[...res.data, ...prev])  // 放在最前面，items 會再把資料夾 / 檔案分開
             setProcessing(false)
         }).catch(err=>{setProcessing(false)})
     }
@@ -260,27 +378,51 @@ export default function FileManager({actions, ...props}) {
     const onEnterFolder = (store_file) => {
         if(store_file?.is_folder){
             setPath([...path, store_file])
-            savePathToLocalStorage([...path, store_file])
-            setSelected(new Set());
         }
     };
 
 
     const onBreadcrumbClick = (index) => {
         setPath(path?.slice(0, index))
-        savePathToLocalStorage(path?.slice(0, index))
-        setSelected(new Set());
-        setTargetFile(null)
     };
 
 
     const toggleSelect = (uuid) => {
+        selectAnchorRef.current = uuid
         setSelected((prev) => {
             const next = new Set(prev);
             if (next.has(uuid)) next.delete(uuid);
             else next.add(uuid);
             return next;
         });
+    };
+
+    // 單擊: 只選這個 / Cmd(Ctrl)+單擊: 加選或取消 / Shift+單擊: 範圍選取
+    const onItemClick = (e, item) => {
+        e.stopPropagation()
+        if(e.metaKey || e.ctrlKey){
+            toggleSelect(item.uuid)
+            return
+        }
+        const anchorIndex = items.findIndex(i=>i?.uuid===selectAnchorRef.current)
+        if(e.shiftKey && anchorIndex>=0){
+            const index = items.findIndex(i=>i?.uuid===item.uuid)
+            const [start, end] = anchorIndex<index ? [anchorIndex, index] : [index, anchorIndex]
+            setSelected(new Set(items.slice(start, end+1).map(i=>i.uuid)))
+            return
+        }
+        selectAnchorRef.current = item.uuid
+        setSelected(new Set([item.uuid]))
+    };
+
+    // 在未選取的項目上按右鍵 → 只選它；在已選取的項目上按右鍵 → 保留目前的選取
+    const onItemContextMenu = (e, item) => {
+        e.stopPropagation()
+        if(!selected.has(item.uuid)){
+            selectAnchorRef.current = item.uuid
+            setSelected(new Set([item.uuid]))
+        }
+        handleContextMenu(e)
     };
 
     const createFolder = ()=>{
@@ -296,22 +438,28 @@ export default function FileManager({actions, ...props}) {
             'formData':formData
         }).then(res=>{
             console.log(res.data)
-            setItems([...items, ...res.data])
+            setItems(prev=>[...res.data, ...prev])  // 放在最前面，items 會再把資料夾 / 檔案分開
             setProcessing(false)
         }).catch(err=>{setProcessing(false)})
     }
-    const clearSelection = () => setSelected(new Set());
+    const clearSelection = () => {
+        selectAnchorRef.current = null
+        setSelected(new Set())
+    };
 
     const deleteStoreFiles = ()=>{
+        const deleteUUIDs = selectedItems.map(i=>i.uuid)
+        if(deleteUUIDs.length<1) return
 
-        if(confirm('確認刪除')){
+        if(confirm(deleteUUIDs.length===1 ? `確認刪除「${selectedItems[0]?.name}」` : `確認刪除 ${deleteUUIDs.length} 個項目`)){
             setProcessing(true)
             user_delete_store_files({
                 'store_uuid':actions?.getStoreUUID(),
-                'store_file_uuids': Array.from(selected).length>0 ? Array.from(selected) : [targetFile?.uuid],
+                'store_file_uuids': deleteUUIDs,
                 
             }).then(res=>{
-                setItems(items?.filter(i=>i?.uuid!=targetFile?.uuid || !selected.has(i?.uuid)))
+                const deleted = new Set(deleteUUIDs)
+                setItems(prev=>prev.filter(i=>!deleted.has(i?.uuid)))
                 clearSelection()
                 setProcessing(false)
             }).catch(err=>{setProcessing(false)})
@@ -325,362 +473,465 @@ export default function FileManager({actions, ...props}) {
             'store_file_uuid': targetFileClone?.uuid,
             'data':targetFileClone,
         }).then(res=>{
-            setItems(items?.map(i=>i?.uuid==res?.data?.uuid ? res?.data : i))
+            setItems(prev=>prev.map(i=>i?.uuid==res?.data?.uuid ? res?.data : i))
             setProcessing(false)
         }).catch(err=>{setProcessing(false)})
     }
 
+    const moveStoreFiles = (targetFolder)=>{
+        const moveUUIDs = selectedItems.map(i=>i.uuid)
+        setShowMoveDialog(false)
+        if(moveUUIDs.length<1) return
+
+        setProcessing(true)
+        user_move_store_files({
+            'store_uuid':actions?.getStoreUUID(),
+            'store_file_uuids':moveUUIDs,
+            'target_folder_uuid':targetFolder?.uuid||null,
+        }).then(res=>{
+            // 移走的項目已不在目前資料夾
+            const moved = new Set(moveUUIDs)
+            setItems(prev=>prev.filter(i=>!moved.has(i?.uuid)))
+            clearSelection()
+            setProcessing(false)
+        }).catch(err=>{setProcessing(false)})
+    }
+
+    const currentFolderName = path?.[path.length-1]?.name || '根目錄'
+    const allSelected = items.length>0 && selectedItems.length===items.length
+    const loadingMore = processing && items.length>0 && !!nextCursor
+
+    // 列表表頭點擊排序：同欄位切換升降冪，換欄位從升冪開始
+    const onHeaderSort = (key)=>{
+        if(sortKey===key){
+            setSortOrder(o=>o==='asc' ? 'desc' : 'asc')
+        }else{
+            setSortKey(key)
+            setSortOrder('asc')
+        }
+    }
+    // 一般函式 (不是元件)，避免每次 render 都產生新的元件型別造成重新掛載
+    const sortHeader = (sortBy, label, className)=>(
+        <th className={className}>
+            <button type="button" className={`${styles['th-sort']} ${sortKey===sortBy ? styles['active'] : ''}`} onClick={()=>onHeaderSort(sortBy)}>
+                {label}
+                {sortKey===sortBy && (sortOrder==='asc' ? <Icons.ChevronUp /> : <Icons.ChevronDown />)}
+            </button>
+        </th>
+    )
+
+    // 列表 / 網格共用的點擊、右鍵、雙擊
+    const itemHandlers = (it)=>({
+        onClick: (e)=>onItemClick(e, it),
+        onContextMenu: (e)=>onItemContextMenu(e, it),
+        onDoubleClick: ()=>onEnterFolder(it),
+    })
+
+    const itemCheckbox = (it)=>(
+        <label className={styles['checkbox']} onClick={(e)=>e.stopPropagation()} onDoubleClick={(e)=>e.stopPropagation()}>
+            <input
+                type="checkbox"
+                checked={selected.has(it.uuid)}
+                onChange={()=>toggleSelect(it.uuid)}
+                aria-label={`選取 ${it.name}`}
+            />
+            <span className={styles['checkbox-box']}><Icons.Check /></span>
+        </label>
+    )
+
+    const btn = (variant)=>`${styles['btn']} ${styles['btn-'+variant]}`
+
     return (
     <div className={styles['fileManager']}>
 
-        <div className={`${styles['spinner']} ${processing?styles['show']:''}`}></div>
-        <div className={`${styles['upload-form']} ${showUploadForm?styles['show']:''}`}>
-            <div className={styles['public']}>
-                <label >資源公開:</label>
-                <select
-                        value={uploadIsPublic ? "true" : "false"}
-                        onChange={(e) => setUploadIsPublic(e.target.value === "true")}
-                >
-                        <option value="true">公開</option>
-                        <option value="false">不公開</option>
-                </select>
-            </div>
-            <div className={styles['actions']}>
-                <button type="button" className={styles['cancel']} onClick={()=>{setShowUploadForm(false)}}>取消</button>
-                <button type="button" className={styles['confirm']} onClick={()=>{uploadAcceptedFiles()}}>確認</button>
-            </div>
-        </div>
-        <div className={`${styles['update-form']} ${showUpdateForm?styles['show']:''}`}>
-
-            <div className={styles['file-name']}>
-                <label >名稱:</label>
-                <input
-                        value={targetFileClone?.name||''}
-                        type='text'
-                        onChange={(e) => setTargetFileClone({...targetFileClone, name:e.target.value})}
-                />
-            </div>
-            <div className={styles['file-description']}>
-                <label >敘述:</label>
-                <input
-                        value={targetFileClone?.description||''}
-                        type='text'
-                        onChange={(e) => setTargetFileClone({...targetFileClone, description:e.target.value})}
-                />
-            </div>
-            <div className={styles['actions']}>
-                <button type="button" className={styles['cancel']} onClick={()=>{setShowUpdateForm(false)}}>取消</button>
-                <button type="button" className={styles['confirm']} onClick={()=>{setShowUpdateForm(false); updateTargetFile()}}>更新</button>
-            </div>
-        </div>
-
-
-
-        {/* 自訂 Context Menu */}
-        {itemContextMenuPos && createPortal(
-            <ul
-                ref={itemContextMenuRef}
-                style={{
-                    position: "fixed",
-                    top: itemContextMenuPos.y,
-                    left: itemContextMenuPos.x,
-                    background: "white",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    padding: "5px 0",
-                    listStyle: "none",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                    zIndex: 1000,
-                }}
+        {/* 上傳確認 */}
+        {showUploadForm &&
+            <Dialog
+                title="上傳檔案"
+                onClose={()=>setShowUploadForm(false)}
+                footer={
+                    <>
+                        <button type="button" className={btn('secondary')} onClick={()=>setShowUploadForm(false)}>取消</button>
+                        <button type="button" className={btn('primary')} onClick={uploadAcceptedFiles} disabled={(acceptedFiles||[]).length<1}>
+                            上傳 {(acceptedFiles||[]).length} 個檔案
+                        </button>
+                    </>
+                }
             >
-                {
-                    !targetFile &&
-                    <li
-                        style={{ padding: "8px 16px", cursor: "pointer" }}
-                        onClick={() => { setItemContextMenuPos(null); createFolder()}}
-                    >
-                        📂 新增資料夾
-                    </li>
+                <p className={styles['dialog-text']}>上傳至「{currentFolderName}」</p>
+                <ul className={styles['upload-list']}>
+                    {(acceptedFiles||[]).slice(0, 5).map((f, i)=>(
+                        <li key={i}>
+                            <FileIcon item={{type: f.type}} />
+                            <span className={styles['upload-list-name']} title={f.name}>{f.name}</span>
+                            <span className={styles['upload-list-size']}>{formatBytes(f.size)}</span>
+                        </li>
+                    ))}
+                    {(acceptedFiles||[]).length>5 &&
+                        <li className={styles['upload-list-more']}>以及其他 {(acceptedFiles||[]).length-5} 個檔案</li>
+                    }
+                </ul>
+
+                <div className={styles['field-label']}>存取權限</div>
+                <div className={styles['visibility-options']}>
+                    {[
+                        {value: true, icon: Icons.Globe, title: '公開', desc: '任何拿到網址的人都能檢視'},
+                        {value: false, icon: Icons.Lock, title: '不公開', desc: '只能在後台使用'},
+                    ].map(o=>(
+                        <label key={String(o.value)} className={`${styles['visibility-option']} ${uploadIsPublic===o.value ? styles['active'] : ''}`}>
+                            <input type="radio" name="upload-visibility" checked={uploadIsPublic===o.value} onChange={()=>setUploadIsPublic(o.value)} />
+                            <o.icon />
+                            <span>
+                                <strong>{o.title}</strong>
+                                <small>{o.desc}</small>
+                            </span>
+                        </label>
+                    ))}
+                </div>
+            </Dialog>
+        }
+
+        {/* 編輯名稱 / 敘述 */}
+        {showUpdateForm &&
+            <Dialog
+                title="編輯"
+                onClose={()=>setShowUpdateForm(false)}
+                footer={
+                    <>
+                        <button type="button" className={btn('secondary')} onClick={()=>setShowUpdateForm(false)}>取消</button>
+                        <button type="submit" form="file-update-form" className={btn('primary')} disabled={!targetFileClone?.name?.trim()}>儲存</button>
+                    </>
                 }
-                {
-                    !targetFile &&
-                    <li
-                        style={{ padding: "8px 16px", cursor: "pointer" }}
-                        onClick={() => { setItemContextMenuPos(null); open()}}
-                    >
-                        📄 上傳檔案
-                    </li>
+            >
+                <form id="file-update-form" className={styles['form']} onSubmit={(e)=>{e.preventDefault(); setShowUpdateForm(false); updateTargetFile()}}>
+                    <label className={styles['field']}>
+                        <span className={styles['field-label']}>名稱</span>
+                        <input
+                            className={styles['input']}
+                            value={targetFileClone?.name||''}
+                            type='text'
+                            maxLength={128}
+                            autoFocus
+                            onChange={(e) => setTargetFileClone({...targetFileClone, name:e.target.value})}
+                        />
+                    </label>
+                    <label className={styles['field']}>
+                        <span className={styles['field-label']}>敘述</span>
+                        <textarea
+                            className={styles['input']}
+                            value={targetFileClone?.description||''}
+                            rows={3}
+                            maxLength={255}
+                            placeholder="選填"
+                            onChange={(e) => setTargetFileClone({...targetFileClone, description:e.target.value})}
+                        />
+                    </label>
+                </form>
+            </Dialog>
+        }
+
+        {showMoveDialog &&
+            <MoveDialog
+                actions={actions}
+                movingItems={selectedItems}
+                currentPath={path}
+                onCancel={()=>setShowMoveDialog(false)}
+                onConfirm={moveStoreFiles}
+            />
+        }
+
+        {/* 右鍵選單 */}
+        {itemContextMenuPos && createPortal(
+            <div
+                ref={itemContextMenuRef}
+                className={styles['context-menu']}
+                style={{ top: itemContextMenuPos.y, left: itemContextMenuPos.x }}
+                onContextMenu={(e)=>e.preventDefault()}
+            >
+                {selectedItems.length===0 && <>
+                    <button type="button" onClick={() => { setItemContextMenuPos(null); createFolder()}}>
+                        <Icons.FolderPlus /> 新增資料夾
+                    </button>
+                    <button type="button" onClick={() => { setItemContextMenuPos(null); open()}}>
+                        <Icons.Upload /> 上傳檔案
+                    </button>
+                </>}
+                {singleSelected?.is_folder &&
+                    <button type="button" onClick={() => {setItemContextMenuPos(null); onEnterFolder(singleSelected)}}>
+                        <Icons.FolderOpen /> 開啟
+                    </button>
                 }
-                {
-                    Array.from(selected).length<=0 && targetFile?.is_folder &&
-                    <li
-                        style={{ padding: "8px 16px", cursor: "pointer" }}
-                        onClick={() => {setItemContextMenuPos(null); setPath([...path, targetFile]); savePathToLocalStorage([...path, targetFile])}}
-                    >
-                        📂 開啟
-                    </li>
+                {singleSelected && !singleSelected.is_folder && singleSelected.is_public &&
+                    <button type="button" onClick={() => {setItemContextMenuPos(null); copyLink(singleSelected)}}>
+                        <Icons.Link /> 複製網址
+                    </button>
                 }
-                {
-                    Array.from(selected).length<=0 && targetFile &&
-                    <li
-                        style={{ padding: "8px 16px", cursor: "pointer" }}
-                        onClick={() => {console.log(targetFile); setItemContextMenuPos(null); setTargetFileClone(JSON.parse(JSON.stringify(targetFile))); setShowUpdateForm(true);}}
-                    >
-                        ✏️ 編輯
-                    </li>
+                {singleSelected &&
+                    <button type="button" onClick={() => {setItemContextMenuPos(null); setTargetFileClone(JSON.parse(JSON.stringify(singleSelected))); setShowUpdateForm(true);}}>
+                        <Icons.Pen /> 編輯
+                    </button>
                 }
-                {
-                    targetFile &&
-                    <li
-                        style={{ padding: "8px 16px", cursor: "pointer", color: "red" }}
-                        onClick={() => {setItemContextMenuPos(null); deleteStoreFiles()}}
-                    >
-                        🗑️ 刪除
-                    </li>
-                }
-               
-            </ul>
+                {selectedItems.length>0 && <>
+                    <button type="button" onClick={() => {setItemContextMenuPos(null); setShowMoveDialog(true)}}>
+                        <Icons.Move /> 移動{selectedItems.length>1 ? ` ${selectedItems.length} 個項目` : ''}
+                    </button>
+                    <div className={styles['context-menu-divider']} />
+                    <button type="button" className={styles['danger']} onClick={() => {setItemContextMenuPos(null); deleteStoreFiles()}}>
+                        <Icons.Trash /> 刪除{selectedItems.length>1 ? ` ${selectedItems.length} 個項目` : ''}
+                    </button>
+                </>}
+            </div>
         , document.body)}
-
-
 
 
         {/* Toolbar */}
         <div className={styles['toolbar']}>
-            {/* Search */}
-            <div className={styles['searchBox']}>
-                <FontAwesomeIcon icon={faMagnifyingGlass} /> 
+            <div className={styles['search-box']}>
+                <Icons.Search />
                 <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="搜尋當前資料夾"
-
+                    placeholder={`在「${currentFolderName}」中搜尋`}
                 />
+                {search &&
+                    <button type="button" className={styles['icon-button']} onClick={()=>setSearch('')} aria-label="清除搜尋">
+                        <Icons.Close />
+                    </button>
+                }
             </div>
 
-            <div className={styles['viewToggle']}>
-                 <button
-                    
-                    onClick={() => setLayout("grid")}
-                    title="Grid view"
-                >
-                    <FontAwesomeIcon icon={faTh} />
+            <div className={styles['toolbar-group']}>
+                <div className={styles['segmented']}>
+                    <select
+                        value={sortKey}
+                        onChange={(e) => setSortKey(e.target.value)}
+                        title="排序依據"
+                    >
+                        <option value="name">名稱</option>
+                        <option value="type">型別</option>
+                        <option value="size">大小</option>
+                        <option value="created_at">建立日期</option>
+                    </select>
+                    <button
+                        type="button"
+                        onClick={() => setSortOrder((o) => (o === "asc" ? "desc" : "asc"))}
+                        title={sortOrder === "asc" ? "升冪" : "降冪"}
+                    >
+                        {sortOrder === "asc" ? <Icons.SortAsc /> : <Icons.SortDesc />}
+                    </button>
+                </div>
+
+                <div className={styles['segmented']}>
+                    <button type="button" className={layout==='grid' ? styles['active'] : ''} onClick={() => setLayout("grid")} title="網格檢視">
+                        <Icons.Grid />
+                    </button>
+                    <button type="button" className={layout==='list' ? styles['active'] : ''} onClick={() => setLayout("list")} title="清單檢視">
+                        <Icons.List />
+                    </button>
+                </div>
+
+                <span className={styles['toolbar-divider']} />
+
+                <button type="button" className={btn('secondary')} onClick={createFolder} disabled={processing}>
+                    <Icons.FolderPlus /> 新增資料夾
                 </button>
-                <button
-                    
-                    onClick={() => setLayout("list")}
-                    title="List view"
-                >
-                    <FontAwesomeIcon icon={faList} /> 
+                <button type="button" className={btn('primary')} onClick={open}>
+                    <Icons.Upload /> 上傳
                 </button>
             </div>
-           
-
-
-            {/* Sort */}
-            <div className={styles['sortBox']}>
-                <select
-                    value={sortKey}
-                    onChange={(e) => setSortKey(e.target.value)}
-                    title="Sort by"
-                >
-                    <option value="name">名稱</option>
-                    <option value="type">型別</option>
-                    <option value="size">大小</option>
-                    <option value="is_public">公開</option>
-                    <option value="is_folder">資料夾</option>
-                    <option value="updated_at">日期</option>
-                </select>
-                <button
-                    onClick={() => setSortOrder((o) => (o === "asc" ? "desc" : "asc"))}
-                    title="排序"
-                >
-                    <FontAwesomeIcon icon={sortOrder === "asc" ? faSortAlphaDown : faSortAlphaUp} />
-                </button>
-            </div>
-
-            <button type="button" onClick={open} title="上傳檔案">
-                📄 上傳
-            </button>
-           
         </div>
 
 
-
-        {/* Breadcrumb */}
-        <nav className={styles['breadcrumb']}>
-            <label>路徑:</label>
-            <div >
-                <button
-                    className={styles['directory']}
-                    onClick={() => onBreadcrumbClick(0)}
-                    title='根目錄'
-                >
-                    根目錄
-                </button> 
-                {path.length>0 && <FontAwesomeIcon icon={faChevronRight} /> }
-            </div>
-
-            {
-                path.map((p, i) => {
-                    const isLast = i === path.length - 1;
-                    return (
-                        <div key={i} >
+        {/* 路徑 / 已選取的操作列 */}
+        <div className={styles['subbar']}>
+            {selectedItems.length>0
+                ?
+                <div className={styles['selection-bar']}>
+                    <button type="button" className={styles['icon-button']} onClick={clearSelection} title="取消選取">
+                        <Icons.Close />
+                    </button>
+                    <span className={styles['selection-count']}>已選取 {selectedItems.length} 項</span>
+                    <span className={styles['toolbar-divider']} />
+                    {singleSelected &&
+                        <button type="button" className={btn('ghost')} onClick={()=>{setTargetFileClone(JSON.parse(JSON.stringify(singleSelected))); setShowUpdateForm(true);}}>
+                            <Icons.Pen /> 編輯
+                        </button>
+                    }
+                    <button type="button" className={btn('ghost')} onClick={()=>setShowMoveDialog(true)}>
+                        <Icons.Move /> 移動
+                    </button>
+                    <button type="button" className={`${btn('ghost')} ${styles['danger']}`} onClick={deleteStoreFiles}>
+                        <Icons.Trash /> 刪除
+                    </button>
+                </div>
+                :
+                <nav className={styles['breadcrumb']}>
+                    <button
+                        type="button"
+                        className={styles['crumb']}
+                        onClick={() => onBreadcrumbClick(0)}
+                        disabled={path.length===0}
+                    >
+                        <Icons.Home />
+                        <span>根目錄</span>
+                    </button>
+                    {path.map((p, i) => (
+                        <Fragment key={p?.uuid || i}>
+                            <Icons.ChevronRight className={styles['crumb-separator']} />
                             <button
-                                className={styles['directory']}
+                                type="button"
+                                className={styles['crumb']}
                                 onClick={() => onBreadcrumbClick(i+1)}
-                                disabled={isLast}
+                                disabled={i === path.length - 1}
                                 title={p?.name}
                             >
-                                {p?.name || p?.uuid}
+                                <span>{p?.name || p?.uuid}</span>
                             </button>
-                            {!isLast && <FontAwesomeIcon icon={faChevronRight} /> }
-                        </div>
-                    );
-                })
+                        </Fragment>
+                    ))}
+                </nav>
             }
-        </nav>
-
-
-
- 
-        <div   {...getRootProps()} 
-           >
-            <input {...getInputProps()} />
-
-
-            <div className={`${styles['tableWrapper']} ${isDragActive?styles['dropActive']:''}`} onContextMenu={(e)=>{
-                clearSelection(); setTargetFile(null); handleContextMenu(e);
-            }}>
-                {
-                        (sortedItems||[]?.length)<1 &&
-                        <div className={styles['empty-file']}>
-                            <span >
-                                無檔案
-                            </span>
-
-                            <div>
-                                <span>拖動檔案至此</span>
-                                <span>或</span>
-                            </div>
-                            <button type="button" onClick={open}>
-                                點此上傳
-                            </button>
-                        </div>
-                        
-                }
-                <table className={styles[layout]}>
-                    <thead className={styles['']}>
-                        <tr>
-                            <th className={styles['']}></th>
-                            <th className={styles['']}>名稱</th>
-                            <th className={styles['']}>敘述</th>
-                            <th className={styles['']}>公開</th>
-                            <th className={styles['']}>型別</th>
-                            <th className={styles['']}>大小</th>
-                            <th className={styles['']}>日期</th>
-                            <th className={styles['']}>網址</th>
-                        </tr>
-                    </thead>
-
-                   
-                    <tbody>
-                        {sortedItems.map((it, i) => (
-                            <tr key={i} className={`${targetFile?.uuid==it?.uuid?styles['focus']:''} ${selected.has(it.uuid)?styles['focus']:''}`} 
-                            onContextMenu={(e)=>{ e.stopPropagation(); if(Array.from(selected).length>0 && !selected.has(it?.uuid)){clearSelection()} setTargetFile(it); handleContextMenu(e);}} 
-                            onClick={()=>{setTargetFile(it)}}
-                            onDoubleClick={(e)=>{if(it?.is_folder){setPath([...path, targetFile]); savePathToLocalStorage([...path, targetFile])}}}
-                            >   
-                                {layout=='list' &&
-                                    <td className={styles['']}>
-                                        <input
-                                            type="checkbox"
-                                            checked={selected.has(it.uuid)}
-                                            onChange={() => toggleSelect(it.uuid)}
-                                            aria-label={`Select ${it.name}`}
-                                        />
-                                    </td>
-                                }
-                                {
-                                    layout=='grid' &&
-                                    <td className={styles['file-thumbnail']}>
-                                        {
-                                            it?.is_public && it?.type?.startsWith('image') ?
-                                            <img src={it?.public_file_s}/>
-                                            :
-                                            it?.is_folder
-                                            ?
-                                            <FontAwesomeIcon icon={faFolder} />
-                                            :
-                                            fileIconByType(it.type)
-                                        }
-                                    </td>
-                                }
-                               
-
-                                <td className={styles['file-name']}>
-                                    <button
-                                        className={styles['']}
-                                        onDoubleClick={() => it.is_folder && onEnterFolder(it.id)}
-                                        onClick={() => toggleSelect(it.uuid)}
-                                    >
-                                        {
-                                            layout=='list' &&
-                                            <Fragment>
-                                                {
-                                                    it?.is_folder
-                                                    ?
-                                                    <span className={styles['']}>
-                                                        <FontAwesomeIcon icon={faFolder} /> 
-                                                    </span>
-                                                    :
-                                                    <span className={styles['']}>{fileIconByType(it.type)}</span>
-                                                }
-                                             </Fragment>
-                                        }
-                                        
-                                        <span className={styles['']} title={it.name}>{it.name}</span>
-                                    </button>
-                                </td>
-                                {
-                                    layout=='list' && <td className={styles['']}>{it.description||''}</td>
-                                }
-                                
-                                <td className={styles['']}>{it.is_public?<FontAwesomeIcon icon={faEye}/>:<FontAwesomeIcon icon={faEyeLowVision}/>}</td>
-
-                                <td className={styles['']}>{it.is_folder ? "資料夾" : (it.type || "未知")}</td>
-                                
-                                <td className={styles['']}>{it.is_folder ? "-" : formatBytes(it.size)}</td>
-                                <td className={styles['']}>{formatDate(it.created_at)}</td>
-                                <td className={styles['']}>
-                                    {
-                                        it?.is_public && !it?.is_folder ?
-                                        <button className={styles['']} onClick={()=>{
-                                            navigator.clipboard.writeText(it.public_file)
-                                        }}>
-                                            <FontAwesomeIcon icon={faCopy}/>
-                                        </button>
-                                        :
-                                        '-'
-                                    }
-                                </td>
-
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-
-
-
+            <span className={styles['item-count']}>
+                {items.length} 個項目{nextCursor ? '以上' : ''}
+            </span>
         </div>
 
-       
 
+        <div {...getRootProps({ className: styles['drop-zone'] })}>
+            <input {...getInputProps()} />
 
+            <div className={`${styles['progress-bar']} ${processing ? styles['show'] : ''}`} />
 
+            <div className={styles['content']}
+                onClick={clearSelection}
+                onContextMenu={(e)=>{ clearSelection(); handleContextMenu(e); }}
+            >
+                {items.length<1 && !processing &&
+                    <div className={styles['empty-state']}>
+                        {debouncedSearch
+                            ? <>
+                                <div className={styles['empty-icon']}><Icons.Search /></div>
+                                <h4>找不到符合「{debouncedSearch}」的項目</h4>
+                                <p>試試其他關鍵字，或清除搜尋條件</p>
+                                <button type="button" className={btn('secondary')} onClick={(e)=>{e.stopPropagation(); setSearch('')}}>清除搜尋</button>
+                            </>
+                            : <>
+                                <div className={styles['empty-icon']}><Icons.CloudUpload /></div>
+                                <h4>這個資料夾是空的</h4>
+                                <p>將檔案拖曳到這裡上傳，或使用下方按鈕</p>
+                                <div className={styles['empty-actions']}>
+                                    <button type="button" className={btn('secondary')} onClick={(e)=>{e.stopPropagation(); createFolder()}}>
+                                        <Icons.FolderPlus /> 新增資料夾
+                                    </button>
+                                    <button type="button" className={btn('primary')} onClick={(e)=>{e.stopPropagation(); open()}}>
+                                        <Icons.Upload /> 上傳檔案
+                                    </button>
+                                </div>
+                            </>
+                        }
+                    </div>
+                }
+
+                {items.length>0 && layout==='grid' &&
+                    <div className={styles['grid']}>
+                        {items.map((it) => (
+                            <div key={it.uuid} className={`${styles['card']} ${selected.has(it.uuid) ? styles['selected'] : ''}`} {...itemHandlers(it)}>
+                                <div className={styles['card-thumb']}>
+                                    {it?.is_public && it?.type?.startsWith('image') && it?.public_file_s
+                                        ? <img src={it.public_file_s} alt="" loading="lazy" draggable={false} />
+                                        : <FileIcon item={it} size="lg" />
+                                    }
+                                    {itemCheckbox(it)}
+                                    {!it.is_public &&
+                                        <span className={styles['card-badge']} title="不公開"><Icons.Lock /></span>
+                                    }
+                                    {it.is_public && !it.is_folder &&
+                                        <button type="button" className={styles['card-action']} title="複製網址" onClick={(e)=>{e.stopPropagation(); copyLink(it)}} onDoubleClick={(e)=>e.stopPropagation()}>
+                                            <Icons.Link />
+                                        </button>
+                                    }
+                                </div>
+                                <div className={styles['card-info']}>
+                                    <div className={styles['card-name']} title={it.name}>{it.name}</div>
+                                    <div className={styles['card-meta']}>
+                                        {it.is_folder ? '資料夾' : `${formatBytes(it.size)} · ${formatDate(it.created_at, false)}`}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                }
+
+                {items.length>0 && layout==='list' &&
+                    <table className={styles['table']}>
+                        <thead>
+                            <tr>
+                                <th className={styles['col-check']}>
+                                    <label className={styles['checkbox']} onClick={(e)=>e.stopPropagation()}>
+                                        <input
+                                            type="checkbox"
+                                            checked={allSelected}
+                                            onChange={()=>allSelected ? clearSelection() : setSelected(new Set(items.map(i=>i.uuid)))}
+                                            aria-label="全選"
+                                        />
+                                        <span className={styles['checkbox-box']}><Icons.Check /></span>
+                                    </label>
+                                </th>
+                                {sortHeader('name', '名稱', styles['col-name'])}
+                                <th className={styles['col-desc']}>敘述</th>
+                                {sortHeader('type', '型別', styles['col-type'])}
+                                {sortHeader('size', '大小', styles['col-size'])}
+                                {sortHeader('created_at', '建立日期', styles['col-date'])}
+                                <th className={styles['col-actions']}></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {items.map((it) => (
+                                <tr key={it.uuid} className={selected.has(it.uuid) ? styles['selected'] : ''} {...itemHandlers(it)}>
+                                    <td className={styles['col-check']}>{itemCheckbox(it)}</td>
+                                    <td className={styles['col-name']}>
+                                        <div className={styles['name-cell']}>
+                                            <FileIcon item={it} />
+                                            <span className={styles['name-text']} title={it.name}>{it.name}</span>
+                                            {!it.is_public && <Icons.Lock className={styles['private-icon']} title="不公開" />}
+                                        </div>
+                                    </td>
+                                    <td className={styles['col-desc']} title={it.description||''}>{it.description||'—'}</td>
+                                    <td className={styles['col-type']}>{formatType(it)}</td>
+                                    <td className={styles['col-size']}>{it.is_folder ? "—" : formatBytes(it.size)}</td>
+                                    <td className={styles['col-date']}>{formatDate(it.created_at)}</td>
+                                    <td className={styles['col-actions']}>
+                                        {it?.is_public && !it?.is_folder &&
+                                            <button type="button" className={styles['icon-button']} title="複製網址" onClick={(e)=>{e.stopPropagation(); copyLink(it)}} onDoubleClick={(e)=>e.stopPropagation()}>
+                                                <Icons.Link />
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                }
+
+                {/* 無限捲動用的觸發點 */}
+                <div ref={sentinelRef} className={styles['sentinel']}>
+                    {loadingMore && <span>載入中…</span>}
+                </div>
+            </div>
+
+            {isDragActive &&
+                <div className={styles['drop-overlay']}>
+                    <div>
+                        <Icons.CloudUpload />
+                        <strong>放開以上傳</strong>
+                        <span>檔案將上傳至「{currentFolderName}」</span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        {toast && <div className={styles['toast']}>{toast}</div>}
     </div>
   );
 }
