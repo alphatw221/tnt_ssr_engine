@@ -31,6 +31,7 @@ import style from './Shop.module.scss'
 
 import { customer_search_product } from &quot;@/api/product&quot;
 import { updateCartProduct, getCartProductsCount } from &quot;@/lib/utils/cartHelper&quot;;
+import { getCartStockUsage } from &quot;@/lib/utils/productHelper&quot;;
 
 const Shop = ({ 
     // element,  
@@ -50,6 +51,8 @@ const Shop = ({
     const customer = useAppSelector((state) =&gt; state.customer);
     const {cartProducts} = useAppSelector((state)=&gt; state.cart)
     const targetCartProducts = customer?.uuid ? customer?.cart_products||[] : cartProducts
+    // 整台購物車在各 stock 的佔用量，所有商品卡共用
+    const cartStockUsage = getCartStockUsage(targetCartProducts)
 
     const {cache} = useAppSelector((state) =&gt; state.shop);
 
@@ -269,6 +272,7 @@ const Shop = ({
                                 cartProduct={                
                                     targetCartProducts.find((cartProduct) =&gt; cartProduct?.product?.uuid === product?.uuid)
                                 } 
+                                cartStockUsage={cartStockUsage}
                                 routingTable={routingTable}/&gt;
                         ))
                     }

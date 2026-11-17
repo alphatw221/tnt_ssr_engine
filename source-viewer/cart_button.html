@@ -27,7 +27,7 @@ import { useAppSelector, useAppDispatch } from &quot;@/redux/hooks&quot;;
 // import Cookies from &quot;js-cookie&quot;;
 
 import {deleteCartProductV1, isInventorySufficient, getCartProductName, updateCartProduct, getCartProductsCount} from &quot;@/lib/utils/cartHelper.js&quot;
-import { getProductPrice, isStockSufficient } from &quot;@/lib/utils/productHelper&quot;;
+import { getProductPrice, isCartProductStockSufficient } from &quot;@/lib/utils/productHelper&quot;;
 
 // import { customer_delete_cart_product } from &quot;../../api/cart&quot;;
 import {useClickOutsideEvent} from '@/lib/utils/clickOutside.js'
@@ -104,7 +104,7 @@ const CartButton = ({
     const plusOneDisabled = (cartProduct)=&gt;{
         if(cartProduct?.compose_base) return true
 
-        const {requireQtySufficient, } = isStockSufficient( cartProduct?.product, 1, cartProduct?.quantity||0)
+        const {requireQtySufficient, } = isCartProductStockSufficient(cartProduct, 1, targetCartProducts)
         // console.log(requireQtySufficient)
         return !requireQtySufficient
     }
