@@ -27,7 +27,7 @@ import {
   getCartProductsCount
 } from "@/lib/utils/cartHelper";
 
-import {getProductPrice, isStockSufficient} from "@/lib/utils/productHelper"
+import {getProductPrice, isCartProductStockSufficient} from "@/lib/utils/productHelper"
 
 import style from "./CartDetail.module.scss"
 import clsx from "clsx";
@@ -171,7 +171,7 @@ const minusOneDisabled = (cartProduct)=>{
 }
 const plusOneDisabled = (cartProduct)=>{
     if(cartProduct?.compose_base) return true
-    const {requireQtySufficient, } = isStockSufficient( cartProduct?.product, 1, cartProduct?.quantity||0)
+    const {requireQtySufficient, } = isCartProductStockSufficient(cartProduct, 1, targetCartProducts)
     return !requireQtySufficient
 }
   return (

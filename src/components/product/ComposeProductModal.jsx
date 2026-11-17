@@ -10,7 +10,7 @@ import style from "./ComposeProductModal.module.scss"
 import clsx from "clsx";
 import { updateCartProduct } from "@/lib/utils/cartHelper";
 import CartToast, { useCartToast } from "@/components/cart-toast/CartToast";
-import { isStockSufficient } from "@/lib/utils/productHelper";
+import { isStockSufficient, getStockTarget, getCartStockUsage } from "@/lib/utils/productHelper";
 
 
 const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, quantityCount, updateCompose, nextAction, reviewContent, props}) =>{
@@ -26,6 +26,12 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
   const [composeProductData, setComposeProductData] = useState({})
 
   const dispatch = useAppDispatch();
+  const { cartProducts } = useAppSelector((state) => state.cart);
+  const customer = useAppSelector((state) => state.customer);
+  const targetCartProducts = customer?.uuid ? customer?.cart_products : cartProducts
+
+  // 購物車中已佔用的庫存（依 stock 計算，含一般/規格/組合商品與其他任搭內容）；編輯既有任搭時排除該任搭原本的內容
+  const cartStockUsage = getCartStockUsage(targetCartProducts, updateCompose ? cartProduct?.uuid : null)
 
   const handleQuantityInput = (e, uuid) => {
     const val = e.target.value;
@@ -48,6 +54,12 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
     setComposeProductData(data)
   },[cartProduct?.cart_compose_products, product?.compose_products])
   
+  // 所有搭配商品的選取數量都不超過庫存
+  const composeStockValid = (product?.compose_products||[]).filter(composeProduct=>composeProduct?.enable).every(composeProduct=>{
+    const stockTarget = getStockTarget(composeProduct?.source_product)
+    return isStockSufficient(stockTarget, 0, composeProductData?.[composeProduct?.uuid]||0, cartStockUsage).requireQtySufficient
+  })
+
   useEffect(()=>{
     const totalCount = (composeBase?.base||1) * (quantityCount||1)
     var composeCount = 0
@@ -79,10 +91,14 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                 <tbody className={clsx(style['表格-身體'], '表格-身體')}>
                   {
                     (product?.compose_products||[]).filter(composeProduct=>composeProduct?.enable).map((composeProduct,composeProductIndex)=>{
-                      const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( composeProduct.source_product, (composeBase?.base||1) * (quantityCount||1), cartProduct?.quantity||0)
+                      // 以「購物車已佔用 + 此次選取」的數量判斷庫存（再加 1 件 / 目前數量是否足夠）
+                      const stockTarget = getStockTarget(composeProduct?.source_product)
+                      const selectedQty = composeProductData?.[composeProduct?.uuid]||0
+                      const {requireQtySufficient:plusOneSufficient} = isStockSufficient( stockTarget, 1, selectedQty, cartStockUsage)
+                      const {requireQtySufficient:selectedQtySufficient, inventorySufficient} = isStockSufficient( stockTarget, 0, selectedQty, cartStockUsage)
 
                       return (<Fragment key={composeProductIndex}>
-                          <tr className={clsx(style['表格-列'], '表格-列', !requireQtySufficient?'存貨不足':'')}>
+                          <tr className={clsx(style['表格-列'], '表格-列', (!inventorySufficient || !selectedQtySufficient)?'存貨不足':'')}>
                             <td className={clsx(style['表格-圖片框'], "表格-圖片框")}>
                               <img
                                 className={clsx(style['表格-圖片'], "表格-圖片")}
@@ -128,7 +144,7 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                                         setComposeProductData(newData)
 
                                       }}
-                                      disabled={ !requireQtySufficient || composeLeft<=0
+                                      disabled={ !plusOneSufficient || composeLeft<=0
                                       }
                                     >
                                       +
@@ -181,7 +197,7 @@ const ComposeProductModal = ({ product, show, onHide, cartProduct, composeBase, 
                     showCartToast('失敗')
                   })
                 }}
-                disabled={!composeValid}
+                disabled={!composeValid || !composeStockValid}
               >
                 {" "}加入購物車{" "}
             </button>

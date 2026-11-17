@@ -8,7 +8,7 @@ import {
     deleteAllCartProduct } from "@/redux/slices/cart-slice";
 
 import { setCustomerCartProduct, customerDeleteCartProduct , setCustomerCartProducts} from "@/redux/slices/customer-slice"
-import {getProductPrice} from "@/lib/utils/productHelper"
+import {getProductPrice, isCartProductStockSufficient} from "@/lib/utils/productHelper"
 
 import {getLogisticServiceInfo, getShippingGroupFeeInfo} from '@/lib/utils/logisticHelper'
 // const _getTargetProduct = (cartProduct)=>{
@@ -82,70 +82,10 @@ export const isComposeValid = (cartProduct) =>{
 }
 
 
-const __getIsSingleProductStockSufficient = (product, quantity)=>{
-    var __inventoryControl = false
-    var __inventorySufficient = false
-    var __inventory = 0
-
-    __inventoryControl = cartProduct?.product.stock?.inventory_control
-    __inventorySufficient = (!_inventoryControl) || ((product?.stock?.inventory||0) > 0 && ((product?.stock?.inventory||0) > quantity ))
-    __inventory = product?.stock?.inventory||0
-
-    return {__inventoryControl, __inventorySufficient, __inventory}
-}
-
-
-const _getIsSingleProductInventorySufficient = (product, quantity)=>{
-    var _inventoryControl = false
-    var _inventorySufficient = false
-    var _inventory = 0
-
-    if(product?.stock){
-        const {__inventoryControl, __inventorySufficient, __inventory} = __getIsSingleProductStockSufficient(product, quantity)
-        _inventoryControl, _inventorySufficient, _inventory = __inventoryControl, __inventorySufficient, __inventory
-    }else {
-        _inventoryControl = product?.inventory_control
-        _inventorySufficient = (!_inventoryControl) || ((product?.inventory||0) > 0 && ((product?.inventory||0) > quantity ))
-        _inventory = product?.inventory||0
-    }
-    return {_inventoryControl, _inventorySufficient, _inventory}
-}
+// 購物車商品目前數量的庫存是否足夠（規格商品以所選 variant 的庫存與 bundle 計算）
 export const isInventorySufficient = (cartProduct)=>{
-
-    var inventoryControl = false
-    var inventorySufficient = true
-    var inventory = 0
-
-
-
-    if (['single', 'variant'].includes(cartProduct?.product?.type)){
-        const {_inventoryControl, _inventorySufficient, _inventory} = _getIsSingleProductInventorySufficient(cartProduct?.product, (cartProduct?.quantity * cartProduct?.product?.bundle||1))
-        inventoryControl, inventorySufficient, inventory = _inventoryControl, _inventorySufficient, _inventory
-    }
-    else if(['assorted'].includes(cartProduct?.product?.type)){
-        const inventories = [];
-        (cartProduct?.product?.assorted_products||[])?.forEach((assorted_product)=>{
-            const {__inventoryControl, __inventorySufficient, __inventory} = __getIsSingleProductStockSufficient(assorted_product, cartProduct?.quantity * (assorted_product?.bundle||1))
-            inventoryControl = inventoryControl || __inventoryControl
-            inventorySufficient = inventorySufficient&&__inventorySufficient
-            if(__inventoryControl)inventories.push(__inventory)
-        })
-        inventory = Math?.min(...inventories)||0
-    }
-    else if([ 'compose'].includes(cartProduct?.product?.type)){
-        const inventories = [];
-        (cartProduct?.cart_compose_products||[])?.forEach((cart_compose_product)=>{
-            const {_inventoryControl, _inventorySufficient, _inventory} = _getIsSingleProductInventorySufficient(cart_compose_product?.source_product, (cart_compose_product?.quantity * cart_compose_product?.source_product?.bundle||1))
-            inventoryControl = inventoryControl || _inventoryControl
-            inventorySufficient = inventorySufficient&&_inventorySufficient
-            if(_inventoryControl)inventories.push(_inventory)
-        })
-        inventory = Math?.min(...inventories)||0
-    }
-
-    return {inventoryControl, inventorySufficient, inventory}
-
-
+    const {inventoryControl, requireQtySufficient, inventory} = isCartProductStockSufficient(cartProduct, 0)
+    return {inventoryControl, inventorySufficient: requireQtySufficient, inventory}
 }
 
 // export const isDiscountApplied = (product, now)=>{

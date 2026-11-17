@@ -12,7 +12,7 @@ import CartToast, { useCartToast } from "@/components/cart-toast/CartToast"
 import ProductReviewSummary from "./ProductReviewSummary"
 import ProductReviews from "./ProductReviews"
 import { customer_get_product_review_summary } from "@/api/product";
-import { isStockSufficient, getProductPrice } from "@/lib/utils/productHelper";
+import { isStockSufficient, getStockTarget, getCartStockUsage, getProductPrice } from "@/lib/utils/productHelper";
 import { updateCartProduct, getCartProductsCount } from "@/lib/utils/cartHelper";
 
 
@@ -227,25 +227,27 @@ const ProductDetailClient = ({
         // return originalTotalPrice
     }
 
+    // 整台購物車在各 stock 的佔用量（含此商品已在購物車的數量，以及共用同一 stock 的其他商品、組合、任搭內容）
+    const cartStockUsage = useMemo(()=>getCartStockUsage(targetCartProducts), [targetCartProducts])
     const isRequireQtySufficient = ()=>{
-        const {requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( selectedProduct, quantityCount, productCartQty)
+        const {requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( getStockTarget(product, selectedVariantProduct), quantityCount, 0, cartStockUsage)
         return requireQtySufficient
     }
     const isInventoryControl = ()=>{
-        const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( selectedProduct, quantityCount, productCartQty)
+        const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( getStockTarget(product, selectedVariantProduct), quantityCount, 0, cartStockUsage)
         return inventoryControl
     }
     const isInventorySufficient = ()=>{
-        const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( selectedProduct, quantityCount, productCartQty)
+        const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( getStockTarget(product, selectedVariantProduct), quantityCount, 0, cartStockUsage)
         return inventorySufficient
     }
     const plusOneSufficient = ()=>{
-        const {requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( selectedProduct, quantityCount+1, productCartQty)
+        const {requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( getStockTarget(product, selectedVariantProduct), quantityCount+1, 0, cartStockUsage)
         return requireQtySufficient
     }
     const getInventory = ()=>{
-        const {requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( selectedProduct, quantityCount, productCartQty)
-        return inventory
+        const {inventoryQty} = isStockSufficient( getStockTarget(product, selectedVariantProduct), quantityCount, 0, cartStockUsage)
+        return inventoryQty
     }
     const getActionButtonText = ()=>{
         if(isRequireQtySufficient()){

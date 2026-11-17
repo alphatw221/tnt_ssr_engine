@@ -59,7 +59,38 @@ export const getPriceRange = (product, now)=>{
 
 
 
-export const isStockSufficient = (targetProduct, requireQty, productCartQty)=>{
+// 取得實際扣庫存的對象：規格商品(variant)用所選規格，其餘用商品本身
+// bundle 也跟著這個對象走（variant 上的 bundle，沒有 variant 則用母商品的 bundle）
+export const getStockTarget = (product, variantProduct)=>{
+    if(product?.type=='variant' && variantProduct) return variantProduct
+    return product
+}
+
+// 庫存資料的識別鍵：stock 是共用的資料表，不同商品（一般商品、規格、組合商品的子商品）可能指向同一筆 stock
+// 以 stock.uuid 識別；沒有 stock 時庫存欄位在品項本身，改用品項的 uuid
+export const getStockKey = (item)=>{
+    if(item?.stock?.uuid) return `stock:${item.stock.uuid}`
+    if(item?.stock) return item?.uuid ? `item:${item.uuid}` : null
+    return item?.uuid ? `item:${item.uuid}` : null
+}
+
+// 讀取單一品項的庫存設定（優先讀 stock，沒有則讀品項本身的欄位）
+const readStock = (item, occupiedUnits)=>{
+    const source = item?.stock || item
+    const key = getStockKey(item)
+    return {
+        inventoryControl: !!source?.inventory_control,
+        inventory: Number(source?.inventory)||0,
+        bundle: Number(item?.bundle)||1,
+        occupied: (key && Number(occupiedUnits?.[key])) || 0,
+    }
+}
+
+// targetProduct: 扣庫存的對象（請用 getStockTarget 取得）
+// requireQty: 本次要新增的數量
+// productCartQty: 已選取 / 購物車中此品項已有的數量（以商品件數計）
+// occupiedUnits: 其他地方已佔用的庫存量 { [stockKey]: 庫存單位 }，由 getCartStockUsage 取得
+export const isStockSufficient = (targetProduct, requireQty, productCartQty, occupiedUnits={})=>{
 
     var inventoryControl = false
     var requireQtySufficient = false
@@ -67,49 +98,105 @@ export const isStockSufficient = (targetProduct, requireQty, productCartQty)=>{
 
     var avaliableForAddToCart = 0
     var inventory = 0
+    var inventoryQty = 0 // 以商品件數計的庫存（已除以 bundle）
+
+    const cartQty = Number(productCartQty)||0
+    const totalQty = (Number(requireQty)||0) + cartQty
+
+    // 每一筆庫存：庫存 >= 其他已佔用 + 這次需要的數量 × bundle
+    const isEnough = (stock, qty)=>stock.inventory >= stock.occupied + qty * stock.bundle
+    const available = (stock)=>stock.inventory - stock.occupied - cartQty * stock.bundle
 
     if (['single', 'variant', null, undefined].includes(targetProduct?.type)){
-        if(targetProduct?.stock ){
-            inventoryControl = targetProduct.stock?.inventory_control
-            requireQtySufficient = (!inventoryControl) || (targetProduct?.stock?.inventory||0) >= ((requireQty + productCartQty||0) * targetProduct?.bundle||1)
-            inventorySufficient = (!inventoryControl) || (targetProduct?.stock?.inventory||0) > 0
-            avaliableForAddToCart= (targetProduct?.stock?.inventory||0) - ((productCartQty||0) * targetProduct?.bundle||1)
-            inventory = targetProduct?.stock?.inventory||0
-        }else {
-            inventoryControl = targetProduct?.inventory_control
-            requireQtySufficient = (!inventoryControl) || (targetProduct?.inventory||0) >= ((requireQty + productCartQty||0) * targetProduct?.bundle||1)
-            inventorySufficient = (!inventoryControl) || (targetProduct?.inventory||0) > 0
-            avaliableForAddToCart= (targetProduct?.inventory||0) - ((productCartQty||0) * targetProduct?.bundle||1)
-            inventory = targetProduct?.inventory
-        }
+        const stock = readStock(targetProduct, occupiedUnits)
+        inventoryControl = stock.inventoryControl
+        requireQtySufficient = (!inventoryControl) || isEnough(stock, totalQty)
+        inventorySufficient = (!inventoryControl) || stock.inventory >= stock.bundle
+        avaliableForAddToCart = available(stock)
+        inventory = stock.inventory
+        inventoryQty = Math.floor(stock.inventory / stock.bundle)
     }
     else if(['assorted'].includes(targetProduct?.type)){
-        var _requireQtySufficient = true
-        var _inventorySufficient = true
+        // 只看有啟用庫存控管的子商品，每個子商品依自己的 stock 與 bundle 計算
+        const controlled = (targetProduct?.assorted_products||[]).map(item=>readStock(item, occupiedUnits)).filter(stock=>stock.inventoryControl)
 
-        const avaliableForAddToCarts = []
-        const inventories = []
-        (targetProduct?.assorted_products||[]).foreach(assorted_product=>{
-            requireQtySufficient = _requireQtySufficient && ((!assorted_product.stock?.inventory_control) || (assorted_product?.stock?.inventory||0) >= ((requireQty + productCartQty||0) * targetProduct.bundle))
-            _requireQtySufficient = requireQtySufficient
-            inventorySufficient = _inventorySufficient && ((!assorted_product.stock?.inventory_control) || (assorted_product?.stock?.inventory||0) > 0)
-            _inventorySufficient = inventorySufficient
-            avaliableForAddToCarts.push((assorted_product?.stock?.inventory||0) - ((productCartQty||0) * assorted_product.bundle))
-            inventories.push(assorted_product?.stock?.inventory)
-        })
-
-        avaliableForAddToCart = Math?.min(...avaliableForAddToCarts)||0
-        inventory = Math?.min(...inventories)||0
+        inventoryControl = controlled.length > 0
+        requireQtySufficient = controlled.every(stock=>isEnough(stock, totalQty))
+        inventorySufficient = controlled.every(stock=>stock.inventory >= stock.bundle)
+        avaliableForAddToCart = controlled.length ? Math.min(...controlled.map(available)) : 0
+        inventory = controlled.length ? Math.min(...controlled.map(stock=>stock.inventory)) : 0
+        inventoryQty = controlled.length ? Math.min(...controlled.map(stock=>Math.floor(stock.inventory / stock.bundle))) : 0
     }
     else if(targetProduct?.type=='compose'){
-        //do nothing
-        requireQtySufficient=true //
+        // 任搭商品的庫存由各搭配子商品檢查
+        requireQtySufficient = true
+        inventorySufficient = true
     }
 
 
-    return {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory}
+    return {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory, inventoryQty}
 
 
+}
+
+// 將「某品項 × 數量」所需的庫存單位累加到 usage 上
+// 組合商品(assorted)依各子商品的 stock 與 bundle 拆開計算
+const addStockUsage = (usage, target, qty)=>{
+    const quantity = Number(qty)||0
+    if(!target || !quantity) return
+    const items = target?.type=='assorted' ? (target?.assorted_products||[]) : [target]
+    items.forEach(item=>{
+        const key = getStockKey(item)
+        if(key) usage[key] = (usage[key]||0) + quantity * (Number(item?.bundle)||1)
+    })
+}
+
+// 購物車中已佔用的庫存量 { [stockKey]: 庫存單位 }
+// 會計入：一般 / 規格 / 組合商品，以及所有任搭商品內選取的搭配商品
+// excludeCartProductUuid: 要排除的購物車商品（例如正在編輯內容的任搭商品）
+export const getCartStockUsage = (cartProducts, excludeCartProductUuid=null)=>{
+    const usage = {}
+    ;(cartProducts||[]).forEach(cartProduct=>{
+        if(excludeCartProductUuid && cartProduct?.uuid==excludeCartProductUuid) return
+        if(cartProduct?.product?.type=='compose'){
+            (cartProduct?.cart_compose_products||[]).forEach(cartComposeProduct=>{
+                addStockUsage(usage, getStockTarget(cartComposeProduct?.source_product), cartComposeProduct?.quantity)
+            })
+        }
+        else {
+            addStockUsage(usage, getStockTarget(cartProduct?.product, cartProduct?.variant_product), cartProduct?.quantity)
+        }
+    })
+    return usage
+}
+
+// 購物車商品的庫存檢查（購物車 / 購物車按鈕 / 結帳共用）
+// additionalQty: 要再增加的數量，0 表示檢查目前數量是否足夠
+// cartProducts: 傳入時以整台購物車在各 stock 的佔用量判斷（用於 +1 按鈕）；不傳則只看此列自己的數量
+export const isCartProductStockSufficient = (cartProduct, additionalQty=0, cartProducts=null)=>{
+    const product = cartProduct?.product
+
+    if(product?.type=='compose'){
+        const results = (cartProduct?.cart_compose_products||[]).map(cartComposeProduct=>
+            isStockSufficient(cartComposeProduct?.source_product, 0, cartComposeProduct?.quantity||0)
+        )
+        const controlled = results.filter(result=>result.inventoryControl)
+        return {
+            inventoryControl: controlled.length > 0,
+            requireQtySufficient: (Number(additionalQty)||0) <= 0 && results.every(result=>result.requireQtySufficient),
+            inventorySufficient: results.every(result=>result.inventorySufficient),
+            avaliableForAddToCart: controlled.length ? Math.min(...controlled.map(result=>result.avaliableForAddToCart)) : 0,
+            inventory: controlled.length ? Math.min(...controlled.map(result=>result.inventory)) : 0,
+            inventoryQty: controlled.length ? Math.min(...controlled.map(result=>result.inventoryQty)) : 0,
+        }
+    }
+
+    const stockTarget = getStockTarget(product, cartProduct?.variant_product)
+    if(cartProducts){
+        // 整台購物車的佔用量已包含此列，所以此列數量傳 0
+        return isStockSufficient(stockTarget, additionalQty, 0, getCartStockUsage(cartProducts))
+    }
+    return isStockSufficient(stockTarget, additionalQty, cartProduct?.quantity||0)
 }
 
 

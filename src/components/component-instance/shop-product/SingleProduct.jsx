@@ -7,7 +7,7 @@ import style from './SingleProduct.module.scss'
 
 import cogoToast from 'cogo-toast';
 import { updateCartProduct, } from "@/lib/utils/cartHelper";
-import { getProductPrice, isStockSufficient } from "@/lib/utils/productHelper"
+import { getProductPrice, isStockSufficient, getStockTarget } from "@/lib/utils/productHelper"
 
 // import ProductModal from "./ProductModal"
 
@@ -28,6 +28,7 @@ const DIRECT_ADD_PRODUCT_TYPES = ['single', 'assorted']
 const SingleProduct = ({
     product,
     cartProduct,
+    cartStockUsage,
     routingTable,
 }) => {
 
@@ -38,11 +39,18 @@ const SingleProduct = ({
     const now = new Date().toJSON().slice(0, 10);
     const ref = useRef()
     const {isDiscountApplied, originalSinglePrice, discountSinglePrice, originalMinimumPrice, originalMaximumPrice, discountMinimumPrice, discountMaximumPrice, discountMaximumPercent, discountMinimumPercent} = getProductPrice(now, product, cartProduct?.quantity, cartProduct?.variant_product, cartProduct?.compose_base)
-    const {inventoryControl, requireQtySufficient, inventorySufficient, avaliableForAddToCart, inventory} = isStockSufficient( product, 1, cartProduct?.quantity||0)
     const productType = product?.type || 'single'
     const canDirectAdd = DIRECT_ADD_PRODUCT_TYPES.includes(productType)
     const cartQuantity = cartProduct?.quantity || 0
-    const isOutOfStock = canDirectAdd && !inventorySufficient
+    // 規格商品：所有規格都缺貨才算缺貨（各規格以自己的庫存與 bundle 判斷）
+    // 其餘商品：以商品本身判斷；任搭商品由搭配內容決定，這裡不標缺貨
+    const isOutOfStock = productType=='variant'
+        ? (product?.variant_products||[]).length > 0 && (product?.variant_products||[]).every(variantProduct=>!isStockSufficient(getStockTarget(product, variantProduct), 1, 0).inventorySufficient)
+        : productType!='compose' && !isStockSufficient(product, 1, 0).inventorySufficient
+    // 可直接加入的商品：再加 1 件是否足夠（以整台購物車在各 stock 的佔用量計算；未傳入時退回只看此商品在購物車的數量）
+    const canAddOne = cartStockUsage
+        ? isStockSufficient(product, 1, 0, cartStockUsage).requireQtySufficient
+        : isStockSufficient(product, 1, cartQuantity).requireQtySufficient
 
     useEffect(()=>{
             const mouseEnterHandler = (e)=>{
@@ -138,7 +146,7 @@ const SingleProduct = ({
                     <div className={clsx(style["加入購物車框"], '加入購物車框')}>
                         <button
                             className={clsx(style["加入購物車-按鈕"], '加入購物車-按鈕')}
-                            disabled={isOutOfStock}
+                            disabled={isOutOfStock || !canAddOne}
                             onClick={() => {
                                 updateCartProduct(product, null, 1, dispatch)
                                     .then(()=>{showCartToast('成功')})
@@ -154,7 +162,7 @@ const SingleProduct = ({
                     <div className={clsx(style["直接購買框"], '直接購買框')}>
                         <button
                             className={clsx(style["直接購買-按鈕"], '直接購買-按鈕')}
-                            disabled={isOutOfStock}
+                            disabled={isOutOfStock || !canAddOne}
                             onClick={() => {
                                 updateCartProduct(product, null, 1, dispatch).then(()=>{
                                     window.location.href = `/${routingTable?.['checkout_route']||'checkout'}`
