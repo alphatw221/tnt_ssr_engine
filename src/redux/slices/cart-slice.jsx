@@ -61,20 +61,26 @@ const cartSlice = createSlice({
                 compose_products_data, 
                 update_compose, 
                 addon_source_product, 
-                cart_addon_product_quantity
+                cart_addon_product_quantity,
+                cart_product_uuid,
             } = action.payload
 
 
 
             const isComposeProduct = !!compose_base
-            const hasMatchedCartProduct = (state?.cartProducts||[])?.some(cartProduct=>
-                (
+            // 編輯既有任搭內容且有指定 cart_product_uuid 時，只更新該列
+            // 否則依 商品 + 規格 + 任搭組數 比對
+            const isMatchedCartProduct = (cartProduct)=>{
+                if(isComposeProduct && update_compose && cart_product_uuid) return cartProduct?.uuid==cart_product_uuid
+                return (
                     cartProduct?.product?.uuid==product.uuid
                     &&
                     (cartProduct?.variant_product?.uuid||null)==(variant_product?.uuid||null)
                     &&
                     (cartProduct?.compose_base?.uuid||null)==(compose_base?.uuid||null)
-                ))
+                )
+            }
+            const hasMatchedCartProduct = (state?.cartProducts||[])?.some(isMatchedCartProduct)
 
             // 一般/variant product：有匹配就更新
             // compose product：有匹配且 update_compose 為 true 才更新
@@ -83,13 +89,7 @@ const cartSlice = createSlice({
             if(shouldUpdate){
 
                 const res =  state.cartProducts.map(cartProduct=>{
-                    if( 
-                        cartProduct?.product?.uuid==product.uuid
-                        &&
-                        (cartProduct?.variant_product?.uuid||null)==(variant_product?.uuid||null)
-                        &&
-                        (cartProduct?.compose_base?.uuid||null)==(compose_base?.uuid||null)
-                    ){
+                    if(isMatchedCartProduct(cartProduct)){
 
 
                         // Compose

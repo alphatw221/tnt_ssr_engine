@@ -139,9 +139,9 @@ export const isStockSufficient = (targetProduct, requireQty, productCartQty, occ
 
 }
 
-// 將「某品項 × 數量」所需的庫存單位累加到 usage 上
+// 將「某品項 × 數量」所需的庫存單位累加到 usage 上（會直接修改 usage）
 // 組合商品(assorted)依各子商品的 stock 與 bundle 拆開計算
-const addStockUsage = (usage, target, qty)=>{
+export const addStockUsage = (usage, target, qty)=>{
     const quantity = Number(qty)||0
     if(!target || !quantity) return
     const items = target?.type=='assorted' ? (target?.assorted_products||[]) : [target]

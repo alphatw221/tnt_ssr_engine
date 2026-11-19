@@ -84,20 +84,29 @@ const OrderReviewItem = ({ item, orderUuid, guestUUID, defaultDisplayName, onCre
     const handleSelectImages = async (e) => {
         const selectedFiles = Array.from(e.target.files || [])
         e.target.value = ''
-        if (images.length + selectedFiles.length > MAX_IMAGES) {
-            setErrorMessage(ERROR_MESSAGES['too_many_images'])
-            return
-        }
+        if (!selectedFiles.length) return
+        //超過張數時只收還放得下的前幾張，不整批退回
+        const remaining = MAX_IMAGES - images.length
+        const acceptedFiles = selectedFiles.slice(0, remaining)
+        const overCount = selectedFiles.length - acceptedFiles.length
+
+        //一張一張壓，避免手機同時解碼多張大圖記憶體不足
         setCompressing(true)
-        const files = await Promise.all(selectedFiles.map(compressImage))
-        setCompressing(false)
-        //大小限制以壓縮後為準，手機原圖超過 5MB 壓完通常就能上傳
-        if (files.some(file => file.size > MAX_IMAGE_SIZE)) {
-            setErrorMessage('每張圖片不能超過 5MB')
-            return
+        const files = []
+        for (const file of acceptedFiles) {
+            files.push(await compressImage(file))
         }
-        setErrorMessage('')
-        setImages(prev => [...prev, ...files.map(file => ({ file, preview: URL.createObjectURL(file) }))])
+        setCompressing(false)
+
+        //大小限制以壓縮後為準，手機原圖超過 5MB 壓完通常就能上傳；太大的單獨略過
+        const validFiles = files.filter(file => file.size <= MAX_IMAGE_SIZE)
+        const tooLargeCount = files.length - validFiles.length
+
+        const messages = []
+        if (overCount > 0) messages.push(`圖片最多 ${MAX_IMAGES} 張，超過的 ${overCount} 張已略過`)
+        if (tooLargeCount > 0) messages.push(`有 ${tooLargeCount} 張圖片超過 5MB，已略過`)
+        setErrorMessage(messages.join('；'))
+        setImages(prev => [...prev, ...validFiles.map(file => ({ file, preview: URL.createObjectURL(file) }))])
     }
 
     const handleRemoveImage = (index) => {

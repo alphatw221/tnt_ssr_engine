@@ -233,7 +233,8 @@ export const getCartSummarize = ({
 
 
 
-export const updateCartProduct = ( product, variant_product, quantity, dispatch, compose_base, compose_products_data, update_compose, addon_source_product, cart_addon_product_quantity)=>{
+// cart_product_uuid: 編輯既有任搭內容時(update_compose)指定要更新的購物車商品，避免同商品同組數的其他列被一起覆蓋
+export const updateCartProduct = ( product, variant_product, quantity, dispatch, compose_base, compose_products_data, update_compose, addon_source_product, cart_addon_product_quantity, cart_product_uuid=null)=>{
 
     // console.log(product)
     // console.log(variant_product)
@@ -254,6 +255,7 @@ export const updateCartProduct = ( product, variant_product, quantity, dispatch,
                 'update_compose':update_compose,
                 'addon_source_product':addon_source_product,
                 'cart_addon_product_quantity':cart_addon_product_quantity,
+                'cart_product_uuid':cart_product_uuid,
             
             }))
             // cogoToast.success("已加入購物車 Added To Cart", {position: "top-right"});
